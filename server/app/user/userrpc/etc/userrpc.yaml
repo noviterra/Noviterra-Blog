@@ -2,30 +2,30 @@ Name: userrpc.rpc
 ListenOn: 0.0.0.0:8080
 Etcd:
   Hosts:
-  - ${ETCD_HOST}
-  Key: ${USER_RPC}
+  - 127.0.0.1:2379
+  Key: userrpc.rpc
 
 Smtp:
-  Host: ${SMTP_HOST}
-  Port: ${SMTP_PORT}
-  User: ${SMTP_USER}
-  Password: ${SMTP_PASSWORD}s
-  From: ${SMTP_FROM}
+  Host: smtp.163.com
+  Port: 465
+  User: noviterra@163.com
+  Password: JPPYLEdiL6TAQyHs
+  From: noviterra@163.com
 
 Cache:
-  Addr: ${REDIS_ADDR}
-  Password: ${REDIS_PASSWORD}
-  DB: ${REDIS_DB}
+  Addr: 127.0.0.1:6379
+  Password:
+  DB: 0
 
 Repo:
-  UserName: ${MYSQL_USER}
-  Password: ${MYSQL_PASSWORD}
-  Host: ${MYSQL_HOST}
-  Port: ${MYSQL_PORT}
-  DBName: ${MYSQL_DB}
+  UserName: "root"
+  Password: "aaa2021s"
+  Host: 127.0.0.1
+  Port: 3306
+  DBName: noviterra
 
 JWT:
-  AccessSecret: ${JWT_ACCESSSECRET}
-  AccessExpire: ${JWT_ACCESSEXPIRE}
-  RefreshSecret: ${JWT_REFRESHSECRET}
-  RefreshExpire:  ${JWT_REFRESHEXPIRE}
+  AccessSecret: hrlHsEomQ9x4vMkLoPTyU3wZ5ahk6oseF2gH4jK6mN9pQ1rS3t
+  AccessExpire: 7200
+  RefreshSecret: PewqShEK5jH9gF4dS2aOkh7SlU0yT4rLkOwasX5cV9bN3mK0
+  RefreshExpire:  604800

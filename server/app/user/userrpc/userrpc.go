@@ -21,7 +21,7 @@ import (
 var configFile = flag.String("f", "etc/userrpc.yaml", "the config file")
 
 func main() {
-	err := godotenv.Load("/.env")
+	err := godotenv.Load("D:\\GoProject\\IT\\Noviterra\\.env")
 	if err != nil {
 		panic(err)
 	}

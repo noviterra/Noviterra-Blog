@@ -4,30 +4,33 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-
 	"Noviterra/server/app/user/userapi/internal/config"
 	"Noviterra/server/app/user/userapi/internal/handler"
 	"Noviterra/server/app/user/userapi/internal/svc"
+	"flag"
+	"fmt"
+	"os"
 
-	"github.com/joho/godotenv"
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest"
 )
 
-var configFile = flag.String("f", "etc/usersservice.yaml", "the config file")
+var configFile = flag.String("f", "server/app/user/userapi/etc/usersservice.yaml", "the config file")
 
 func main() {
-	err := godotenv.Load("/.env")
-	if err != nil {
-		panic(err)
-	}
+	//wd, _ := os.Getwd()
+	//abs, _ := filepath.Abs("etc/usersservice.yaml")
+	//
+	//fmt.Println("当前工作目录:", wd)
+	//fmt.Println("实际查找路径:", abs)
 
 	flag.Parse()
 
 	var c config.Config
-	conf.MustLoad(*configFile, &c, conf.UseEnv())
+	conf.MustLoad(*configFile, &c)
+
+	logx.Infof("MYSQL_USER=%q MYSQL_HOST=%q", os.Getenv("MYSQL_USER"), os.Getenv("MYSQL_HOST"))
 
 	server := rest.MustNewServer(c.RestConf, rest.WithCors("*"))
 	defer server.Stop()

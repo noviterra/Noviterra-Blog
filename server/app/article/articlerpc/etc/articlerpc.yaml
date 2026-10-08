@@ -2,5 +2,5 @@ Name: articlerpc.rpc
 ListenOn: 0.0.0.0:8080
 Etcd:
   Hosts:
-  - ${ETCD_HOST}
-  Key: ${ARTICLE_RPC}
+  - 127.0.0.1:2379
+  Key: articlerpc.rpc
