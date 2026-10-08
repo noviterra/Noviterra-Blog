@@ -1,0 +1,31 @@
+Name: userrpc.rpc
+ListenOn: 0.0.0.0:8080
+Etcd:
+  Hosts:
+  - ${ETCD_HOST}
+  Key: ${USER_RPC}
+
+Smtp:
+  Host: ${SMTP_HOST}
+  Port: ${SMTP_PORT}
+  User: ${SMTP_USER}
+  Password: ${SMTP_PASSWORD}s
+  From: ${SMTP_FROM}
+
+Cache:
+  Addr: ${REDIS_ADDR}
+  Password: ${REDIS_PASSWORD}
+  DB: ${REDIS_DB}
+
+Repo:
+  UserName: ${MYSQL_USER}
+  Password: ${MYSQL_PASSWORD}
+  Host: ${MYSQL_HOST}
+  Port: ${MYSQL_PORT}
+  DBName: ${MYSQL_DB}
+
+JWT:
+  AccessSecret: ${JWT_ACCESSSECRET}
+  AccessExpire: ${JWT_ACCESSEXPIRE}
+  RefreshSecret: ${JWT_REFRESHSECRET}
+  RefreshExpire:  ${JWT_REFRESHEXPIRE}

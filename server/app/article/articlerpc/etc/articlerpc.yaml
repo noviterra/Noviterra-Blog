@@ -1,0 +1,6 @@
+Name: articlerpc.rpc
+ListenOn: 0.0.0.0:8080
+Etcd:
+  Hosts:
+  - ${ETCD_HOST}
+  Key: ${ARTICLE_RPC}

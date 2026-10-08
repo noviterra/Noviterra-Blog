@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noviterra · 记录、思考与构建</title>
+<meta name="description" content="Noviterra —— 一个后端开发者的个人博客，记录 Go、微服务与架构实践。">
+<style>
+/* ============================================================================
+   Noviterra · 博客首页
+   ----------------------------------------------------------------------------
+   视觉策略：暖纸底 + 单一强调色（铁锈橙）+ 辅助色（梅紫）构成的暖色渐变，
+   氛围层用模糊光斑与网格纹理制造纵深，信息层保持白面平铺以保证可读性。
+   华丽集中在「首屏 / 精选卡 / 局部强调」，正文区域依旧克制。
+   ============================================================================ */
+
+/* ---------- 1. 设计令牌 ---------- */
+:root {
+  /* 表面 */
+  --bg:            #f9f7f4;
+  --bg-deep:       #f3efea;
+  --surface:       #ffffff;
+  --surface-2:     #faf8f6;
+  --sunken:        #f2eeea;
+  --glass:         rgba(255, 255, 255, .72);
+  --veil:          rgba(255, 255, 255, .82);
+
+  /* 文字 */
+  --text:          #1a1817;
+  --text-2:        #57524c;
+  --text-3:        #8d867e;
+
+  /* 线条 */
+  --border:        #ebe6e0;
+  --border-2:      #dcd5cc;
+  --grid-line:     rgba(26, 24, 23, .045);
+
+  /* 强调色：主色铁锈橙 + 辅助梅紫，构成暖色渐变 */
+  --accent:        #b0542a;
+  --accent-2:      #a1522c;
+  --accent-3:      #7c3a56;
+  --accent-soft:   #c9652f;
+  --accent-tint:   #fbeee7;
+  --accent-ring:   rgba(176, 84, 42, .28);
+  --accent-glow:   rgba(176, 84, 42, .22);
+
+  /* 渐变 */
+  --grad-accent:   linear-gradient(115deg, #cf6a2c 0%, #b0542a 42%, #7c3a56 100%);
+  --grad-heading:  linear-gradient(102deg, #1a1817 0%, #6d3a1f 52%, #a1522c 100%);
+  --grad-line:     linear-gradient(90deg, #cf6a2c, #7c3a56);
+  --grad-warm:     linear-gradient(135deg, #fdf3ea 0%, #fbeaf0 48%, #f0effa 100%);
+
+  /* 彩色阴影（黑色阴影显脏，改用暖调） */
+  --sh-xs: 0 1px 2px rgba(52, 38, 28, .05);
+  --sh-sm: 0 1px 2px rgba(52, 38, 28, .05), 0 3px 10px -4px rgba(120, 60, 30, .10);
+  --sh-md: 0 2px 4px rgba(52, 38, 28, .04), 0 12px 28px -12px rgba(120, 60, 30, .20);
+  --sh-lg: 0 4px 10px rgba(52, 38, 28, .05), 0 28px 56px -20px rgba(120, 60, 30, .26);
+  --sh-glow: 0 10px 30px -10px var(--accent-glow);
+
+  --header-bg:     rgba(249, 247, 244, .72);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+               "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC",
+               "Noto Sans CJK SC", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", "Courier New", monospace;
+
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+
+  --wrap: 1200px;
+  --header-h: 62px;
+
+  --orb-a: rgba(243, 178, 130, .62);
+  --orb-b: rgba(233, 165, 190, .50);
+  --orb-c: rgba(172, 183, 240, .44);
+  --noise-blend: multiply;
+  --noise-opacity: .038;
+}
+
+/* 深色：系统偏好（无 JS 也可用） */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:          #100f0e;
+    --bg-deep:     #161513;
+    --surface:     #1a1918;
+    --surface-2:   #1f1e1c;
+    --sunken:      #232120;
+    --glass:       rgba(26, 25, 24, .68);
+    --veil:        rgba(22, 21, 20, .84);
+
+    --text:        #f0ede8;
+    --text-2:      #aca69e;
+    --text-3:      #7e7871;
+
+    --border:      #2a2725;
+    --border-2:    #3a3633;
+    --grid-line:   rgba(240, 237, 232, .045);
+
+    --accent:      #e0905f;
+    --accent-2:    #d98d63;
+    --accent-3:    #c9799c;
+    --accent-soft: #eda478;
+    --accent-tint: #2c1f18;
+    --accent-ring: rgba(224, 144, 95, .3);
+    --accent-glow: rgba(224, 144, 95, .2);
+
+    --grad-accent:  linear-gradient(115deg, #e79a63 0%, #d98d63 44%, #c9799c 100%);
+    --grad-heading: linear-gradient(102deg, #f5f2ec 0%, #e0a97e 55%, #d98d63 100%);
+    --grad-warm:    linear-gradient(135deg, #241c17 0%, #251b20 48%, #1c1c26 100%);
+
+    --sh-xs: 0 1px 2px rgba(0, 0, 0, .3);
+    --sh-sm: 0 1px 2px rgba(0, 0, 0, .3), 0 3px 10px -4px rgba(0, 0, 0, .4);
+    --sh-md: 0 2px 4px rgba(0, 0, 0, .3), 0 12px 28px -12px rgba(0, 0, 0, .55);
+    --sh-lg: 0 4px 10px rgba(0, 0, 0, .35), 0 28px 56px -20px rgba(0, 0, 0, .6);
+
+    --header-bg: rgba(16, 15, 14, .72);
+
+    --orb-a: rgba(200, 108, 60, .34);
+    --orb-b: rgba(180, 90, 130, .30);
+    --orb-c: rgba(96, 110, 200, .26);
+    --noise-blend: screen;
+    --noise-opacity: .05;
+  }
+}
+/* 深色：手动切换 */
+:root[data-theme="dark"] {
+  --bg:          #100f0e;
+  --bg-deep:     #161513;
+  --surface:     #1a1918;
+  --surface-2:   #1f1e1c;
+  --sunken:      #232120;
+  --glass:       rgba(26, 25, 24, .68);
+  --veil:        rgba(22, 21, 20, .84);
+
+  --text:        #f0ede8;
+  --text-2:      #aca69e;
+  --text-3:      #7e7871;
+
+  --border:      #2a2725;
+  --border-2:    #3a3633;
+  --grid-line:   rgba(240, 237, 232, .045);
+
+  --accent:      #e0905f;
+  --accent-2:    #d98d63;
+  --accent-3:    #c9799c;
+  --accent-soft: #eda478;
+  --accent-tint: #2c1f18;
+  --accent-ring: rgba(224, 144, 95, .3);
+  --accent-glow: rgba(224, 144, 95, .2);
+
+  --grad-accent:  linear-gradient(115deg, #e79a63 0%, #d98d63 44%, #c9799c 100%);
+  --grad-heading: linear-gradient(102deg, #f5f2ec 0%, #e0a97e 55%, #d98d63 100%);
+  --grad-warm:    linear-gradient(135deg, #241c17 0%, #251b20 48%, #1c1c26 100%);
+
+  --sh-xs: 0 1px 2px rgba(0, 0, 0, .3);
+  --sh-sm: 0 1px 2px rgba(0, 0, 0, .3), 0 3px 10px -4px rgba(0, 0, 0, .4);
+  --sh-md: 0 2px 4px rgba(0, 0, 0, .3), 0 12px 28px -12px rgba(0, 0, 0, .55);
+  --sh-lg: 0 4px 10px rgba(0, 0, 0, .35), 0 28px 56px -20px rgba(0, 0, 0, .6);
+
+  --header-bg: rgba(16, 15, 14, .72);
+
+  --orb-a: rgba(200, 108, 60, .34);
+  --orb-b: rgba(180, 90, 130, .30);
+  --orb-c: rgba(96, 110, 200, .26);
+  --noise-blend: screen;
+  --noise-opacity: .05;
+}
+
+/* ---------- 2. 基础 ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+input { font: inherit; }
+
+::selection { background: var(--accent-tint); color: var(--accent-2); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.skip {
+  position: absolute; left: -9999px; top: 0;
+  padding: 8px 16px; background: var(--accent-2); color: #fff;
+  border-radius: 0 0 var(--r-md) 0; z-index: 200;
+}
+.skip:focus { left: 0; }
+
+.wrap {
+  width: 100%;
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 0 26px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- 3. 全局氛围层：光斑 + 网格 + 噪点 ---------- */
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  will-change: transform;
+}
+
+.orb-a {
+  width: 620px; height: 620px;
+  top: -240px; left: -160px;
+  background: radial-gradient(circle at 40% 40%, var(--orb-a), transparent 68%);
+  animation: drift-a 26s ease-in-out infinite;
+}
+.orb-b {
+  width: 540px; height: 540px;
+  top: -180px; right: -140px;
+  background: radial-gradient(circle at 50% 50%, var(--orb-b), transparent 68%);
+  animation: drift-b 32s ease-in-out infinite;
+}
+.orb-c {
+  width: 700px; height: 420px;
+  top: 420px; left: 30%;
+  background: radial-gradient(circle at 50% 50%, var(--orb-c), transparent 70%);
+  opacity: .8;
+  animation: drift-c 38s ease-in-out infinite;
+}
+
+@keyframes drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(60px, 40px, 0) scale(1.08); }
+}
+@keyframes drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.05); }
+  50%      { transform: translate3d(-50px, 60px, 0) scale(.95); }
+}
+@keyframes drift-c {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(-70px, -40px, 0); }
+}
+
+.grid-veil {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 34px 34px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 55% at 50% 0%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(ellipse 90% 55% at 50% 0%, #000 0%, transparent 78%);
+}
+
+.noise {
+  position: absolute;
+  inset: 0;
+  opacity: var(--noise-opacity);
+  mix-blend-mode: var(--noise-blend);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- 4. 顶栏 ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  height: var(--header-h);
+  background: var(--header-bg);
+  backdrop-filter: saturate(200%) blur(14px);
+  -webkit-backdrop-filter: saturate(200%) blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.site-header::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 1px;
+  background: var(--grad-line);
+  opacity: .35;
+}
+
+.header-inner { height: 100%; display: flex; align-items: center; gap: 30px; }
+
+.brand { display: flex; align-items: center; gap: 11px; flex: none; }
+
+.brand-mark {
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  border-radius: 9px;
+  background: var(--grad-accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  box-shadow: var(--sh-glow);
+}
+
+.brand-text { display: flex; flex-direction: column; line-height: 1.12; }
+.brand-text strong { font-size: 15.5px; font-weight: 700; letter-spacing: -.015em; }
+.brand-text small {
+  font-size: 10.5px; color: var(--text-3); letter-spacing: .09em; text-transform: uppercase;
+}
+
+.nav { display: flex; align-items: center; gap: 2px; margin-left: 4px; }
+
+.nav a {
+  position: relative;
+  padding: 7px 12px;
+  font-size: 14px;
+  color: var(--text-2);
+  border-radius: var(--r-sm);
+  transition: color .16s, background .16s;
+}
+.nav a:hover { color: var(--text); background: var(--sunken); }
+.nav a[aria-current="page"] { color: var(--accent-2); font-weight: 650; }
+.nav a[aria-current="page"]::after {
+  content: "";
+  position: absolute; left: 12px; right: 12px; bottom: 1px;
+  height: 2px; border-radius: 2px;
+  background: var(--grad-line);
+}
+
+.header-actions { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+
+.search-btn {
+  display: flex; align-items: center; gap: 9px;
+  height: 34px; padding: 0 9px 0 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text-3);
+  font-size: 13px;
+  box-shadow: var(--sh-xs);
+  transition: border-color .16s, color .16s, box-shadow .16s, transform .16s;
+}
+.search-btn:hover {
+  border-color: var(--border-2);
+  color: var(--text-2);
+  box-shadow: var(--sh-sm);
+  transform: translateY(-1px);
+}
+.search-btn kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  color: var(--text-3);
+  background: var(--sunken);
+}
+
+.icon-btn {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text-2);
+  box-shadow: var(--sh-xs);
+  transition: border-color .16s, color .16s, box-shadow .16s, transform .16s;
+}
+.icon-btn:hover {
+  border-color: var(--border-2); color: var(--accent-2);
+  box-shadow: var(--sh-sm); transform: translateY(-1px);
+}
+.icon-btn svg { width: 16px; height: 16px; }
+
+/* ---------- 5. 首屏 ---------- */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr);
+  gap: 48px;
+  align-items: center;
+  padding: 64px 0 52px;
+}
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 5px 12px 5px 10px;
+  margin-bottom: 20px;
+  border: 1px solid var(--accent-ring);
+  border-radius: 999px;
+  background: var(--glass);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 11.5px;
+  font-family: var(--font-mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  box-shadow: var(--sh-xs);
+}
+.eyebrow .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--grad-accent);
+  box-shadow: 0 0 0 3px var(--accent-tint);
+}
+
+.hero h1 {
+  margin: 0 0 18px;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.24;
+  font-weight: 800;
+  letter-spacing: -.032em;
+  text-wrap: balance;
+  background: var(--grad-heading);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-lead {
+  margin: 0 0 26px;
+  font-size: 15.5px;
+  line-height: 1.78;
+  color: var(--text-2);
+  max-width: 46ch;
+}
+
+.cta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 30px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 40px; padding: 0 20px;
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .18s, border-color .18s, color .18s;
+}
+.btn-primary {
+  background: var(--grad-accent);
+  color: #fff;
+  box-shadow: 0 10px 24px -10px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.22);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -12px var(--accent-glow); }
+.btn-ghost {
+  border: 1px solid var(--border-2);
+  background: var(--glass);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-2);
+}
+.btn-ghost:hover { transform: translateY(-2px); color: var(--text); box-shadow: var(--sh-sm); }
+.btn svg { width: 15px; height: 15px; }
+
+.hero-metrics {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.metric .v {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  line-height: 1.25;
+  background: var(--grad-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.metric .k { font-size: 12px; color: var(--text-3); letter-spacing: .02em; }
+
+/* 首屏右侧：玻璃状态卡 */
+.pulse-card {
+  position: relative;
+  padding: 20px;
+  border-radius: var(--r-xl);
+  background: var(--glass);
+  backdrop-filter: saturate(180%) blur(18px);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  border: 1px solid var(--border);
+  box-shadow: var(--sh-lg);
+  overflow: hidden;
+}
+.pulse-card::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, rgba(255,255,255,.9), transparent 42%, var(--accent-ring));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.pulse-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.pulse-list { display: grid; gap: 2px; }
+
+.pulse-item {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 14px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 9px;
+  border-radius: var(--r-sm);
+  transition: background .16s, transform .16s;
+}
+.pulse-item:hover { background: var(--surface); transform: translateX(2px); }
+.pulse-item .d {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.pulse-item .t {
+  font-size: 13.2px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color .16s;
+}
+.pulse-item:hover .t { color: var(--accent-2); }
+.pulse-item .arrow { color: var(--border-2); transition: transform .16s, color .16s; }
+.pulse-item:hover .arrow { color: var(--accent-2); transform: translateX(2px); }
+
+.pulse-now {
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px dashed var(--border-2);
+  display: flex; align-items: center; gap: 9px;
+  font-size: 12.8px;
+  color: var(--text-3);
+}
+.pulse-now b { color: var(--text-2); font-weight: 600; }
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex: none;
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 3px var(--accent-tint);
+  animation: breathe 2.4s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 3px var(--accent-tint); }
+  50%      { box-shadow: 0 0 0 6px transparent; }
+}
+
+/* ---------- 6. 主网格 ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 46px;
+  align-items: start;
+  padding-bottom: 64px;
+}
+.col-side { display: grid; gap: 16px; }
+
+/* ---------- 7. 精选卡（极光） ---------- */
+.featured {
+  position: relative;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--sh-md);
+  overflow: hidden;
+  isolation: isolate;
+  transition: box-shadow .28s, transform .28s, border-color .28s;
+}
+.featured:hover { box-shadow: var(--sh-lg); transform: translateY(-2px); border-color: var(--border-2); }
+
+.aurora {
+  position: absolute;
+  inset: -60%;
+  background: conic-gradient(from 0deg,
+    #f6c9a4, #efb6c8, #c8cdf2, #f3d9b0, #f6c9a4);
+  filter: blur(58px);
+  opacity: .55;
+  animation: spin 30s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.featured-inner {
+  position: relative;
+  padding: 26px 30px 24px;
+  background: linear-gradient(104deg,
+    var(--veil) 0%, var(--veil) 42%, rgba(255,255,255,.5) 100%);
+}
+:root[data-theme="dark"] .featured-inner {
+  background: linear-gradient(104deg,
+    rgba(22,21,20,.94) 0%, rgba(22,21,20,.88) 42%, rgba(22,21,20,.5) 100%);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .featured-inner {
+    background: linear-gradient(104deg,
+      rgba(22,21,20,.94) 0%, rgba(22,21,20,.88) 42%, rgba(22,21,20,.5) 100%);
+  }
+}
+
+.featured-label {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 11px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  background: var(--grad-accent);
+  color: #fff;
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  box-shadow: var(--sh-glow);
+}
+
+.featured h2 {
+  margin: 0 0 12px;
+  font-size: clamp(21px, 2.4vw, 27px);
+  line-height: 1.36;
+  font-weight: 750;
+  letter-spacing: -.026em;
+  text-wrap: balance;
+  max-width: 26ch;
+}
+.featured h2 a { transition: color .18s; }
+.featured:hover h2 a { color: var(--accent-2); }
+
+.featured p {
+  margin: 0 0 18px;
+  color: var(--text-2);
+  font-size: 14.6px;
+  line-height: 1.72;
+  max-width: 60ch;
+}
+
+/* ---------- 8. 元信息行 ---------- */
+.meta {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.meta .sep { color: var(--border-2); }
+.meta time, .meta .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.meta .cat { color: var(--accent-2); font-weight: 550; }
+
+/* ---------- 9. 分节标题 + 分类切换 ---------- */
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  margin: 42px 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-head h2 {
+  position: relative;
+  margin: 0;
+  padding-left: 13px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.section-head h2::before {
+  content: "";
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 14px;
+  border-radius: 2px;
+  background: var(--grad-line);
+}
+
+.tabs { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.tab {
+  padding: 5px 12px;
+  font-size: 12.8px;
+  color: var(--text-2);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  transition: all .18s;
+}
+.tab:hover { color: var(--text); background: var(--sunken); }
+.tab[aria-selected="true"] {
+  color: #fff;
+  background: var(--grad-accent);
+  font-weight: 600;
+  box-shadow: var(--sh-glow);
+}
+.tab .count { font-family: var(--font-mono); font-size: 11.5px; opacity: .62; margin-left: 4px; }
+
+/* ---------- 10. 文章列表 ---------- */
+.posts { border-top: 1px solid var(--border); }
+
+.post {
+  position: relative;
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px 14px 18px 16px;
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--r-md);
+  transition: background .18s, transform .18s;
+}
+.post::before {
+  content: "";
+  position: absolute; left: 0; top: 14px; bottom: 14px;
+  width: 2px; border-radius: 2px;
+  background: var(--grad-line);
+  opacity: 0;
+  transform: scaleY(.3);
+  transform-origin: center;
+  transition: opacity .22s, transform .22s;
+}
+.post:hover { background: var(--surface); box-shadow: var(--sh-sm); }
+.post:hover::before { opacity: 1; transform: scaleY(1); }
+
+.post-date {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: var(--text-3);
+  padding-top: 3px;
+  line-height: 1.5;
+}
+.post-date .y { display: block; font-size: 11px; color: var(--border-2); }
+
+.post-title {
+  margin: 0 0 6px;
+  font-size: 16.8px;
+  line-height: 1.44;
+  font-weight: 680;
+  letter-spacing: -.016em;
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+.post-title a { transition: color .16s; }
+.post:hover .post-title a { color: var(--accent-2); }
+
+.pin {
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  letter-spacing: .07em;
+  color: #fff;
+  background: var(--grad-accent);
+  border-radius: var(--r-xs);
+  padding: 1px 6px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px -6px var(--accent-glow);
+}
+
+.post-excerpt {
+  margin: 0 0 10px;
+  color: var(--text-2);
+  font-size: 13.8px;
+  line-height: 1.64;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.chips { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+
+.chip {
+  font-size: 12px;
+  color: var(--text-2);
+  background: var(--sunken);
+  border: 1px solid transparent;
+  border-radius: var(--r-xs);
+  padding: 2px 8px;
+  transition: all .18s;
+}
+.chip:hover {
+  color: var(--accent-2);
+  background: var(--accent-tint);
+  border-color: var(--accent-ring);
+  transform: translateY(-1px);
+}
+.chip .n { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); margin-left: 5px; }
+
+.chips .meta {
+  gap: 0; margin-left: 5px; padding-left: 10px;
+  border-left: 1px solid var(--border);
+}
+.chips .meta .sep { display: none; }
+
+/* ---------- 11. 分页 ---------- */
+.pager {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+  padding: 22px 16px 0;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.pager a {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--sh-xs);
+  transition: all .18s;
+}
+.pager a:hover {
+  border-color: var(--accent-ring);
+  color: var(--accent-2);
+  box-shadow: var(--sh-sm);
+  transform: translateY(-1px);
+}
+.pager .disabled { opacity: .38; pointer-events: none; }
+
+/* ---------- 12. 侧栏卡片 ---------- */
+.card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  padding: 17px;
+  box-shadow: var(--sh-sm);
+  transition: box-shadow .22s, border-color .22s, transform .22s;
+}
+.card:hover { box-shadow: var(--sh-md); border-color: var(--border-2); }
+
+.card-title {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 0 0 13px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.card-title a { color: var(--text-3); transition: color .16s; }
+.card-title a:hover { color: var(--accent-2); }
+
+/* 作者 */
+.author { display: flex; gap: 14px; align-items: flex-start; }
+
+.avatar-ring {
+  flex: none;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  padding: 2px;
+  background: var(--grad-accent);
+  box-shadow: var(--sh-glow);
+}
+.avatar {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--surface);
+  color: var(--accent-2);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.author-name { font-size: 15.5px; font-weight: 720; letter-spacing: -.015em; margin-bottom: 4px; }
+.author-bio { font-size: 13px; color: var(--text-2); line-height: 1.62; margin: 0 0 11px; }
+
+.author-links { display: flex; gap: 13px; font-size: 12.5px; }
+.author-links a { color: var(--text-3); transition: color .16s; }
+.author-links a:hover { color: var(--accent-2); }
+
+/* 统计 + 活跃度条 */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--sh-sm);
+}
+.stat { background: var(--surface); padding: 13px 6px 12px; text-align: center; }
+.stat .v {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  line-height: 1.2;
+  background: var(--grad-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.stat .k { font-size: 10.5px; color: var(--text-3); letter-spacing: .05em; }
+
+.activity { margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--border); }
+.activity-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 9px;
+  font-size: 11.5px;
+  color: var(--text-3);
+  letter-spacing: .04em;
+}
+.activity-head b { color: var(--accent-2); font-family: var(--font-mono); font-weight: 700; }
+
+.bars { display: flex; align-items: flex-end; gap: 3px; height: 34px; }
+.bars i {
+  flex: 1;
+  border-radius: 2px 2px 1px 1px;
+  background: var(--grad-accent);
+  opacity: .38;
+  transition: opacity .18s, transform .18s;
+}
+.bars i.on { opacity: 1; }
+.bars:hover i { opacity: .85; }
+.bars i:hover { transform: scaleY(1.08); }
+
+/* 热门榜 */
+.rank-list { display: grid; gap: 2px; }
+.rank-item {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 8px;
+  border-radius: var(--r-sm);
+  transition: background .16s, transform .16s;
+}
+.rank-item:hover { background: var(--surface-2); transform: translateX(2px); }
+.rank-no {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -.04em;
+  line-height: 1;
+  background: var(--grad-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.rank-item.plain .rank-no { background: none; color: var(--border-2); -webkit-text-fill-color: var(--border-2); }
+.rank-title { font-size: 13.2px; color: var(--text-2); line-height: 1.5; transition: color .16s; }
+.rank-item:hover .rank-title { color: var(--accent-2); }
+.rank-view { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
+
+/* 标签云 */
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag-cloud .chip { font-size: 12.5px; }
+
+/* 归档 */
+.archive { display: grid; gap: 10px; }
+.archive-row {
+  display: grid;
+  grid-template-columns: 42px 1fr 30px;
+  align-items: center;
+  gap: 11px;
+  font-size: 13px;
+  color: var(--text-2);
+  transition: color .16s;
+}
+.archive-row:hover { color: var(--accent-2); }
+.archive-row .yr { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.archive-row .bar { height: 4px; border-radius: 3px; background: var(--sunken); overflow: hidden; }
+.archive-row .bar i {
+  display: block; height: 100%; border-radius: 3px;
+  background: var(--grad-line);
+  opacity: .5;
+  transition: opacity .18s;
+}
+.archive-row:hover .bar i { opacity: 1; }
+.archive-row .c { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); text-align: right; }
+
+/* 系列 */
+.series { display: grid; gap: 14px; }
+.series-top {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  margin-bottom: 7px;
+}
+.series-name { font-size: 13.5px; font-weight: 600; transition: color .16s; }
+.series-item:hover .series-name { color: var(--accent-2); }
+.series-cnt { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
+.series-bar { height: 4px; border-radius: 3px; background: var(--sunken); overflow: hidden; margin-bottom: 6px; }
+.series-bar i { display: block; height: 100%; border-radius: 3px; background: var(--grad-accent); }
+.series-note { font-size: 11.5px; color: var(--text-3); }
+
+/* 订阅 */
+.subscribe p { margin: 0 0 11px; font-size: 12.8px; color: var(--text-2); line-height: 1.62; }
+.subscribe-form { display: flex; gap: 7px; }
+.subscribe-form input {
+  flex: 1; min-width: 0;
+  height: 36px; padding: 0 11px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  transition: border-color .16s, box-shadow .16s;
+}
+.subscribe-form input::placeholder { color: var(--text-3); }
+.subscribe-form input:focus {
+  outline: none;
+  border-color: var(--accent-ring);
+  box-shadow: 0 0 0 3px var(--accent-tint);
+}
+.subscribe-form button {
+  height: 36px; padding: 0 15px;
+  font-size: 13px; font-weight: 620;
+  color: #fff;
+  background: var(--grad-accent);
+  border-radius: var(--r-md);
+  box-shadow: 0 8px 20px -10px var(--accent-glow);
+  transition: transform .18s, box-shadow .18s;
+}
+.subscribe-form button:hover { transform: translateY(-1px); box-shadow: 0 12px 26px -10px var(--accent-glow); }
+
+/* ---------- 13. 页脚 ---------- */
+.site-footer {
+  position: relative;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.site-footer::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: -1px;
+  height: 1px;
+  background: var(--grad-line);
+  opacity: .3;
+}
+.footer-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap;
+  padding: 26px 0;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.footer-links { display: flex; gap: 17px; flex-wrap: wrap; }
+.footer-links a { transition: color .16s; }
+.footer-links a:hover { color: var(--accent-2); }
+
+/* ---------- 14. 入场动画 ---------- */
+.rise { opacity: 0; animation: rise .72s cubic-bezier(.22,.68,.32,1) forwards; }
+.rise-1 { animation-delay: .04s; }
+.rise-2 { animation-delay: .12s; }
+.rise-3 { animation-delay: .20s; }
+.rise-4 { animation-delay: .28s; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------- 15. 响应式 ---------- */
+@media (max-width: 1080px) {
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 34px; padding: 46px 0 40px; }
+  .pulse-card { max-width: 460px; }
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 34px; }
+  .col-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .col-side > .author-card,
+  .col-side > .stats { grid-column: 1 / -1; }
+}
+
+@media (max-width: 720px) {
+  .wrap { padding: 0 16px; }
+  .nav { display: none; }
+  .hero { padding: 34px 0 30px; }
+  .hero-metrics { gap: 22px; }
+  .featured-inner { padding: 20px 18px 18px; }
+  .post { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 15px 10px; }
+  .post-date { padding-top: 0; }
+  .post-date .y { display: inline; margin-left: 6px; }
+  .col-side { grid-template-columns: minmax(0, 1fr); }
+  .search-btn span { display: none; }
+  .orb { filter: blur(52px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+  .rise { opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">跳到正文</a>
+
+<!-- 全局氛围层 -->
+<div class="atmosphere" aria-hidden="true">
+  <span class="orb orb-a"></span>
+  <span class="orb orb-b"></span>
+  <span class="orb orb-c"></span>
+  <span class="grid-veil"></span>
+  <span class="noise"></span>
+</div>
+
+<!-- ======================= 顶栏 ======================= -->
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="/">
+      <span class="brand-mark">N</span>
+      <span class="brand-text">
+        <strong>Noviterra</strong>
+        <small>Record · Think · Build</small>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="主导航">
+      <a href="/" aria-current="page">首页</a>
+      <a href="/articles">文章</a>
+      <a href="/series">系列</a>
+      <a href="/tags">标签</a>
+      <a href="/archive">归档</a>
+      <a href="/about">关于</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="search-btn" type="button" aria-label="搜索文章">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" width="15" height="15" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>
+        </svg>
+        <span>搜索</span>
+        <kbd>⌘K</kbd>
+      </button>
+      <button class="icon-btn" id="themeToggle" type="button" aria-label="切换深浅色主题">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.2"/>
+          <path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ======================= 首屏 ======================= -->
+<section class="wrap hero">
+  <div>
+    <span class="eyebrow rise rise-1">
+      <span class="dot" aria-hidden="true"></span>
+      Personal Blog · Go / 架构 / 记录
+    </span>
+
+    <h1 class="rise rise-1">写代码，<br>也写下代码之外的那些判断。</h1>
+
+    <p class="hero-lead rise rise-2">
+      这里存放我在构建一个博客系统过程中的笔记：Go 与 go-zero 的实践、数据库与缓存的取舍、
+      以及一些还没想清楚就先记下来的问题。
+    </p>
+
+    <div class="cta-row rise rise-2">
+      <a class="btn btn-primary" href="/articles">
+        开始阅读
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h13M12.5 5.5 19 12l-6.5 6.5"/>
+        </svg>
+      </a>
+      <a class="btn btn-ghost" href="/about">关于我</a>
+    </div>
+
+    <div class="hero-metrics rise rise-3">
+      <div class="metric">
+        <div class="v">12.4w</div>
+        <div class="k">累计阅读</div>
+      </div>
+      <div class="metric">
+        <div class="v">386</div>
+        <div class="k">订阅者</div>
+      </div>
+      <div class="metric">
+        <div class="v">731</div>
+        <div class="k">已运行天数</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 玻璃状态卡 -->
+  <aside class="pulse-card rise rise-3" aria-label="最近更新">
+    <div class="pulse-head">
+      <span>Recently</span>
+      <span class="mono">2025.03</span>
+    </div>
+
+    <div class="pulse-list">
+      <a class="pulse-item" href="/posts/go-zero-layout">
+        <span class="d">03-14</span>
+        <span class="t">go-zero 目录拆分：为什么每个域要留三个目录</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="pulse-item" href="/posts/gorm-with-gozero">
+        <span class="d">03-09</span>
+        <span class="t">GORM 接入 go-zero 的正确姿势</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="pulse-item" href="/posts/cache-three-problems">
+        <span class="d">03-02</span>
+        <span class="t">缓存三防实战：穿透、击穿、雪崩</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="pulse-item" href="/posts/outbox-pattern">
+        <span class="d">02-24</span>
+        <span class="t">用 outbox 解决「数据写了、消息没发」</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <div class="pulse-now">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span>正在写：<b>文章审核状态机</b></span>
+    </div>
+  </aside>
+</section>
+
+<!-- ======================= 正文 ======================= -->
+<main id="main" class="wrap">
+  <div class="layout">
+
+    <!-- ---------- 主列 ---------- -->
+    <div class="col-main">
+
+      <!-- 精选 -->
+      <article class="featured rise rise-2">
+        <div class="aurora" aria-hidden="true"></div>
+        <div class="featured-inner">
+          <span class="featured-label">Latest · 置顶</span>
+          <h2><a href="/posts/go-zero-layout">go-zero 目录拆分：为什么每个域要留 api / rpc / model 三个目录</a></h2>
+          <p>三个目录不是形式主义。它决定了「业务需求」和「基础数据」的边界在哪，也决定了你能不能在不动其他域的前提下，把评论接口单独发一次版。</p>
+          <div class="meta">
+            <time datetime="2025-03-14">2025-03-14</time>
+            <span class="sep">·</span>
+            <span class="cat">架构</span>
+            <span class="sep">·</span>
+            <span>12 分钟</span>
+            <span class="sep">·</span>
+            <span class="num">4200</span> 字
+          </div>
+        </div>
+      </article>
+
+      <!-- 筛选 -->
+      <div class="section-head">
+        <h2>全部文章</h2>
+        <div class="tabs" role="tablist" aria-label="文章分类">
+          <button class="tab" role="tab" aria-selected="true">全部<span class="count">42</span></button>
+          <button class="tab" role="tab" aria-selected="false">Go<span class="count">18</span></button>
+          <button class="tab" role="tab" aria-selected="false">架构<span class="count">14</span></button>
+          <button class="tab" role="tab" aria-selected="false">数据库<span class="count">9</span></button>
+          <button class="tab" role="tab" aria-selected="false">随笔<span class="count">6</span></button>
+        </div>
+      </div>
+
+      <!-- 列表 -->
+      <div class="posts">
+
+        <article class="post">
+          <div class="post-date"><span class="y">2025</span>03-09</div>
+          <div>
+            <h3 class="post-title">
+              <a href="/posts/gorm-with-gozero">GORM 接入 go-zero 的正确姿势：从连接池到慢查询日志</a>
+            </h3>
+            <p class="post-excerpt">go-zero 默认给的是 sqlx，换 GORM 之后要自己补齐四件事：连接池参数、zap 日志桥接、事务传播，以及把 1062、1213 这类底层错误翻译成业务错误码。</p>
+            <div class="chips">
+              <span class="chip">Go</span>
+              <span class="chip">GORM</span>
+              <span class="chip">MySQL</span>
+              <span class="meta" style="margin-left:2px"><span class="sep">·</span>9 分钟</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-date"><span class="y">2025</span>03-02</div>
+          <div>
+            <h3 class="post-title">
+              <a href="/posts/cache-three-problems">缓存三防实战：穿透、击穿、雪崩在博客系统里的具体落地</a>
+            </h3>
+            <p class="post-excerpt">别背概念，看场景。文章详情页要防的是热点 Key 击穿，标签云要防的是雪崩，而空结果缓存要小心「作者删了文章但缓存还在」这种假命中。</p>
+            <div class="chips">
+              <span class="chip">Redis</span>
+              <span class="chip">性能</span>
+              <span class="meta" style="margin-left:2px"><span class="sep">·</span>14 分钟</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-date"><span class="y">2025</span>02-24</div>
+          <div>
+            <h3 class="post-title">
+              <a href="/posts/outbox-pattern">用 outbox 模式解决「数据写了、消息没发」的老问题</a>
+            </h3>
+            <p class="post-excerpt">在同一个事务里写业务表和事件表，再由后台协程投递。代价是多一张表和一个补偿任务，换来的是「数据库提交成功」就等于「事件最终一定会发出去」。</p>
+            <div class="chips">
+              <span class="chip">架构</span>
+              <span class="chip">分布式</span>
+              <span class="meta" style="margin-left:2px"><span class="sep">·</span>11 分钟</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-date"><span class="y">2025</span>02-18</div>
+          <div>
+            <h3 class="post-title">
+              <a href="/posts/jwt-refresh-token">JWT 双令牌与踢下线：一次踩坑记录</a>
+            </h3>
+            <p class="post-excerpt">access token 无状态是优点也是麻烦。真正让人下线要靠权限版本号，而不是去遍历黑名单——顺带记一个 refresh token 轮转时的并发复用问题。</p>
+            <div class="chips">
+              <span class="chip">安全</span>
+              <span class="chip">认证</span>
+              <span class="meta" style="margin-left:2px"><span class="sep">·</span>8 分钟</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-date"><span class="y">2025</span>02-11</div>
+          <div>
+            <h3 class="post-title">
+              <a href="/posts/minimal-observability">从 0 搭一套可观测性：日志、指标、链路追踪的最小集</a>
+            </h3>
+            <p class="post-excerpt">先别上全套。日志统一成 JSON 并带上 trace_id，接口埋三个指标（量、延迟、错误率），链路追踪只采样错误与慢请求——这三件事足够定位八成问题。</p>
+            <div class="chips">
+              <span class="chip">可观测</span>
+              <span class="chip">运维</span>
+              <span class="meta" style="margin-left:2px"><span class="sep">·</span>16 分钟</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-date"><span class="y">2025</span>02-03</div>
+          <div>
+            <h3 class="post-title">
+              <a href="/posts/search-engine-choice">Meilisearch 还是 Elasticsearch？中小博客的搜索选型</a>
+            </h3>
+            <p class="post-excerpt">单机 40 万篇文章的规模下，Meilisearch 的部署成本几乎为零，中文分词也够用。真正的分界线不是数据量，而是你要不要复杂聚合和同义词词典。</p>
+            <div class="chips">
+              <span class="chip">搜索</span>
+              <span class="chip">选型</span>
+              <span class="meta" style="margin-left:2px"><span class="sep">·</span>10 分钟</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-date"><span class="y">2025</span>01-27</div>
+          <div>
+            <h3 class="post-title">
+              <a href="/posts/idempotent-comment">评论接口的幂等：从「连点两次」到「重复提交」</a>
+            </h3>
+            <p class="post-excerpt">前端禁用按钮只能挡住手快的人。真正兜底的是唯一索引加上一个 Idempotency-Key，以及想清楚「重复请求应该返回第一次的结果，还是报错」。</p>
+            <div class="chips">
+              <span class="chip">Go</span>
+              <span class="chip">并发</span>
+              <span class="meta" style="margin-left:2px"><span class="sep">·</span>7 分钟</span>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <nav class="pager" aria-label="分页">
+        <span class="disabled">← 上一页</span>
+        <span class="mono">第 1 / 6 页</span>
+        <a href="/page/2">下一页 →</a>
+      </nav>
+
+    </div>
+
+    <!-- ---------- 侧栏 ---------- -->
+    <aside class="col-side">
+
+      <!-- 作者 -->
+      <section class="card author-card rise rise-3">
+        <div class="author">
+          <div class="avatar-ring"><div class="avatar" aria-hidden="true">N</div></div>
+          <div>
+            <div class="author-name">Noviterra</div>
+            <p class="author-bio">后端开发者。正在从零搭一个自己的博客系统，顺手把过程写下来。相信「能讲清楚」才算真的搞懂了。</p>
+            <div class="author-links">
+              <a href="/about">关于</a>
+              <a href="https://github.com/" rel="noopener">GitHub</a>
+              <a href="/feed.xml">RSS</a>
+              <a href="mailto:hi@example.com">邮箱</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 统计 + 活跃度 -->
+      <section class="stats-card rise rise-3">
+        <div class="stats" aria-label="站点统计">
+          <div class="stat"><div class="v">42</div><div class="k">文章</div></div>
+          <div class="stat"><div class="v">27</div><div class="k">标签</div></div>
+          <div class="stat"><div class="v">5</div><div class="k">系列</div></div>
+          <div class="stat"><div class="v">18.6w</div><div class="k">字数</div></div>
+        </div>
+
+        <div class="activity">
+          <div class="activity-head">
+            <span>近 14 天更新</span>
+            <b>4 篇</b>
+          </div>
+          <div class="bars" aria-hidden="true">
+            <i style="height:20%"></i><i style="height:34%"></i><i style="height:14%"></i>
+            <i style="height:52%"></i><i style="height:26%"></i><i style="height:40%"></i>
+            <i style="height:18%"></i><i class="on" style="height:100%"></i>
+            <i style="height:30%"></i><i style="height:46%"></i><i style="height:22%"></i>
+            <i class="on" style="height:74%"></i><i class="on" style="height:58%"></i>
+            <i class="on" style="height:88%"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- 热门 -->
+      <section class="card">
+        <h2 class="card-title">热门阅读 <a href="/hot">全部 →</a></h2>
+        <div class="rank-list">
+          <a class="rank-item" href="/posts/cache-three-problems">
+            <span class="rank-no">01</span>
+            <span class="rank-title">缓存三防实战：穿透、击穿、雪崩</span>
+            <span class="rank-view">2.4k</span>
+          </a>
+          <a class="rank-item" href="/posts/go-zero-layout">
+            <span class="rank-no">02</span>
+            <span class="rank-title">go-zero 目录拆分：三个目录的理由</span>
+            <span class="rank-view">2.1k</span>
+          </a>
+          <a class="rank-item" href="/posts/outbox-pattern">
+            <span class="rank-no">03</span>
+            <span class="rank-title">用 outbox 解决消息丢失</span>
+            <span class="rank-view">1.7k</span>
+          </a>
+          <a class="rank-item plain" href="/posts/gorm-with-gozero">
+            <span class="rank-no">04</span>
+            <span class="rank-title">GORM 接入 go-zero 的正确姿势</span>
+            <span class="rank-view">1.5k</span>
+          </a>
+          <a class="rank-item plain" href="/posts/jwt-refresh-token">
+            <span class="rank-no">05</span>
+            <span class="rank-title">JWT 双令牌与踢下线</span>
+            <span class="rank-view">1.2k</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- 标签 -->
+      <section class="card">
+        <h2 class="card-title">标签 <a href="/tags">全部 →</a></h2>
+        <div class="tag-cloud">
+          <a class="chip" href="/tags/go">Go<span class="n">18</span></a>
+          <a class="chip" href="/tags/arch">架构<span class="n">14</span></a>
+          <a class="chip" href="/tags/redis">Redis<span class="n">11</span></a>
+          <a class="chip" href="/tags/gorm">GORM<span class="n">9</span></a>
+          <a class="chip" href="/tags/mysql">MySQL<span class="n">8</span></a>
+          <a class="chip" href="/tags/micro">微服务<span class="n">8</span></a>
+          <a class="chip" href="/tags/perf">性能<span class="n">7</span></a>
+          <a class="chip" href="/tags/dist">分布式<span class="n">6</span></a>
+          <a class="chip" href="/tags/essay">随笔<span class="n">6</span></a>
+          <a class="chip" href="/tags/security">安全<span class="n">5</span></a>
+          <a class="chip" href="/tags/ops">可观测<span class="n">4</span></a>
+          <a class="chip" href="/tags/search">搜索<span class="n">3</span></a>
+        </div>
+      </section>
+
+      <!-- 归档 -->
+      <section class="card">
+        <h2 class="card-title">归档 <a href="/archive">全部 →</a></h2>
+        <div class="archive">
+          <a class="archive-row" href="/archive/2025">
+            <span class="yr">2025</span>
+            <span class="bar"><i style="width:67%"></i></span>
+            <span class="c">14</span>
+          </a>
+          <a class="archive-row" href="/archive/2024">
+            <span class="yr">2024</span>
+            <span class="bar"><i style="width:100%"></i></span>
+            <span class="c">21</span>
+          </a>
+          <a class="archive-row" href="/archive/2023">
+            <span class="yr">2023</span>
+            <span class="bar"><i style="width:33%"></i></span>
+            <span class="c">7</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- 系列 -->
+      <section class="card">
+        <h2 class="card-title">系列 <a href="/series">全部 →</a></h2>
+        <div class="series">
+          <a class="series-item" href="/series/go-zero">
+            <div class="series-top">
+              <span class="series-name">go-zero 实战笔记</span>
+              <span class="series-cnt">12 篇</span>
+            </div>
+            <div class="series-bar"><i style="width:60%"></i></div>
+            <div class="series-note">进行中 · 已写到第 7 篇</div>
+          </a>
+          <a class="series-item" href="/series/database">
+            <div class="series-top">
+              <span class="series-name">数据库那些事</span>
+              <span class="series-cnt">8 篇</span>
+            </div>
+            <div class="series-bar"><i style="width:100%"></i></div>
+            <div class="series-note">已完结</div>
+          </a>
+          <a class="series-item" href="/series/build-blog">
+            <div class="series-top">
+              <span class="series-name">从零搭建个人博客</span>
+              <span class="series-cnt">6 篇</span>
+            </div>
+            <div class="series-bar"><i style="width:50%"></i></div>
+            <div class="series-note">进行中 · 已写到第 3 篇</div>
+          </a>
+        </div>
+      </section>
+
+      <!-- 订阅 -->
+      <section class="card subscribe">
+        <h2 class="card-title">订阅更新</h2>
+        <p>新文章发布时发一封邮件，不定期，没有广告。</p>
+        <form class="subscribe-form" onsubmit="return false;">
+          <input type="email" placeholder="you@example.com" aria-label="邮箱地址">
+          <button type="submit">订阅</button>
+        </form>
+      </section>
+
+    </aside>
+
+  </div>
+</main>
+
+<!-- ======================= 页脚 ======================= -->
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <span>© 2025 Noviterra · 用 Go 与耐心构建</span>
+    <nav class="footer-links" aria-label="页脚导航">
+      <a href="/feed.xml">RSS</a>
+      <a href="/sitemap.xml">站点地图</a>
+      <a href="/archive">归档</a>
+      <a href="/about">关于</a>
+      <a href="https://beian.miit.gov.cn/" rel="noopener">备案号</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+// 主题切换：CSS 已用 prefers-color-scheme 兜底，这里只负责「记住用户的选择」。
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  var saved = null;
+  try { saved = localStorage.getItem('nv-theme'); } catch (e) {}
+  if (saved === 'light' || saved === 'dark') root.setAttribute('data-theme', saved);
+
+  btn.addEventListener('click', function () {
+    var isDark = root.getAttribute('data-theme') === 'dark' ||
+      (!root.hasAttribute('data-theme') &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches);
+    var next = isDark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('nv-theme', next); } catch (e) {}
+  });
+})();
+</script>
+
+</body>
+</html>

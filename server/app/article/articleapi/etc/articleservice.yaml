@@ -1,0 +1,22 @@
+Name: articleService
+Host: 0.0.0.0
+Port: 8888
+
+ArticleRPC:
+  Etcd:
+    Hosts:
+    - ${ETCD_HOST}
+    Key: ${ARTICLE_RPC}
+
+JWT:
+  AccessSecret: ${JWT_ACCESSSECRET}
+  AccessExpire: ${JWT_ACCESSEXPIRE}
+  RefreshSecret: ${JWT_REFRESHSECRET}
+  RefreshExpire:  ${JWT_REFRESHEXPIRE}
+
+Repo:
+  UserName: ${MYSQL_USER}
+  Password: ${MYSQL_PASSWORD}
+  Host: ${MYSQL_HOST}
+  Port: ${MYSQL_PORT}
+  DBName: ${MYSQL_DB}

@@ -1,0 +1,184 @@
+syntax = "v1"
+
+// 对于响应 除特殊情况外进行统一封装
+type Response {
+	Status  int    `json:"status"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+// 用户注册
+type (
+	RegisterRequest {
+		ID               string `json:"id" validate:"required,min=6,max=10"`
+		Password         string `json:"password" validate:"required,min=6,max=20"`
+		Email            string `json:"email" validate:"required,email"`
+		VerificationCode string `json:"verification_code" validate:"required,len=6"`
+		VerifPassword    string `json:"verif_password" validate:"required,min=6,max=20"`
+	}
+)
+
+// 用户登录
+type (
+	// 对于?type=ID即账号密码登录
+	LoginByIDRequest {
+		ID       string `json:"id" validate:"required,min=6,max=10"`
+		Password string `json:"password" validate:"required,min=6,max=20"`
+	}
+	// 对于?type=Email即邮箱登录
+	LoginByEmailRequest {
+		Email            string `json:"email" validate:"required,email"`
+		VerificationCode string `json:"verification_code" validate:"required,len=6"`
+	}
+	LoginResponse {
+		RefreshToken string `json:"refreshToken"`
+		AccessToken  string `json:"accessToken"`
+		Resp         Response `json:"resp"`
+	}
+)
+
+// 密码操作
+type (
+	// 修改密码 ?type=ID
+	ChangePasswordByIDRequest {
+		//ID          string `json:"id" validate:"required,min=6,max=10"`  // 通过鉴权中间件获取
+		OldPassword string `json:"old_password" validate:"required,min=6,max=20"`
+		NewPassword string `json:"new_password" validate:"required,min=6,max=20"`
+	}
+	// 修改密码 ?type=Email
+	ChangePasswordByEmailRequest {
+		Email            string `json:"email" validate:"required,email"`
+		VerificationCode string `json:"verification_code" validate:"required,len=6"`
+		NewPassword      string `json:"new_password" validate:"required,min=6,max=20"`
+	}
+	// 忘记密码
+	ForgetPasswordRequest {
+		ID               string `json:"id" validate:"required,min=6,max=10"`
+		Email            string `json:"email" validate:"required,email"`
+		VerificationCode string `json:"verification_code" validate:"required,len=6"`
+		NewPassword      string `json:"new_password" validate:"required,min=6,max=20"`
+		VerifPassowrd    string `json:"verif_password" validate:"required,min=6,max=20"`
+	}
+)
+
+// 发送邮箱验证码 注册、登录、修改密码、忘记密码
+type (
+	SendEmailVerificationCodeRequest {
+		Email string `json:"email" validate:"required,email"`
+		Type  string `json:"type" validate:"required,oneof=register login change_password forget_password"`
+	}
+)
+
+// 管理员对用户的管理
+type (
+	// 拉黑用户
+	BlacklistUserRequest {
+		ID string `json:"id" validate:"required,min=6,max=10"`
+	}
+	// 解封用户
+	UnblacklistUserRequest {
+		ID string `json:"id" validate:"required,min=6,max=10"`
+	}
+)
+
+// 用户信息
+type (
+	// 获取用户信息
+	UserInfoResponse {
+		ID               string   `json:"id"`
+		Role             int      `json:"Role"` // 0:普通用户 1:超级管理员
+		Username         string   `json:"username"`
+		Email            string   `json:"email"`
+		Avatar           string   `json:"avatar"`
+		Age              int      `json:"age"`
+		Gender           int      `json:"gender"` // 0:未知 1:男 2:女
+		SelfIntroduction string   `json:"self_introduction"`
+		Resp             Response `json:"response"`
+	}
+	// 管理员批量获取用户信息  分页查询
+	BatchUserInfoRequest {
+		size int `json:"size"`
+		page int `json:"page"`
+	}
+	BatchUserInfoResponse {
+		Users []*UserInfoResponse `json:"users"`
+		Resp  Response            `json:"response"`
+	}
+	// 用户更新信息
+	UpdateUserInfoRequest {
+		//ID               string `json:"id" validate:"required,min=6,max=10"`  // 由鉴权中间件获取
+		Username string `json:"username" validate:"omitempty,min=2,max=20"`
+		//Email            string `json:"email" validate:"omitempty,email"`  // 涉及换绑功能 另起功能
+		Avatar           string `json:"avatar" validate:"omitempty,url"`
+		Age              int    `json:"age" validate:"omitempty,gte=0,lte=150"`
+		Gender           int    `json:"gender" validate:"omitempty"`
+		SelfIntroduction string `json:"self_introduction" validate:"omitempty,max=200"`
+	}
+)
+
+type (
+	RefreshAccessTokenRequest {
+		RefreshToken string `json:"refreshToken" validate:"required"`
+	}
+	RefreshAccessTokenResponse {
+		RefreshToken string   `json:"refreshToken"`
+		AccessToken  string   `json:"accessToken"`
+		Resp         Response `json:"response"`
+	}
+)
+
+// 不需要鉴权的
+@server (
+	prefix: novblog/user
+)
+service usersService {
+	@handler register
+	post /register (RegisterRequest) returns (Response)
+
+	@handler loginByID
+	post /login/id (LoginByIDRequest) returns (LoginResponse)
+
+	@handler loginByEmail
+	post /login/email (LoginByEmailRequest) returns (LoginResponse)
+
+	@handler sendEmailVerificationCode
+	post /server/verificationcode (SendEmailVerificationCodeRequest) returns (Response)
+
+	@handler forgetPassword
+	post /forgetpassword (ForgetPasswordRequest) returns (Response)
+
+	@handler refreshAccessToken
+	post /server/refreshaccesstoken (RefreshAccessTokenRequest) returns (RefreshAccessTokenResponse)
+}
+
+// 需要鉴权的
+	@server (
+		prefix: novblog/user
+		jwt:    JWT
+	)
+service usersService {
+	@handler changePasswordByID
+	post /changepassword/id (ChangePasswordByIDRequest) returns (Response)
+
+	@handler changePasswordByEmail
+	post /changepassword/email (ChangePasswordByEmailRequest) returns (Response)
+
+	@handler getUserInfo
+	get /info returns (UserInfoResponse)
+
+	// 管理员操作
+	@handler batchGetUserInfo
+	get /batchinfo (BatchUserInfoRequest) returns (BatchUserInfoResponse)
+
+	// 拉黑用户
+	@handler blacklistUser
+	post /blackusers (BlacklistUserRequest) returns (Response)
+
+	@handler unblacklistUser
+	post /unblackusers (UnblacklistUserRequest) returns (Response)
+
+	@handler updateUserInfo
+	post /updateinfo (UpdateUserInfoRequest) returns (Response)
+}
+
+// goctl api go -api ./doc/api/user.api -dir ./server/app/user/userapi
