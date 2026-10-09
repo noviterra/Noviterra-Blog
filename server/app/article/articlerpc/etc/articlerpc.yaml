@@ -4,3 +4,14 @@ Etcd:
   Hosts:
   - 127.0.0.1:2379
   Key: articlerpc.rpc
+
+Interceptor:
+  ServiceToken: NdsowVhIlsaTea241EgsRadsawAds4dS2aOkahk6ose
+  SkipToken: GswdkYwebvDAdfeLKwe31Yqfds4KaqOecMd123cSq
+
+Repo:
+  UserName: root
+  Password: aaa2021s
+  Host: 127.0.0.1
+  Port: 3306
+  DBName: noviterra

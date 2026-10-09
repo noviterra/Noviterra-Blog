@@ -11,23 +11,17 @@ import (
 	"Noviterra/server/app/article/articleapi/internal/handler"
 	"Noviterra/server/app/article/articleapi/internal/svc"
 
-	"github.com/joho/godotenv"
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
 )
 
-var configFile = flag.String("f", "etc/articleservice.yaml", "the config file")
+var configFile = flag.String("f", "server/app/article/articleapi/etc/articleservice.yaml", "the config file")
 
 func main() {
-	err := godotenv.Load("D:\\GoProject\\IT\\Noviterra\\.env")
-	if err != nil {
-		panic(err)
-	}
-
 	flag.Parse()
 
 	var c config.Config
-	conf.MustLoad(*configFile, &c, conf.UseEnv())
+	conf.MustLoad(*configFile, &c)
 
 	server := rest.MustNewServer(c.RestConf)
 	defer server.Stop()

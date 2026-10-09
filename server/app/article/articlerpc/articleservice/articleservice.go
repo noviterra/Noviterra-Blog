@@ -14,18 +14,20 @@ import (
 )
 
 type (
-	Article                  = articlerpc.Article
-	ArticleList              = articlerpc.ArticleList
-	DeleteArticleRequest     = articlerpc.DeleteArticleRequest
-	GetArticleDetailRequest  = articlerpc.GetArticleDetailRequest
-	GetArticleDetailResponse = articlerpc.GetArticleDetailResponse
-	GetArticleListRequest    = articlerpc.GetArticleListRequest
-	GetArticleListResponse   = articlerpc.GetArticleListResponse
-	PublishArticleRequest    = articlerpc.PublishArticleRequest
-	Response                 = articlerpc.Response
-	SearchArticleRequest     = articlerpc.SearchArticleRequest
-	SearchArticleResponse    = articlerpc.SearchArticleResponse
-	UpdateArticleRequest     = articlerpc.UpdateArticleRequest
+	Article                    = articlerpc.Article
+	ArticleList                = articlerpc.ArticleList
+	DeleteArticleRequest       = articlerpc.DeleteArticleRequest
+	GetArticleDetailRequest    = articlerpc.GetArticleDetailRequest
+	GetArticleDetailResponse   = articlerpc.GetArticleDetailResponse
+	GetArticleListRequest      = articlerpc.GetArticleListRequest
+	GetArticleListResponse     = articlerpc.GetArticleListResponse
+	PublishArticleRequest      = articlerpc.PublishArticleRequest
+	Response                   = articlerpc.Response
+	SearchArticleRequest       = articlerpc.SearchArticleRequest
+	SearchArticleResponse      = articlerpc.SearchArticleResponse
+	UpdateArticleCoverRequest  = articlerpc.UpdateArticleCoverRequest
+	UpdateArticleCoverResponse = articlerpc.UpdateArticleCoverResponse
+	UpdateArticleRequest       = articlerpc.UpdateArticleRequest
 
 	ArticleService interface {
 		// 发布文章
@@ -34,6 +36,8 @@ type (
 		DeleteArticle(ctx context.Context, in *DeleteArticleRequest, opts ...grpc.CallOption) (*Response, error)
 		// 修改文章
 		UpdateArticle(ctx context.Context, in *UpdateArticleRequest, opts ...grpc.CallOption) (*Response, error)
+		// 修改文章封面
+		UpdateArticleCover(ctx context.Context, in *UpdateArticleCoverRequest, opts ...grpc.CallOption) (*UpdateArticleCoverResponse, error)
 		// 查询文章列表
 		GetArticleList(ctx context.Context, in *GetArticleListRequest, opts ...grpc.CallOption) (*GetArticleListResponse, error)
 		// 搜索文章
@@ -69,6 +73,12 @@ func (m *defaultArticleService) DeleteArticle(ctx context.Context, in *DeleteArt
 func (m *defaultArticleService) UpdateArticle(ctx context.Context, in *UpdateArticleRequest, opts ...grpc.CallOption) (*Response, error) {
 	client := articlerpc.NewArticleServiceClient(m.cli.Conn())
 	return client.UpdateArticle(ctx, in, opts...)
+}
+
+// 修改文章封面
+func (m *defaultArticleService) UpdateArticleCover(ctx context.Context, in *UpdateArticleCoverRequest, opts ...grpc.CallOption) (*UpdateArticleCoverResponse, error) {
+	client := articlerpc.NewArticleServiceClient(m.cli.Conn())
+	return client.UpdateArticleCover(ctx, in, opts...)
 }
 
 // 查询文章列表

@@ -9,6 +9,16 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+type Repository struct {
+	db *gorm.DB
+}
+
+func NewRepository(repoConfig RepoConfig) *Repository {
+	return &Repository{
+		db: NewDB(repoConfig),
+	}
+}
+
 func (r *Repository) CheckIDExists(id string) (bool, error) {
 	var u model.UserAccount
 	err := r.db.Model(&model.UserAccount{}).Select("id").Where("id = ?", id).Take((&u)).Error

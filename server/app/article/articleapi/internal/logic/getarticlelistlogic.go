@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/metadata"
 )
 
 type GetArticleListLogic struct {
@@ -44,7 +45,13 @@ func (l *GetArticleListLogic) GetArticleList(req *types.GetArticleListRequest) (
 		return resp, nil
 	}
 
-	rep, err := l.svcCtx.ArticleModel.GetArticleList(l.ctx, &articlerpc.GetArticleListRequest{
+	// 对于api层不需要鉴权的接口 也要将rpc服务凭证传入到metadata中
+	ctx := metadata.AppendToOutgoingContext(l.ctx,
+		"service-token", l.svcCtx.Config.Interceptor.ServiceToken,
+		"skip-token", l.svcCtx.Config.Interceptor.SkipToken,
+	)
+
+	rep, err := l.svcCtx.ArticleModel.GetArticleList(ctx, &articlerpc.GetArticleListRequest{
 		Page:     int32(req.Page),
 		PageSize: int32(req.PageSize),
 	})

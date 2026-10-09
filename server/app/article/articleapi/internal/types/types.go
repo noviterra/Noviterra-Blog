@@ -71,11 +71,20 @@ type SearchArticleResponse struct {
 	Resp         Response      `json:"response"`
 }
 
+type UpdateArticleCoverRequest struct {
+	NewCover  string `json:"new_cover" validate:"omitempty,url"`
+	ArticleID string `json:"article_id" validate:"required,min=6,max=10"`
+}
+
+type UpdateArticleCoverResponse struct {
+	Cover string   `json:"cover" validate:"omitempty,url"`
+	Resp  Response `json:"response"`
+}
+
 type UpdateArticleRequest struct {
 	ArticleID   string   `json:"article_id" validate:"required,min=6,max=10"`
 	Title       string   `json:"title" validate:"omitempty,min=1,max=100"`
 	Content     string   `json:"content" validate:"omitempty,min=1"`
-	Cover       string   `json:"cover" validate:"omitempty,url"`
 	Tags        []string `json:"tags" validate:"omitempty,min=1,max=5,dive,required,min=1,max=20"`
 	Information string   `json:"information" validate:"omitempty,min=1,max=200"`
 }

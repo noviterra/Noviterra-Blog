@@ -26,8 +26,13 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			},
 			{
 				Method:  http.MethodPost,
-				Path:    "/update",
+				Path:    "/update/article",
 				Handler: UpdateArticleHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/update/cover",
+				Handler: UpdateArticleCoverHandler(serverCtx),
 			},
 		},
 		rest.WithPrefix("/novblog/article"),

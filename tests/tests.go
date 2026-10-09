@@ -2,10 +2,21 @@ package main
 
 import (
 	"Noviterra/server/utils/email"
+	"Noviterra/server/utils/snowflake"
 	"fmt"
 )
 
-func main() {
+func testsSnowFlake() {
+	sf, err := snowflake.NewSnowFlake(1)
+	if err != nil {
+		panic(err)
+	}
+
+	id := sf.GenerateSnowFlakeID()
+	fmt.Printf("%d\n", id)
+}
+
+func testsEmailSender() {
 	emailSender := email.NewEmailSender(email.EmailConfig{
 		Host:     "smtp.163.com",
 		Port:     465,
@@ -18,4 +29,8 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func main() {
+	testsEmailSender()
 }

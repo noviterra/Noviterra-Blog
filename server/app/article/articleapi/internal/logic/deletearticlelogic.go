@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/metadata"
 )
 
 type DeleteArticleLogic struct {
@@ -62,9 +63,14 @@ func (l *DeleteArticleLogic) DeleteArticle(req *types.DeleteArticleRequest) (res
 		return resp, nil
 	}
 
-	rep, err := l.svcCtx.ArticleModel.DeleteArticle(l.ctx, &articlerpc.DeleteArticleRequest{
-		ArticleID:   req.ArticleID,
-		PublisherID: publisherID,
+	// 用户信息与服务凭证注入metadata中
+	ctx := metadata.AppendToOutgoingContext(l.ctx,
+		"service-token", l.svcCtx.Config.Interceptor.ServiceToken,
+		"user-id", publisherID,
+	)
+
+	rep, err := l.svcCtx.ArticleModel.DeleteArticle(ctx, &articlerpc.DeleteArticleRequest{
+		ArticleID: req.ArticleID,
 	})
 	if err != nil {
 		resp.Status = http.StatusBadRequest

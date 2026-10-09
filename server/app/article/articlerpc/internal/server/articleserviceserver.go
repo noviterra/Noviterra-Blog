@@ -41,6 +41,12 @@ func (s *ArticleServiceServer) UpdateArticle(ctx context.Context, in *articlerpc
 	return l.UpdateArticle(in)
 }
 
+// 修改文章封面
+func (s *ArticleServiceServer) UpdateArticleCover(ctx context.Context, in *articlerpc.UpdateArticleCoverRequest) (*articlerpc.UpdateArticleCoverResponse, error) {
+	l := logic.NewUpdateArticleCoverLogic(ctx, s.svcCtx)
+	return l.UpdateArticleCover(in)
+}
+
 // 查询文章列表
 func (s *ArticleServiceServer) GetArticleList(ctx context.Context, in *articlerpc.GetArticleListRequest) (*articlerpc.GetArticleListResponse, error) {
 	l := logic.NewGetArticleListLogic(ctx, s.svcCtx)

@@ -2,7 +2,7 @@ Name: articleService
 Host: 0.0.0.0
 Port: 8888
 
-ArticleRPC:
+ArticleRpc:
   Etcd:
     Hosts:
     - 127.0.0.1:2379
@@ -20,3 +20,7 @@ Repo:
   Host: 127.0.0.1
   Port: 3306
   DBName: noviterra
+
+Interceptor:
+  ServiceToken: NdsowVhIlsaTea241EgsRadsawAds4dS2aOkahk6ose
+  SkipToken: GswdkYwebvDAdfeLKwe31Yqfds4KaqOecMd123cSq

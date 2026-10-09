@@ -9,7 +9,6 @@ import (
 	"Noviterra/server/app/article/articlerpc/internal/svc"
 	"Noviterra/server/app/article/articlerpc/types/articlerpc"
 
-	"github.com/joho/godotenv"
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/zrpc"
@@ -17,18 +16,13 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var configFile = flag.String("f", "etc/articlerpc.yaml", "the config file")
+var configFile = flag.String("f", "server/app/article/articlerpc/etc/articlerpc.yaml", "the config file")
 
 func main() {
-	// 加载.env到系统变量
-	err := godotenv.Load("D:\\GoProject\\IT\\Noviterra\\.env")
-	if err != nil {
-		panic(err)
-	}
 	flag.Parse()
 
 	var c config.Config
-	conf.MustLoad(*configFile, &c, conf.UseEnv()) // 加载环境变量
+	conf.MustLoad(*configFile, &c)
 	ctx := svc.NewServiceContext(c)
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
@@ -37,7 +31,12 @@ func main() {
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {
 			reflection.Register(grpcServer)
 		}
-	})
+	},
+	)
+
+	// 在此注册拦截器
+	s.AddUnaryInterceptors(ctx.Interceptor.ServiceTokenInterceptor(c.Interceptor.ServiceToken, c.Interceptor.SkipToken))
+
 	defer s.Stop()
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)

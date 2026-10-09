@@ -47,12 +47,22 @@ type (
 	}
 	// 改：修改文章
 	UpdateArticleRequest {
-		ArticleID   string   `json:"article_id" validate:"required,min=6,max=10"`
-		Title       string   `json:"title" validate:"omitempty,min=1,max=100"`
-		Content     string   `json:"content" validate:"omitempty,min=1"`
-		Cover       string   `json:"cover" validate:"omitempty,url"`
+		ArticleID string `json:"article_id" validate:"required,min=6,max=10"`
+		Title     string `json:"title" validate:"omitempty,min=1,max=100"`
+		Content   string `json:"content" validate:"omitempty,min=1"`
+		//Cover       string   `json:"cover" validate:"omitempty,url"`  // 封面单独抽出写一个接口
 		Tags        []string `json:"tags" validate:"omitempty,min=1,max=5,dive,required,min=1,max=20"`
 		Information string   `json:"information" validate:"omitempty,min=1,max=200"`
+	}
+	// 改：修改文章封面
+	UpdateArticleCoverRequest {
+		NewCover  string `json:"new_cover" validate:"omitempty,url"`
+		ArticleID string `json:"article_id" validate:"required,min=6,max=10"`
+	}
+	// 修改封面成功后 将封面重新渲染
+	UpdateArticleCoverResponse {
+		Cover string   `json:"cover" validate:"omitempty,url"`
+		Resp  Response `json:"response"`
 	}
 	// 查：获取文章列表
 	GetArticleListRequest {
@@ -101,7 +111,11 @@ service articleService {
 
 	// @doc 修改文章
 	@handler UpdateArticle
-	post /update (UpdateArticleRequest) returns (Response)
+	post /update/article (UpdateArticleRequest) returns (Response)
+
+	// @doc 修改文章封面
+	@handler UpdateArticleCover
+	post /update/cover (UpdateArticleCoverRequest) returns (UpdateArticleCoverResponse)
 }
 
 // 不需要鉴权中间件的

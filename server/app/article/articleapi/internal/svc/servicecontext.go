@@ -23,7 +23,7 @@ type ServiceContext struct {
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	// article rpc服务
-	articleService := articleservice.NewArticleService(zrpc.MustNewClient(c.RpcClientConf))
+	articleService := articleservice.NewArticleService(zrpc.MustNewClient(c.ArticleRpc))
 
 	// jwt插件
 	jwtConfig := jwtauth.AuthenticationConfig{

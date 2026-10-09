@@ -31,20 +31,11 @@ func NewDB(repoconfig RepoConfig) *gorm.DB {
 	}
 
 	// 数据库迁移
-	err = db.AutoMigrate(&model.UserAccount{}, &model.UserInfo{}, &model.UserRefreshToken{})
+	err = db.AutoMigrate(&model.UserAccount{}, &model.UserInfo{}, &model.UserRefreshToken{},
+		&model.ArticleInfo{})
 	if err != nil {
 		panic(fmt.Errorf("数据库表迁移失败:%v", err))
 	}
 
 	return db
-}
-
-type Repository struct {
-	db *gorm.DB
-}
-
-func NewRepository(repoConfig RepoConfig) *Repository {
-	return &Repository{
-		db: NewDB(repoConfig),
-	}
 }

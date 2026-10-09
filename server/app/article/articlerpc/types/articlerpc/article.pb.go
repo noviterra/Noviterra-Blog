@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.12
 // 	protoc        v5.29.3
-// source: proto/article.proto
+// source: doc/proto/article.proto
 
 package articlerpc
 
@@ -32,7 +32,7 @@ type Response struct {
 
 func (x *Response) Reset() {
 	*x = Response{}
-	mi := &file_proto_article_proto_msgTypes[0]
+	mi := &file_doc_proto_article_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +44,7 @@ func (x *Response) String() string {
 func (*Response) ProtoMessage() {}
 
 func (x *Response) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[0]
+	mi := &file_doc_proto_article_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +57,7 @@ func (x *Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Response.ProtoReflect.Descriptor instead.
 func (*Response) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{0}
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Response) GetMessage() string {
@@ -87,7 +87,7 @@ type ArticleList struct {
 
 func (x *ArticleList) Reset() {
 	*x = ArticleList{}
-	mi := &file_proto_article_proto_msgTypes[1]
+	mi := &file_doc_proto_article_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -99,7 +99,7 @@ func (x *ArticleList) String() string {
 func (*ArticleList) ProtoMessage() {}
 
 func (x *ArticleList) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[1]
+	mi := &file_doc_proto_article_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -112,7 +112,7 @@ func (x *ArticleList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArticleList.ProtoReflect.Descriptor instead.
 func (*ArticleList) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{1}
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ArticleList) GetTitle() string {
@@ -147,21 +147,20 @@ func (x *ArticleList) GetInformation() string {
 type Article struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ID            string                 `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	PublisherID   string                 `protobuf:"bytes,2,opt,name=PublisherID,proto3" json:"PublisherID,omitempty"`
-	Title         string                 `protobuf:"bytes,3,opt,name=Title,proto3" json:"Title,omitempty"`
-	Content       string                 `protobuf:"bytes,4,opt,name=Content,proto3" json:"Content,omitempty"`
-	Cover         string                 `protobuf:"bytes,5,opt,name=Cover,proto3" json:"Cover,omitempty"`
-	Tags          []string               `protobuf:"bytes,6,rep,name=Tags,proto3" json:"Tags,omitempty"`
-	Information   string                 `protobuf:"bytes,7,opt,name=Information,proto3" json:"Information,omitempty"`
-	CreatedAt     int64                  `protobuf:"varint,8,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
-	UpdatedAt     int64                  `protobuf:"varint,9,opt,name=UpdatedAt,proto3" json:"UpdatedAt,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=Title,proto3" json:"Title,omitempty"`
+	Content       string                 `protobuf:"bytes,3,opt,name=Content,proto3" json:"Content,omitempty"`
+	Cover         string                 `protobuf:"bytes,4,opt,name=Cover,proto3" json:"Cover,omitempty"`
+	Tags          []string               `protobuf:"bytes,5,rep,name=Tags,proto3" json:"Tags,omitempty"`
+	Information   string                 `protobuf:"bytes,6,opt,name=Information,proto3" json:"Information,omitempty"`
+	CreatedAt     int64                  `protobuf:"varint,7,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
+	UpdatedAt     int64                  `protobuf:"varint,8,opt,name=UpdatedAt,proto3" json:"UpdatedAt,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Article) Reset() {
 	*x = Article{}
-	mi := &file_proto_article_proto_msgTypes[2]
+	mi := &file_doc_proto_article_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -173,7 +172,7 @@ func (x *Article) String() string {
 func (*Article) ProtoMessage() {}
 
 func (x *Article) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[2]
+	mi := &file_doc_proto_article_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -186,19 +185,12 @@ func (x *Article) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Article.ProtoReflect.Descriptor instead.
 func (*Article) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{2}
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Article) GetID() string {
 	if x != nil {
 		return x.ID
-	}
-	return ""
-}
-
-func (x *Article) GetPublisherID() string {
-	if x != nil {
-		return x.PublisherID
 	}
 	return ""
 }
@@ -255,19 +247,18 @@ func (x *Article) GetUpdatedAt() int64 {
 // 发布文章请求体
 type PublishArticleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	PublisherID   string                 `protobuf:"bytes,1,opt,name=PublisherID,proto3" json:"PublisherID,omitempty"`
-	Title         string                 `protobuf:"bytes,2,opt,name=Title,proto3" json:"Title,omitempty"`
-	Content       string                 `protobuf:"bytes,3,opt,name=Content,proto3" json:"Content,omitempty"`
-	Cover         string                 `protobuf:"bytes,4,opt,name=Cover,proto3" json:"Cover,omitempty"`
-	Information   string                 `protobuf:"bytes,5,opt,name=Information,proto3" json:"Information,omitempty"`
-	Tags          []string               `protobuf:"bytes,6,rep,name=Tags,proto3" json:"Tags,omitempty"`
+	Title         string                 `protobuf:"bytes,1,opt,name=Title,proto3" json:"Title,omitempty"`
+	Content       string                 `protobuf:"bytes,2,opt,name=Content,proto3" json:"Content,omitempty"`
+	Cover         string                 `protobuf:"bytes,3,opt,name=Cover,proto3" json:"Cover,omitempty"`
+	Information   string                 `protobuf:"bytes,4,opt,name=Information,proto3" json:"Information,omitempty"`
+	Tags          []string               `protobuf:"bytes,5,rep,name=Tags,proto3" json:"Tags,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PublishArticleRequest) Reset() {
 	*x = PublishArticleRequest{}
-	mi := &file_proto_article_proto_msgTypes[3]
+	mi := &file_doc_proto_article_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -279,7 +270,7 @@ func (x *PublishArticleRequest) String() string {
 func (*PublishArticleRequest) ProtoMessage() {}
 
 func (x *PublishArticleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[3]
+	mi := &file_doc_proto_article_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -292,14 +283,7 @@ func (x *PublishArticleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishArticleRequest.ProtoReflect.Descriptor instead.
 func (*PublishArticleRequest) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *PublishArticleRequest) GetPublisherID() string {
-	if x != nil {
-		return x.PublisherID
-	}
-	return ""
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *PublishArticleRequest) GetTitle() string {
@@ -340,15 +324,14 @@ func (x *PublishArticleRequest) GetTags() []string {
 // 删除文章请求体
 type DeleteArticleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	PublisherID   string                 `protobuf:"bytes,1,opt,name=PublisherID,proto3" json:"PublisherID,omitempty"`
-	ArticleID     string                 `protobuf:"bytes,2,opt,name=ArticleID,proto3" json:"ArticleID,omitempty"`
+	ArticleID     string                 `protobuf:"bytes,1,opt,name=ArticleID,proto3" json:"ArticleID,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DeleteArticleRequest) Reset() {
 	*x = DeleteArticleRequest{}
-	mi := &file_proto_article_proto_msgTypes[4]
+	mi := &file_doc_proto_article_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -360,7 +343,7 @@ func (x *DeleteArticleRequest) String() string {
 func (*DeleteArticleRequest) ProtoMessage() {}
 
 func (x *DeleteArticleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[4]
+	mi := &file_doc_proto_article_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -373,14 +356,7 @@ func (x *DeleteArticleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteArticleRequest.ProtoReflect.Descriptor instead.
 func (*DeleteArticleRequest) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *DeleteArticleRequest) GetPublisherID() string {
-	if x != nil {
-		return x.PublisherID
-	}
-	return ""
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *DeleteArticleRequest) GetArticleID() string {
@@ -393,20 +369,18 @@ func (x *DeleteArticleRequest) GetArticleID() string {
 // 修改文章请求体
 type UpdateArticleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	PublisherID   string                 `protobuf:"bytes,1,opt,name=PublisherID,proto3" json:"PublisherID,omitempty"`
-	ArticleID     string                 `protobuf:"bytes,2,opt,name=ArticleID,proto3" json:"ArticleID,omitempty"`
-	Title         string                 `protobuf:"bytes,3,opt,name=Title,proto3" json:"Title,omitempty"`
-	Content       string                 `protobuf:"bytes,4,opt,name=Content,proto3" json:"Content,omitempty"`
-	Cover         string                 `protobuf:"bytes,5,opt,name=Cover,proto3" json:"Cover,omitempty"`
-	Information   string                 `protobuf:"bytes,6,opt,name=Information,proto3" json:"Information,omitempty"`
-	Tags          []string               `protobuf:"bytes,7,rep,name=Tags,proto3" json:"Tags,omitempty"`
+	ArticleID     string                 `protobuf:"bytes,1,opt,name=ArticleID,proto3" json:"ArticleID,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=Title,proto3" json:"Title,omitempty"`
+	Content       string                 `protobuf:"bytes,3,opt,name=Content,proto3" json:"Content,omitempty"`
+	Information   string                 `protobuf:"bytes,4,opt,name=Information,proto3" json:"Information,omitempty"`
+	Tags          []string               `protobuf:"bytes,5,rep,name=Tags,proto3" json:"Tags,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateArticleRequest) Reset() {
 	*x = UpdateArticleRequest{}
-	mi := &file_proto_article_proto_msgTypes[5]
+	mi := &file_doc_proto_article_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -418,7 +392,7 @@ func (x *UpdateArticleRequest) String() string {
 func (*UpdateArticleRequest) ProtoMessage() {}
 
 func (x *UpdateArticleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[5]
+	mi := &file_doc_proto_article_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -431,14 +405,7 @@ func (x *UpdateArticleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateArticleRequest.ProtoReflect.Descriptor instead.
 func (*UpdateArticleRequest) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *UpdateArticleRequest) GetPublisherID() string {
-	if x != nil {
-		return x.PublisherID
-	}
-	return ""
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UpdateArticleRequest) GetArticleID() string {
@@ -462,13 +429,6 @@ func (x *UpdateArticleRequest) GetContent() string {
 	return ""
 }
 
-func (x *UpdateArticleRequest) GetCover() string {
-	if x != nil {
-		return x.Cover
-	}
-	return ""
-}
-
 func (x *UpdateArticleRequest) GetInformation() string {
 	if x != nil {
 		return x.Information
@@ -479,6 +439,112 @@ func (x *UpdateArticleRequest) GetInformation() string {
 func (x *UpdateArticleRequest) GetTags() []string {
 	if x != nil {
 		return x.Tags
+	}
+	return nil
+}
+
+// 修改文章封面请求体
+type UpdateArticleCoverRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NewCover      string                 `protobuf:"bytes,1,opt,name=NewCover,proto3" json:"NewCover,omitempty"`
+	ArticleID     string                 `protobuf:"bytes,2,opt,name=ArticleID,proto3" json:"ArticleID,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateArticleCoverRequest) Reset() {
+	*x = UpdateArticleCoverRequest{}
+	mi := &file_doc_proto_article_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateArticleCoverRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateArticleCoverRequest) ProtoMessage() {}
+
+func (x *UpdateArticleCoverRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_doc_proto_article_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateArticleCoverRequest.ProtoReflect.Descriptor instead.
+func (*UpdateArticleCoverRequest) Descriptor() ([]byte, []int) {
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *UpdateArticleCoverRequest) GetNewCover() string {
+	if x != nil {
+		return x.NewCover
+	}
+	return ""
+}
+
+func (x *UpdateArticleCoverRequest) GetArticleID() string {
+	if x != nil {
+		return x.ArticleID
+	}
+	return ""
+}
+
+// 修改文章封面响应体 返回新封面
+type UpdateArticleCoverResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Cover         string                 `protobuf:"bytes,1,opt,name=Cover,proto3" json:"Cover,omitempty"`
+	Resp          *Response              `protobuf:"bytes,2,opt,name=Resp,proto3" json:"Resp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateArticleCoverResponse) Reset() {
+	*x = UpdateArticleCoverResponse{}
+	mi := &file_doc_proto_article_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateArticleCoverResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateArticleCoverResponse) ProtoMessage() {}
+
+func (x *UpdateArticleCoverResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_doc_proto_article_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateArticleCoverResponse.ProtoReflect.Descriptor instead.
+func (*UpdateArticleCoverResponse) Descriptor() ([]byte, []int) {
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *UpdateArticleCoverResponse) GetCover() string {
+	if x != nil {
+		return x.Cover
+	}
+	return ""
+}
+
+func (x *UpdateArticleCoverResponse) GetResp() *Response {
+	if x != nil {
+		return x.Resp
 	}
 	return nil
 }
@@ -494,7 +560,7 @@ type GetArticleListRequest struct {
 
 func (x *GetArticleListRequest) Reset() {
 	*x = GetArticleListRequest{}
-	mi := &file_proto_article_proto_msgTypes[6]
+	mi := &file_doc_proto_article_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -506,7 +572,7 @@ func (x *GetArticleListRequest) String() string {
 func (*GetArticleListRequest) ProtoMessage() {}
 
 func (x *GetArticleListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[6]
+	mi := &file_doc_proto_article_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -519,7 +585,7 @@ func (x *GetArticleListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArticleListRequest.ProtoReflect.Descriptor instead.
 func (*GetArticleListRequest) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{6}
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetArticleListRequest) GetPage() int32 {
@@ -548,7 +614,7 @@ type GetArticleListResponse struct {
 
 func (x *GetArticleListResponse) Reset() {
 	*x = GetArticleListResponse{}
-	mi := &file_proto_article_proto_msgTypes[7]
+	mi := &file_doc_proto_article_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -560,7 +626,7 @@ func (x *GetArticleListResponse) String() string {
 func (*GetArticleListResponse) ProtoMessage() {}
 
 func (x *GetArticleListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[7]
+	mi := &file_doc_proto_article_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -573,7 +639,7 @@ func (x *GetArticleListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArticleListResponse.ProtoReflect.Descriptor instead.
 func (*GetArticleListResponse) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{7}
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetArticleListResponse) GetArticles() []*ArticleList {
@@ -609,7 +675,7 @@ type SearchArticleRequest struct {
 
 func (x *SearchArticleRequest) Reset() {
 	*x = SearchArticleRequest{}
-	mi := &file_proto_article_proto_msgTypes[8]
+	mi := &file_doc_proto_article_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -621,7 +687,7 @@ func (x *SearchArticleRequest) String() string {
 func (*SearchArticleRequest) ProtoMessage() {}
 
 func (x *SearchArticleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[8]
+	mi := &file_doc_proto_article_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -634,7 +700,7 @@ func (x *SearchArticleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchArticleRequest.ProtoReflect.Descriptor instead.
 func (*SearchArticleRequest) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{8}
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *SearchArticleRequest) GetQuery() string {
@@ -670,7 +736,7 @@ type SearchArticleResponse struct {
 
 func (x *SearchArticleResponse) Reset() {
 	*x = SearchArticleResponse{}
-	mi := &file_proto_article_proto_msgTypes[9]
+	mi := &file_doc_proto_article_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -682,7 +748,7 @@ func (x *SearchArticleResponse) String() string {
 func (*SearchArticleResponse) ProtoMessage() {}
 
 func (x *SearchArticleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[9]
+	mi := &file_doc_proto_article_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -695,7 +761,7 @@ func (x *SearchArticleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchArticleResponse.ProtoReflect.Descriptor instead.
 func (*SearchArticleResponse) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{9}
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *SearchArticleResponse) GetArticles() []*ArticleList {
@@ -729,7 +795,7 @@ type GetArticleDetailRequest struct {
 
 func (x *GetArticleDetailRequest) Reset() {
 	*x = GetArticleDetailRequest{}
-	mi := &file_proto_article_proto_msgTypes[10]
+	mi := &file_doc_proto_article_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -741,7 +807,7 @@ func (x *GetArticleDetailRequest) String() string {
 func (*GetArticleDetailRequest) ProtoMessage() {}
 
 func (x *GetArticleDetailRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[10]
+	mi := &file_doc_proto_article_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -754,7 +820,7 @@ func (x *GetArticleDetailRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArticleDetailRequest.ProtoReflect.Descriptor instead.
 func (*GetArticleDetailRequest) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{10}
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetArticleDetailRequest) GetArticleID() string {
@@ -775,7 +841,7 @@ type GetArticleDetailResponse struct {
 
 func (x *GetArticleDetailResponse) Reset() {
 	*x = GetArticleDetailResponse{}
-	mi := &file_proto_article_proto_msgTypes[11]
+	mi := &file_doc_proto_article_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -787,7 +853,7 @@ func (x *GetArticleDetailResponse) String() string {
 func (*GetArticleDetailResponse) ProtoMessage() {}
 
 func (x *GetArticleDetailResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_proto_msgTypes[11]
+	mi := &file_doc_proto_article_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -800,7 +866,7 @@ func (x *GetArticleDetailResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArticleDetailResponse.ProtoReflect.Descriptor instead.
 func (*GetArticleDetailResponse) Descriptor() ([]byte, []int) {
-	return file_proto_article_proto_rawDescGZIP(), []int{11}
+	return file_doc_proto_article_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetArticleDetailResponse) GetA() *Article {
@@ -817,11 +883,11 @@ func (x *GetArticleDetailResponse) GetResp() *Response {
 	return nil
 }
 
-var File_proto_article_proto protoreflect.FileDescriptor
+var File_doc_proto_article_proto protoreflect.FileDescriptor
 
-const file_proto_article_proto_rawDesc = "" +
+const file_doc_proto_article_proto_rawDesc = "" +
 	"\n" +
-	"\x13proto/article.proto\x12\n" +
+	"\x17doc/proto/article.proto\x12\n" +
 	"articlerpc\"8\n" +
 	"\bResponse\x12\x18\n" +
 	"\aMessage\x18\x01 \x01(\tR\aMessage\x12\x12\n" +
@@ -830,35 +896,36 @@ const file_proto_article_proto_rawDesc = "" +
 	"\x05Title\x18\x01 \x01(\tR\x05Title\x12\x14\n" +
 	"\x05Cover\x18\x02 \x01(\tR\x05Cover\x12\x12\n" +
 	"\x04Tags\x18\x03 \x03(\tR\x04Tags\x12 \n" +
-	"\vInformation\x18\x04 \x01(\tR\vInformation\"\xf3\x01\n" +
+	"\vInformation\x18\x04 \x01(\tR\vInformation\"\xd1\x01\n" +
 	"\aArticle\x12\x0e\n" +
-	"\x02ID\x18\x01 \x01(\tR\x02ID\x12 \n" +
-	"\vPublisherID\x18\x02 \x01(\tR\vPublisherID\x12\x14\n" +
-	"\x05Title\x18\x03 \x01(\tR\x05Title\x12\x18\n" +
-	"\aContent\x18\x04 \x01(\tR\aContent\x12\x14\n" +
-	"\x05Cover\x18\x05 \x01(\tR\x05Cover\x12\x12\n" +
-	"\x04Tags\x18\x06 \x03(\tR\x04Tags\x12 \n" +
-	"\vInformation\x18\a \x01(\tR\vInformation\x12\x1c\n" +
-	"\tCreatedAt\x18\b \x01(\x03R\tCreatedAt\x12\x1c\n" +
-	"\tUpdatedAt\x18\t \x01(\x03R\tUpdatedAt\"\xb5\x01\n" +
-	"\x15PublishArticleRequest\x12 \n" +
-	"\vPublisherID\x18\x01 \x01(\tR\vPublisherID\x12\x14\n" +
+	"\x02ID\x18\x01 \x01(\tR\x02ID\x12\x14\n" +
 	"\x05Title\x18\x02 \x01(\tR\x05Title\x12\x18\n" +
 	"\aContent\x18\x03 \x01(\tR\aContent\x12\x14\n" +
-	"\x05Cover\x18\x04 \x01(\tR\x05Cover\x12 \n" +
-	"\vInformation\x18\x05 \x01(\tR\vInformation\x12\x12\n" +
-	"\x04Tags\x18\x06 \x03(\tR\x04Tags\"V\n" +
-	"\x14DeleteArticleRequest\x12 \n" +
-	"\vPublisherID\x18\x01 \x01(\tR\vPublisherID\x12\x1c\n" +
-	"\tArticleID\x18\x02 \x01(\tR\tArticleID\"\xd2\x01\n" +
-	"\x14UpdateArticleRequest\x12 \n" +
-	"\vPublisherID\x18\x01 \x01(\tR\vPublisherID\x12\x1c\n" +
-	"\tArticleID\x18\x02 \x01(\tR\tArticleID\x12\x14\n" +
-	"\x05Title\x18\x03 \x01(\tR\x05Title\x12\x18\n" +
-	"\aContent\x18\x04 \x01(\tR\aContent\x12\x14\n" +
-	"\x05Cover\x18\x05 \x01(\tR\x05Cover\x12 \n" +
-	"\vInformation\x18\x06 \x01(\tR\vInformation\x12\x12\n" +
-	"\x04Tags\x18\a \x03(\tR\x04Tags\"G\n" +
+	"\x05Cover\x18\x04 \x01(\tR\x05Cover\x12\x12\n" +
+	"\x04Tags\x18\x05 \x03(\tR\x04Tags\x12 \n" +
+	"\vInformation\x18\x06 \x01(\tR\vInformation\x12\x1c\n" +
+	"\tCreatedAt\x18\a \x01(\x03R\tCreatedAt\x12\x1c\n" +
+	"\tUpdatedAt\x18\b \x01(\x03R\tUpdatedAt\"\x93\x01\n" +
+	"\x15PublishArticleRequest\x12\x14\n" +
+	"\x05Title\x18\x01 \x01(\tR\x05Title\x12\x18\n" +
+	"\aContent\x18\x02 \x01(\tR\aContent\x12\x14\n" +
+	"\x05Cover\x18\x03 \x01(\tR\x05Cover\x12 \n" +
+	"\vInformation\x18\x04 \x01(\tR\vInformation\x12\x12\n" +
+	"\x04Tags\x18\x05 \x03(\tR\x04Tags\"4\n" +
+	"\x14DeleteArticleRequest\x12\x1c\n" +
+	"\tArticleID\x18\x01 \x01(\tR\tArticleID\"\x9a\x01\n" +
+	"\x14UpdateArticleRequest\x12\x1c\n" +
+	"\tArticleID\x18\x01 \x01(\tR\tArticleID\x12\x14\n" +
+	"\x05Title\x18\x02 \x01(\tR\x05Title\x12\x18\n" +
+	"\aContent\x18\x03 \x01(\tR\aContent\x12 \n" +
+	"\vInformation\x18\x04 \x01(\tR\vInformation\x12\x12\n" +
+	"\x04Tags\x18\x05 \x03(\tR\x04Tags\"U\n" +
+	"\x19UpdateArticleCoverRequest\x12\x1a\n" +
+	"\bNewCover\x18\x01 \x01(\tR\bNewCover\x12\x1c\n" +
+	"\tArticleID\x18\x02 \x01(\tR\tArticleID\"\\\n" +
+	"\x1aUpdateArticleCoverResponse\x12\x14\n" +
+	"\x05Cover\x18\x01 \x01(\tR\x05Cover\x12(\n" +
+	"\x04Resp\x18\x02 \x01(\v2\x14.articlerpc.ResponseR\x04Resp\"G\n" +
 	"\x15GetArticleListRequest\x12\x12\n" +
 	"\x04Page\x18\x01 \x01(\x05R\x04Page\x12\x1a\n" +
 	"\bPageSize\x18\x02 \x01(\x05R\bPageSize\"\x97\x01\n" +
@@ -882,88 +949,94 @@ const file_proto_article_proto_rawDesc = "" +
 	"\tArticleID\x18\x01 \x01(\tR\tArticleID\"g\n" +
 	"\x18GetArticleDetailResponse\x12!\n" +
 	"\x01A\x18\x01 \x01(\v2\x13.articlerpc.ArticleR\x01A\x12(\n" +
-	"\x04Resp\x18\x02 \x01(\v2\x14.articlerpc.ResponseR\x04Resp2\xfb\x03\n" +
+	"\x04Resp\x18\x02 \x01(\v2\x14.articlerpc.ResponseR\x04Resp2\xe0\x04\n" +
 	"\x0eArticleService\x12I\n" +
 	"\x0ePublishArticle\x12!.articlerpc.PublishArticleRequest\x1a\x14.articlerpc.Response\x12G\n" +
 	"\rDeleteArticle\x12 .articlerpc.DeleteArticleRequest\x1a\x14.articlerpc.Response\x12G\n" +
-	"\rUpdateArticle\x12 .articlerpc.UpdateArticleRequest\x1a\x14.articlerpc.Response\x12W\n" +
+	"\rUpdateArticle\x12 .articlerpc.UpdateArticleRequest\x1a\x14.articlerpc.Response\x12c\n" +
+	"\x12UpdateArticleCover\x12%.articlerpc.UpdateArticleCoverRequest\x1a&.articlerpc.UpdateArticleCoverResponse\x12W\n" +
 	"\x0eGetArticleList\x12!.articlerpc.GetArticleListRequest\x1a\".articlerpc.GetArticleListResponse\x12T\n" +
 	"\rSearchArticle\x12 .articlerpc.SearchArticleRequest\x1a!.articlerpc.SearchArticleResponse\x12]\n" +
 	"\x10GetArticleDetail\x12#.articlerpc.GetArticleDetailRequest\x1a$.articlerpc.GetArticleDetailResponseB\rZ\v/articlerpcb\x06proto3"
 
 var (
-	file_proto_article_proto_rawDescOnce sync.Once
-	file_proto_article_proto_rawDescData []byte
+	file_doc_proto_article_proto_rawDescOnce sync.Once
+	file_doc_proto_article_proto_rawDescData []byte
 )
 
-func file_proto_article_proto_rawDescGZIP() []byte {
-	file_proto_article_proto_rawDescOnce.Do(func() {
-		file_proto_article_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_article_proto_rawDesc), len(file_proto_article_proto_rawDesc)))
+func file_doc_proto_article_proto_rawDescGZIP() []byte {
+	file_doc_proto_article_proto_rawDescOnce.Do(func() {
+		file_doc_proto_article_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_doc_proto_article_proto_rawDesc), len(file_doc_proto_article_proto_rawDesc)))
 	})
-	return file_proto_article_proto_rawDescData
+	return file_doc_proto_article_proto_rawDescData
 }
 
-var file_proto_article_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
-var file_proto_article_proto_goTypes = []any{
-	(*Response)(nil),                 // 0: articlerpc.Response
-	(*ArticleList)(nil),              // 1: articlerpc.ArticleList
-	(*Article)(nil),                  // 2: articlerpc.Article
-	(*PublishArticleRequest)(nil),    // 3: articlerpc.PublishArticleRequest
-	(*DeleteArticleRequest)(nil),     // 4: articlerpc.DeleteArticleRequest
-	(*UpdateArticleRequest)(nil),     // 5: articlerpc.UpdateArticleRequest
-	(*GetArticleListRequest)(nil),    // 6: articlerpc.GetArticleListRequest
-	(*GetArticleListResponse)(nil),   // 7: articlerpc.GetArticleListResponse
-	(*SearchArticleRequest)(nil),     // 8: articlerpc.SearchArticleRequest
-	(*SearchArticleResponse)(nil),    // 9: articlerpc.SearchArticleResponse
-	(*GetArticleDetailRequest)(nil),  // 10: articlerpc.GetArticleDetailRequest
-	(*GetArticleDetailResponse)(nil), // 11: articlerpc.GetArticleDetailResponse
+var file_doc_proto_article_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_doc_proto_article_proto_goTypes = []any{
+	(*Response)(nil),                   // 0: articlerpc.Response
+	(*ArticleList)(nil),                // 1: articlerpc.ArticleList
+	(*Article)(nil),                    // 2: articlerpc.Article
+	(*PublishArticleRequest)(nil),      // 3: articlerpc.PublishArticleRequest
+	(*DeleteArticleRequest)(nil),       // 4: articlerpc.DeleteArticleRequest
+	(*UpdateArticleRequest)(nil),       // 5: articlerpc.UpdateArticleRequest
+	(*UpdateArticleCoverRequest)(nil),  // 6: articlerpc.UpdateArticleCoverRequest
+	(*UpdateArticleCoverResponse)(nil), // 7: articlerpc.UpdateArticleCoverResponse
+	(*GetArticleListRequest)(nil),      // 8: articlerpc.GetArticleListRequest
+	(*GetArticleListResponse)(nil),     // 9: articlerpc.GetArticleListResponse
+	(*SearchArticleRequest)(nil),       // 10: articlerpc.SearchArticleRequest
+	(*SearchArticleResponse)(nil),      // 11: articlerpc.SearchArticleResponse
+	(*GetArticleDetailRequest)(nil),    // 12: articlerpc.GetArticleDetailRequest
+	(*GetArticleDetailResponse)(nil),   // 13: articlerpc.GetArticleDetailResponse
 }
-var file_proto_article_proto_depIdxs = []int32{
-	1,  // 0: articlerpc.GetArticleListResponse.Articles:type_name -> articlerpc.ArticleList
-	0,  // 1: articlerpc.GetArticleListResponse.Resp:type_name -> articlerpc.Response
-	1,  // 2: articlerpc.SearchArticleResponse.Articles:type_name -> articlerpc.ArticleList
-	0,  // 3: articlerpc.SearchArticleResponse.Resp:type_name -> articlerpc.Response
-	2,  // 4: articlerpc.GetArticleDetailResponse.A:type_name -> articlerpc.Article
-	0,  // 5: articlerpc.GetArticleDetailResponse.Resp:type_name -> articlerpc.Response
-	3,  // 6: articlerpc.ArticleService.PublishArticle:input_type -> articlerpc.PublishArticleRequest
-	4,  // 7: articlerpc.ArticleService.DeleteArticle:input_type -> articlerpc.DeleteArticleRequest
-	5,  // 8: articlerpc.ArticleService.UpdateArticle:input_type -> articlerpc.UpdateArticleRequest
-	6,  // 9: articlerpc.ArticleService.GetArticleList:input_type -> articlerpc.GetArticleListRequest
-	8,  // 10: articlerpc.ArticleService.SearchArticle:input_type -> articlerpc.SearchArticleRequest
-	10, // 11: articlerpc.ArticleService.GetArticleDetail:input_type -> articlerpc.GetArticleDetailRequest
-	0,  // 12: articlerpc.ArticleService.PublishArticle:output_type -> articlerpc.Response
-	0,  // 13: articlerpc.ArticleService.DeleteArticle:output_type -> articlerpc.Response
-	0,  // 14: articlerpc.ArticleService.UpdateArticle:output_type -> articlerpc.Response
-	7,  // 15: articlerpc.ArticleService.GetArticleList:output_type -> articlerpc.GetArticleListResponse
-	9,  // 16: articlerpc.ArticleService.SearchArticle:output_type -> articlerpc.SearchArticleResponse
-	11, // 17: articlerpc.ArticleService.GetArticleDetail:output_type -> articlerpc.GetArticleDetailResponse
-	12, // [12:18] is the sub-list for method output_type
-	6,  // [6:12] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+var file_doc_proto_article_proto_depIdxs = []int32{
+	0,  // 0: articlerpc.UpdateArticleCoverResponse.Resp:type_name -> articlerpc.Response
+	1,  // 1: articlerpc.GetArticleListResponse.Articles:type_name -> articlerpc.ArticleList
+	0,  // 2: articlerpc.GetArticleListResponse.Resp:type_name -> articlerpc.Response
+	1,  // 3: articlerpc.SearchArticleResponse.Articles:type_name -> articlerpc.ArticleList
+	0,  // 4: articlerpc.SearchArticleResponse.Resp:type_name -> articlerpc.Response
+	2,  // 5: articlerpc.GetArticleDetailResponse.A:type_name -> articlerpc.Article
+	0,  // 6: articlerpc.GetArticleDetailResponse.Resp:type_name -> articlerpc.Response
+	3,  // 7: articlerpc.ArticleService.PublishArticle:input_type -> articlerpc.PublishArticleRequest
+	4,  // 8: articlerpc.ArticleService.DeleteArticle:input_type -> articlerpc.DeleteArticleRequest
+	5,  // 9: articlerpc.ArticleService.UpdateArticle:input_type -> articlerpc.UpdateArticleRequest
+	6,  // 10: articlerpc.ArticleService.UpdateArticleCover:input_type -> articlerpc.UpdateArticleCoverRequest
+	8,  // 11: articlerpc.ArticleService.GetArticleList:input_type -> articlerpc.GetArticleListRequest
+	10, // 12: articlerpc.ArticleService.SearchArticle:input_type -> articlerpc.SearchArticleRequest
+	12, // 13: articlerpc.ArticleService.GetArticleDetail:input_type -> articlerpc.GetArticleDetailRequest
+	0,  // 14: articlerpc.ArticleService.PublishArticle:output_type -> articlerpc.Response
+	0,  // 15: articlerpc.ArticleService.DeleteArticle:output_type -> articlerpc.Response
+	0,  // 16: articlerpc.ArticleService.UpdateArticle:output_type -> articlerpc.Response
+	7,  // 17: articlerpc.ArticleService.UpdateArticleCover:output_type -> articlerpc.UpdateArticleCoverResponse
+	9,  // 18: articlerpc.ArticleService.GetArticleList:output_type -> articlerpc.GetArticleListResponse
+	11, // 19: articlerpc.ArticleService.SearchArticle:output_type -> articlerpc.SearchArticleResponse
+	13, // 20: articlerpc.ArticleService.GetArticleDetail:output_type -> articlerpc.GetArticleDetailResponse
+	14, // [14:21] is the sub-list for method output_type
+	7,  // [7:14] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
-func init() { file_proto_article_proto_init() }
-func file_proto_article_proto_init() {
-	if File_proto_article_proto != nil {
+func init() { file_doc_proto_article_proto_init() }
+func file_doc_proto_article_proto_init() {
+	if File_doc_proto_article_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_article_proto_rawDesc), len(file_proto_article_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_doc_proto_article_proto_rawDesc), len(file_doc_proto_article_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_article_proto_goTypes,
-		DependencyIndexes: file_proto_article_proto_depIdxs,
-		MessageInfos:      file_proto_article_proto_msgTypes,
+		GoTypes:           file_doc_proto_article_proto_goTypes,
+		DependencyIndexes: file_doc_proto_article_proto_depIdxs,
+		MessageInfos:      file_doc_proto_article_proto_msgTypes,
 	}.Build()
-	File_proto_article_proto = out.File
-	file_proto_article_proto_goTypes = nil
-	file_proto_article_proto_depIdxs = nil
+	File_doc_proto_article_proto = out.File
+	file_doc_proto_article_proto_goTypes = nil
+	file_doc_proto_article_proto_depIdxs = nil
 }

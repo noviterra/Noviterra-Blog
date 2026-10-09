@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v5.29.3
-// source: proto/article.proto
+// source: doc/proto/article.proto
 
 package articlerpc
 
@@ -19,12 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ArticleService_PublishArticle_FullMethodName   = "/articlerpc.ArticleService/PublishArticle"
-	ArticleService_DeleteArticle_FullMethodName    = "/articlerpc.ArticleService/DeleteArticle"
-	ArticleService_UpdateArticle_FullMethodName    = "/articlerpc.ArticleService/UpdateArticle"
-	ArticleService_GetArticleList_FullMethodName   = "/articlerpc.ArticleService/GetArticleList"
-	ArticleService_SearchArticle_FullMethodName    = "/articlerpc.ArticleService/SearchArticle"
-	ArticleService_GetArticleDetail_FullMethodName = "/articlerpc.ArticleService/GetArticleDetail"
+	ArticleService_PublishArticle_FullMethodName     = "/articlerpc.ArticleService/PublishArticle"
+	ArticleService_DeleteArticle_FullMethodName      = "/articlerpc.ArticleService/DeleteArticle"
+	ArticleService_UpdateArticle_FullMethodName      = "/articlerpc.ArticleService/UpdateArticle"
+	ArticleService_UpdateArticleCover_FullMethodName = "/articlerpc.ArticleService/UpdateArticleCover"
+	ArticleService_GetArticleList_FullMethodName     = "/articlerpc.ArticleService/GetArticleList"
+	ArticleService_SearchArticle_FullMethodName      = "/articlerpc.ArticleService/SearchArticle"
+	ArticleService_GetArticleDetail_FullMethodName   = "/articlerpc.ArticleService/GetArticleDetail"
 )
 
 // ArticleServiceClient is the client API for ArticleService service.
@@ -37,6 +38,8 @@ type ArticleServiceClient interface {
 	DeleteArticle(ctx context.Context, in *DeleteArticleRequest, opts ...grpc.CallOption) (*Response, error)
 	// 修改文章
 	UpdateArticle(ctx context.Context, in *UpdateArticleRequest, opts ...grpc.CallOption) (*Response, error)
+	// 修改文章封面
+	UpdateArticleCover(ctx context.Context, in *UpdateArticleCoverRequest, opts ...grpc.CallOption) (*UpdateArticleCoverResponse, error)
 	// 查询文章列表
 	GetArticleList(ctx context.Context, in *GetArticleListRequest, opts ...grpc.CallOption) (*GetArticleListResponse, error)
 	// 搜索文章
@@ -83,6 +86,16 @@ func (c *articleServiceClient) UpdateArticle(ctx context.Context, in *UpdateArti
 	return out, nil
 }
 
+func (c *articleServiceClient) UpdateArticleCover(ctx context.Context, in *UpdateArticleCoverRequest, opts ...grpc.CallOption) (*UpdateArticleCoverResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateArticleCoverResponse)
+	err := c.cc.Invoke(ctx, ArticleService_UpdateArticleCover_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *articleServiceClient) GetArticleList(ctx context.Context, in *GetArticleListRequest, opts ...grpc.CallOption) (*GetArticleListResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetArticleListResponse)
@@ -123,6 +136,8 @@ type ArticleServiceServer interface {
 	DeleteArticle(context.Context, *DeleteArticleRequest) (*Response, error)
 	// 修改文章
 	UpdateArticle(context.Context, *UpdateArticleRequest) (*Response, error)
+	// 修改文章封面
+	UpdateArticleCover(context.Context, *UpdateArticleCoverRequest) (*UpdateArticleCoverResponse, error)
 	// 查询文章列表
 	GetArticleList(context.Context, *GetArticleListRequest) (*GetArticleListResponse, error)
 	// 搜索文章
@@ -147,6 +162,9 @@ func (UnimplementedArticleServiceServer) DeleteArticle(context.Context, *DeleteA
 }
 func (UnimplementedArticleServiceServer) UpdateArticle(context.Context, *UpdateArticleRequest) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateArticle not implemented")
+}
+func (UnimplementedArticleServiceServer) UpdateArticleCover(context.Context, *UpdateArticleCoverRequest) (*UpdateArticleCoverResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateArticleCover not implemented")
 }
 func (UnimplementedArticleServiceServer) GetArticleList(context.Context, *GetArticleListRequest) (*GetArticleListResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetArticleList not implemented")
@@ -232,6 +250,24 @@ func _ArticleService_UpdateArticle_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ArticleService_UpdateArticleCover_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateArticleCoverRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticleServiceServer).UpdateArticleCover(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ArticleService_UpdateArticleCover_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticleServiceServer).UpdateArticleCover(ctx, req.(*UpdateArticleCoverRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ArticleService_GetArticleList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetArticleListRequest)
 	if err := dec(in); err != nil {
@@ -306,6 +342,10 @@ var ArticleService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ArticleService_UpdateArticle_Handler,
 		},
 		{
+			MethodName: "UpdateArticleCover",
+			Handler:    _ArticleService_UpdateArticleCover_Handler,
+		},
+		{
 			MethodName: "GetArticleList",
 			Handler:    _ArticleService_GetArticleList_Handler,
 		},
@@ -319,5 +359,5 @@ var ArticleService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/article.proto",
+	Metadata: "doc/proto/article.proto",
 }

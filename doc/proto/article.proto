@@ -19,41 +19,47 @@ message ArticleList {
 // 文章详细属性
 message Article {
     string ID = 1;
-    string PublisherID = 2;
-    string Title = 3;
-    string Content = 4;
-    string Cover = 5;
-    repeated string Tags = 6;
-    string Information = 7;
-    int64 CreatedAt = 8;
-    int64 UpdatedAt = 9;
+    string Title = 2;
+    string Content = 3;
+    string Cover = 4;
+    repeated string Tags = 5;
+    string Information = 6;
+    int64 CreatedAt = 7;
+    int64 UpdatedAt = 8;
 }
 
 // 发布文章请求体
 message PublishArticleRequest {
-    string PublisherID = 1;
-    string Title = 2;
-    string Content = 3;
-    string Cover = 4;
-    string Information = 5;
-    repeated string Tags = 6;
+    string Title = 1;
+    string Content = 2;
+    string Cover = 3;
+    string Information = 4;
+    repeated string Tags = 5;
 }
 
 // 删除文章请求体
 message DeleteArticleRequest {
-    string PublisherID = 1;
-    string ArticleID = 2;
+    string ArticleID = 1;
 }
 
 // 修改文章请求体
 message UpdateArticleRequest {
-    string PublisherID = 1;
+    string ArticleID = 1;
+    string Title = 2;
+    string Content = 3;
+    string Information = 4;
+    repeated string Tags = 5;
+}
+
+// 修改文章封面请求体
+message UpdateArticleCoverRequest {
+    string NewCover = 1;
     string ArticleID = 2;
-    string Title = 3;
-    string Content = 4;
-    string Cover = 5;
-    string Information = 6;
-    repeated string Tags = 7;
+}
+// 修改文章封面响应体 返回新封面
+message UpdateArticleCoverResponse {
+    string Cover = 1;
+    Response Resp = 2;
 }
 
 // 查询文章列表请求体
@@ -98,6 +104,8 @@ service ArticleService {
     rpc DeleteArticle(DeleteArticleRequest) returns (Response);
     // 修改文章
     rpc UpdateArticle(UpdateArticleRequest) returns (Response);
+    // 修改文章封面
+    rpc UpdateArticleCover(UpdateArticleCoverRequest) returns (UpdateArticleCoverResponse);
     // 查询文章列表
     rpc GetArticleList(GetArticleListRequest) returns (GetArticleListResponse);
     // 搜索文章

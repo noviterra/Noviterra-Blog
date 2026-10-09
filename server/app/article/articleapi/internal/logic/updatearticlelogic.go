@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/metadata"
 )
 
 type UpdateArticleLogic struct {
@@ -62,13 +63,17 @@ func (l *UpdateArticleLogic) UpdateArticle(req *types.UpdateArticleRequest) (res
 		return resp, nil
 	}
 
+	// 信息注入到metadata中
+	ctx := metadata.AppendToOutgoingContext(l.ctx,
+		"service-token", l.svcCtx.Config.Interceptor.ServiceToken,
+		"user-id", publisherID,
+	)
+
 	// 调用rpc服务方法 执行核心业务
-	rep, err := l.svcCtx.ArticleModel.UpdateArticle(l.ctx, &articlerpc.UpdateArticleRequest{
-		PublisherID: publisherID,
+	rep, err := l.svcCtx.ArticleModel.UpdateArticle(ctx, &articlerpc.UpdateArticleRequest{
 		ArticleID:   req.ArticleID,
 		Title:       req.Title,
 		Content:     req.Content,
-		Cover:       req.Cover,
 		Tags:        req.Tags,
 		Information: req.Information,
 	})

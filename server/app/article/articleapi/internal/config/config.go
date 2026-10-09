@@ -10,12 +10,16 @@ import (
 
 type Config struct {
 	rest.RestConf
-
 	JWT struct {
 		AccessSecret  string
 		AccessExpire  int64
 		RefreshSecret string
 		RefreshExpire int64
+	}
+
+	Interceptor struct {
+		ServiceToken string
+		SkipToken    string
 	}
 
 	Repo struct {
@@ -25,6 +29,5 @@ type Config struct {
 		Port     int
 		DBName   string
 	}
-
-	zrpc.RpcClientConf
+	ArticleRpc zrpc.RpcClientConf
 }

@@ -3631,7 +3631,7 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 ```go
 log.Debug("cache miss", logx.Key(key))                                     // dev 调试
 log.Info("article published", logx.ArticleId(id), logx.Uid(uid))            // 业务里程碑
-log.Warn("third party degraded", logx.Provider("baidu"), logx.Err(err))     // 降级
+log.Warn("interceptor party degraded", logx.Provider("baidu"), logx.Err(err))     // 降级
 log.Error("create article failed", logx.Err(err), logx.Uid(uid))            // 需处理
 ```
 

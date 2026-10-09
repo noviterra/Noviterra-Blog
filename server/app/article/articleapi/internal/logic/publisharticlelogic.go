@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/metadata"
 )
 
 type PublishArticleLogic struct {
@@ -34,6 +35,7 @@ func (l *PublishArticleLogic) PublishArticle(req *types.PublishArticleRequest) (
 	// todo: add your logic here and delete this line
 	resp = new(types.Response)
 
+	// 参数格式校验
 	if err := Validate.Struct(*req); err != nil {
 		var errs validator.ValidationErrors
 		if errors.As(err, &errs) && len(errs) > 0 {
@@ -62,9 +64,14 @@ func (l *PublishArticleLogic) PublishArticle(req *types.PublishArticleRequest) (
 		return resp, nil
 	}
 
+	// 将用户信息注入metadata
+	ctx := metadata.AppendToOutgoingContext(l.ctx,
+		"service-token", l.svcCtx.Config.Interceptor.ServiceToken,
+		"user-id", publisherID,
+	)
+
 	// 调用rpc服务方法 执行核心业务
-	rep, err := l.svcCtx.ArticleModel.PublishArticle(l.ctx, &articlerpc.PublishArticleRequest{
-		PublisherID: publisherID,
+	rep, err := l.svcCtx.ArticleModel.PublishArticle(ctx, &articlerpc.PublishArticleRequest{
 		Tags:        req.Tags,
 		Title:       req.Title,
 		Content:     req.Content,

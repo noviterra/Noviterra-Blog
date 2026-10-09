@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/metadata"
 )
 
 type GetArticleDetailLogic struct {
@@ -44,7 +45,13 @@ func (l *GetArticleDetailLogic) GetArticleDetail(req *types.GetArticleDetailRequ
 		return resp, nil
 	}
 
-	rep, err := l.svcCtx.ArticleModel.GetArticleDetail(l.ctx, &articlerpc.GetArticleDetailRequest{
+	// 对于api层不需要鉴权的接口 也要将rpc服务凭证传入到metadata中
+	ctx := metadata.AppendToOutgoingContext(l.ctx,
+		"service-token", l.svcCtx.Config.Interceptor.ServiceToken,
+		"skip-token", l.svcCtx.Config.Interceptor.SkipToken,
+	)
+
+	rep, err := l.svcCtx.ArticleModel.GetArticleDetail(ctx, &articlerpc.GetArticleDetailRequest{
 		ArticleID: req.ArticleID,
 	})
 	if err != nil {
@@ -70,7 +77,6 @@ func (l *GetArticleDetailLogic) GetArticleDetail(req *types.GetArticleDetailRequ
 	resp.Article.CreatedAt = l.svcCtx.CommonUtils.ToStringTime(rep.A.CreatedAt)
 	resp.Article.UpdatedAt = l.svcCtx.CommonUtils.ToStringTime(rep.A.UpdatedAt)
 	resp.Article.ArticleID = rep.A.ID
-	resp.Article.PublisherID = rep.A.PublisherID
 
 	resp.Resp.Code = 0
 	resp.Resp.Message = rep.Resp.Message
