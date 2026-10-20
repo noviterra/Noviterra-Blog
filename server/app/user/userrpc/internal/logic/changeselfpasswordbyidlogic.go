@@ -6,84 +6,102 @@ import (
 	"Noviterra/server/app/model"
 	"Noviterra/server/app/user/userrpc/internal/svc"
 	"Noviterra/server/app/user/userrpc/types/userrpc"
-
-	"github.com/zeromicro/go-zero/core/logx"
 )
 
+type changPwdByIDUserRepository interface {
+	GetUserPassword(id string) (string, error)
+}
+
+type changePwdByIDIdentityRepository interface {
+	UpdateUsersAccount(userAccount model.UserAccount) error
+}
+
+type changePwdByIDCrypt interface {
+	CheckPasswords(password, hashPassword string) (bool, error)
+	HashPassword(password string) (string, error)
+}
+
+type changePwdByIDCommonUtils interface {
+	CheckPasswordFormat(password string) bool
+}
 type ChangeSelfPasswordByIDLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
-	logx.Logger
+	ctx                context.Context
+	userRepository     changPwdByIDUserRepository
+	identityRepository changePwdByIDIdentityRepository
+	crypt              changePwdByIDCrypt
+	commonUtils        changePwdByIDCommonUtils
 }
 
 func NewChangeSelfPasswordByIDLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ChangeSelfPasswordByIDLogic {
 	return &ChangeSelfPasswordByIDLogic{
-		ctx:    ctx,
-		svcCtx: svcCtx,
-		Logger: logx.WithContext(ctx),
+		ctx:                ctx,
+		identityRepository: svcCtx.IdentityRepository,
+		userRepository:     svcCtx.UserRepository,
+		crypt:              svcCtx.Crypt,
+		commonUtils:        svcCtx.CommonUtils,
 	}
 }
 
-func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangePasswordRequest) (*userrpc.ChangePasswordResponse, error) {
+func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangePasswordRequest) (*userrpc.Response, error) {
 	// todo: add your logic here and delete this line
 	// 根据用户ID返回Password 为空则表示账号不存在
-	hashPwd, err := l.svcCtx.DB.GetUserPassword(in.ID)
+	hashPwd, err := l.userRepository.GetUserPassword(in.ID)
 	if err != nil {
-		return &userrpc.ChangePasswordResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "",
 		}, err
 	}
 	if hashPwd == "" {
-		return &userrpc.ChangePasswordResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "用户ID不存在！",
 		}, nil
 	}
 
-	samePwd, err := l.svcCtx.Crypt.CheckPasswords(in.OldPassword, hashPwd)
+	samePwd, err := l.crypt.CheckPasswords(in.OldPassword, hashPwd)
 	if err != nil {
-		return &userrpc.ChangePasswordResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "",
 		}, err
 	}
 	if !samePwd {
-		return &userrpc.ChangePasswordResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "原始密码输入错误！",
 		}, nil
 	}
 
-	passwordAvailable := l.svcCtx.CommonUtils.CheckPasswordFormat(in.NewPassword)
+	passwordAvailable := l.commonUtils.CheckPasswordFormat(in.NewPassword)
 	if !passwordAvailable {
-		return &userrpc.ChangePasswordResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "密码格式错误，请检查后重试！",
 		}, nil
 	}
 
 	// 密码加密
-	hashPwd1, err := l.svcCtx.Crypt.HashPassword(in.NewPassword)
+	hashPwd1, err := l.crypt.HashPassword(in.NewPassword)
 	if err != nil {
-		return &userrpc.ChangePasswordResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "",
 		}, err
 	}
 
-	err = l.svcCtx.DB.UpdateUsersAccount(model.UserAccount{
+	err = l.identityRepository.UpdateUsersAccount(model.UserAccount{
 		ID:       in.ID,
 		Password: hashPwd1,
 	})
 	if err != nil {
-		return &userrpc.ChangePasswordResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "",
 		}, err
 	}
 
-	return &userrpc.ChangePasswordResponse{
+	return &userrpc.Response{
 		Code:    0,
 		Message: "密码修改成功！",
 	}, nil

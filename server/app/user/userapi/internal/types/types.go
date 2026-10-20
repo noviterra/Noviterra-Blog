@@ -28,57 +28,10 @@ type ChangePasswordByIDRequest struct {
 	NewPassword string `json:"new_password" validate:"required,min=6,max=20"`
 }
 
-type ForgetPasswordRequest struct {
-	ID               string `json:"id" validate:"required,min=6,max=10"`
-	Email            string `json:"email" validate:"required,email"`
-	VerificationCode string `json:"verification_code" validate:"required,len=6"`
-	NewPassword      string `json:"new_password" validate:"required,min=6,max=20"`
-	VerifPassowrd    string `json:"verif_password" validate:"required,min=6,max=20"`
-}
-
-type LoginByEmailRequest struct {
-	Email            string `json:"email" validate:"required,email"`
-	VerificationCode string `json:"verification_code" validate:"required,len=6"`
-}
-
-type LoginByIDRequest struct {
-	ID       string `json:"id" validate:"required,min=6,max=10"`
-	Password string `json:"password" validate:"required,min=6,max=20"`
-}
-
-type LoginResponse struct {
-	RefreshToken string `json:"refreshToken"`
-	AccessToken  string `json:"accessToken"`
-	Resp         Response
-}
-
-type RefreshAccessTokenRequest struct {
-	RefreshToken string `json:"refreshToken" validate:"required"`
-}
-
-type RefreshAccessTokenResponse struct {
-	RefreshToken string   `json:"refreshToken"`
-	AccessToken  string   `json:"accessToken"`
-	Resp         Response `json:"response"`
-}
-
-type RegisterRequest struct {
-	ID               string `json:"id" validate:"required,min=6,max=10"`
-	Password         string `json:"password" validate:"required,min=6,max=20"`
-	Email            string `json:"email" validate:"required,email"`
-	VerificationCode string `json:"verification_code" validate:"required,len=6"`
-	VerifPassword    string `json:"verif_password" validate:"required,min=6,max=20"`
-}
-
 type Response struct {
 	Status  int    `json:"status"`
-	Code    int    `json:"code"`
+	Code    int    `json:"errcode"`
 	Message string `json:"message"`
-}
-
-type SendEmailVerificationCodeRequest struct {
-	Email string `json:"email" validate:"required,email"`
-	Type  string `json:"type" validate:"required,oneof=register login change_password forget_password"`
 }
 
 type UnblacklistUserRequest struct {

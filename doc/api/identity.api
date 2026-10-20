@@ -1,0 +1,87 @@
+syntax = "v1"
+
+info (
+	title:  "Noviterra用户认证服务"
+	desc:   "管理Noviterra博客的全部认证服务，如注册、登录、忘记密码、邮箱操作、Token刷新等等"
+	author: "Noviterra"
+)
+
+type (
+	// 统一响应体
+	Response {
+		Status  int    `json:"status"`
+		Code    int    `json:"errcode"`
+		Message string `json:"message"`
+	}
+	// 注册账号请求
+	RegisterRequest {
+		ID               string `json:"id" validate:"required,min=6,max=10"`
+		Password         string `json:"password" validate:"required,min=6,max=20"`
+		Email            string `json:"email" validate:"required,email"`
+		VerificationCode string `json:"verification_code" validate:"required,len=6"`
+		VerifPassword    string `json:"verif_password" validate:"required,min=6,max=20"`
+	}
+	// 对于?type=ID即账号密码登录
+	LoginByIDRequest {
+		ID       string `json:"id" validate:"required,min=6,max=10"`
+		Password string `json:"password" validate:"required,min=6,max=20"`
+	}
+	// 对于?type=Email即邮箱登录
+	LoginByEmailRequest {
+		Email            string `json:"email" validate:"required,email"`
+		VerificationCode string `json:"verification_code" validate:"required,len=6"`
+	}
+	// 登录成功返回Token
+	LoginResponse {
+		RefreshToken string   `json:"refreshToken"`
+		AccessToken  string   `json:"accessToken"`
+		Resp         Response `json:"resp"`
+	}
+	// 忘记密码
+	ForgetPasswordRequest {
+		ID               string `json:"id" validate:"required,min=6,max=10"`
+		Email            string `json:"email" validate:"required,email"`
+		VerificationCode string `json:"verification_code" validate:"required,len=6"`
+		NewPassword      string `json:"new_password" validate:"required,min=6,max=20"`
+		VerifPassowrd    string `json:"verif_password" validate:"required,min=6,max=20"`
+	}
+	// 邮箱验证
+	SendEmailVerificationCodeRequest {
+		Email string `json:"email" validate:"required,email"`
+		Type  string `json:"type" validate:"required,oneof=register login change_password forget_password"`
+	}
+	// Token刷新
+	RefreshAccessTokenRequest {
+		RefreshToken string `json:"refreshToken" validate:"required"`
+	}
+	RefreshAccessTokenResponse {
+		RefreshToken string   `json:"refreshToken"`
+		AccessToken  string   `json:"accessToken"`
+		Resp         Response `json:"response"`
+	}
+)
+
+@server (
+	prefix: novblog/identity
+)
+service identityService {
+	@handler register
+	post /register (RegisterRequest) returns (Response)
+
+	@handler loginByID
+	post /login/id (LoginByIDRequest) returns (LoginResponse)
+
+	@handler loginByEmail
+	post /login/email (LoginByEmailRequest) returns (LoginResponse)
+
+	@handler sendEmailVerificationCode
+	post /server/verificationcode (SendEmailVerificationCodeRequest) returns (Response)
+
+	@handler forgetPassword
+	post /forgetpassword (ForgetPasswordRequest) returns (Response)
+
+	@handler refreshAccessToken
+	post /server/refreshaccesstoken (RefreshAccessTokenRequest) returns (RefreshAccessTokenResponse)
+}
+
+// goctl api go -api ./doc/api/identity.api -dir ./server/app/identity/identityapi

@@ -3,6 +3,7 @@ package interceptor
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -45,6 +46,8 @@ func (i *Interceptor) ServiceTokenInterceptor(secretToken, skipToken string) grp
 			if len(id) <= 0 {
 				return nil, errors.New("无效的user-id！")
 			}
+			fmt.Println(id)
+			ctx = i.CtxData.StoreUserID(ctx, id)
 			return handler(ctx, req)
 		}
 		// 存在正确的跳过令牌 直接返回ctx 不写入ID

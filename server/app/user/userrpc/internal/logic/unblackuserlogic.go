@@ -6,48 +6,50 @@ import (
 	"Noviterra/server/app/model"
 	"Noviterra/server/app/user/userrpc/internal/svc"
 	"Noviterra/server/app/user/userrpc/types/userrpc"
-
-	"github.com/zeromicro/go-zero/core/logx"
 )
 
+type unBlackUserIdentityRepository interface {
+	CheckIDExists(id string) (bool, error)
+	UpdateUsersAccount(userAccount model.UserAccount) error
+	GetUserRole(id string) (int, error)
+}
+
 type UnBlackUserLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
-	logx.Logger
+	ctx                context.Context
+	identityRepository unBlackUserIdentityRepository
 }
 
 func NewUnBlackUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UnBlackUserLogic {
 	return &UnBlackUserLogic{
-		ctx:    ctx,
-		svcCtx: svcCtx,
-		Logger: logx.WithContext(ctx),
+		ctx:                ctx,
+		identityRepository: svcCtx.IdentityRepository,
 	}
 }
 
-func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc.UnBlackUserResponse, error) {
-	operatorRole, err := l.svcCtx.DB.GetUserRole(in.Operator)
+func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc.Response, error) {
+	operatorRole, err := l.identityRepository.GetUserRole(in.Operator)
 	if err != nil {
-		return &userrpc.UnBlackUserResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "",
 		}, err
 	}
 	if operatorRole != 1 {
-		return &userrpc.UnBlackUserResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "操作者权限不足！",
 		}, nil
 	}
 
-	idExist, err := l.svcCtx.DB.CheckIDExists(in.ID)
+	idExist, err := l.identityRepository.CheckIDExists(in.ID)
 	if err != nil {
-		return &userrpc.UnBlackUserResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "",
 		}, err
 	}
 	if !idExist {
-		return &userrpc.UnBlackUserResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "要解封的用户ID不存在！",
 		}, nil
@@ -55,18 +57,18 @@ func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc
 
 	// 修改数据库字段
 	// todo： q1 解封字段无法更新
-	err = l.svcCtx.DB.UpdateUsersAccount(model.UserAccount{
+	err = l.identityRepository.UpdateUsersAccount(model.UserAccount{
 		ID:     in.ID,
 		Status: 0,
 	})
 	if err != nil {
-		return &userrpc.UnBlackUserResponse{
+		return &userrpc.Response{
 			Code:    1,
 			Message: "",
 		}, err
 	}
 
-	return &userrpc.UnBlackUserResponse{
+	return &userrpc.Response{
 		Code:    0,
 		Message: "用户账号解封完成！",
 	}, nil

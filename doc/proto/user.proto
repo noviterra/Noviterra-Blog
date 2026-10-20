@@ -2,71 +2,30 @@ syntax = "proto3";
 package userrpc;
 option go_package = "/userrpc";
 
-// =============================================================================登录系统=================================================
-// 用户注册
-message RegisterRequest {
-    string ID  = 1;
-    string Email = 2;
-    string VerificationCode = 3;
-    string Password = 4;
-    string VerifPassword = 5;
-    
-}
-message RegisterResponse {
+// 基本响应体
+message Response {
     string Message = 1;
     int64 Code = 2;
 }
 
-// 用户登录
-message LoginByIDRequest {
+message UserInfo {
     string ID = 1;
-    string Password = 2;
-}
-message LoginByIDResponse {
-    string Message = 1;
-    int64 Code = 2;
-}
-
-message LoginByEmailRequest {
-    string Email = 1;
-    string VerificationCode = 2;
-}
-message LoginByEmailResponse {
-    string Message = 1;
-    string ID = 2;
-    int64 Code = 3;
+    int64 Role = 2;
+    string UserName = 3;
+    string Email = 4;
+    string Avatar = 5;
+    int64  Age = 6;
+    int64  Gender = 7;
+    string SelfIntroduction = 8;
+    int64 CreateAt = 9;
+    int64 UpdatedAt = 10;
 }
 
-message GenerateTokenRequest {
-    string ID = 1;
-}
-message GenerateTokenResponse {
-    string AccessToken = 1;
-    string RefreshToken = 2;
-    string Message = 3;
-    int64 Code = 4;   
-}
-
-message RefreshAccessTokenARequest {
-    string RefreshToken = 1;
-}
-message RefreshAccessTokenResponse {
-    string AccessToken = 1;
-    string RefreshToken = 2;
-    string Message = 3;
-    int64 Code = 4;
-}
-
-// ===========================================================================用户信息个人操作===============================================================
 // 通过账号修改密码
 message ChangePasswordRequest {
     string ID = 1;
     string OldPassword = 2;
     string NewPassword = 3;
-}
-message ChangePasswordResponse {
-    string Message = 1;
-    int64 Code = 2;
 }
 
 // 通过邮箱修改密码
@@ -76,44 +35,14 @@ message ChangePasswordByEmailRequest {
     string VerificationCode = 3;
     string NewPassword = 4;
 }
-message ChangePasswordByEmailResponse {
-    string Message = 1;
-    int64 Code = 2;
-}
-
-// 忘记密码
-message ForgetPasswordRequest {
-    string ID = 1;
-    string Email = 2;
-    string VerificationCode = 3;
-    string NewPassword = 4;
-    string VerifPassword = 5;
-}
-message ForgetPasswordResponse {
-    string Message = 1;
-    int64 Code = 2  ;
-}
 
 // 获取个人信息
 message GetUserInfoRequest {
     string ID = 1;
 }
 message UserInfoResponse {
-    message Data {
-        string ID = 1;
-        int64 Role = 2;
-        string UserName = 3;
-        string Email = 4;
-        string Avatar = 5;
-        int64  Age = 6;
-        int64  Gender = 7;
-        string SelfIntroduction = 8;
-        int64 CreateAt = 9;
-        int64 UpdatedAt = 10;
-    }
-    string Message = 1;
-    int64 Code = 2;
-    Data data = 3;
+    Response Resp = 1;
+    UserInfo data = 2;
 }
 
 // 修改个人信息
@@ -126,31 +55,15 @@ message UpdateUserInfoRequest {
     int64  Gender = 5;
     string SelfIntroduction = 6;
 }
-message UpdateUserInfoResponse {
-    string Message = 1;
-    int64 Code = 2;
-}
 
-// =========================================================================邮箱辅助功能======================================================================
-message SendVerificationCodeRequest {
-    string Email = 1;
-    string Type = 2;
-}
-message SendVerificationCodeResponse {
-    string Message = 1;
-    int64 Code = 2;
-}
-
-// ===============================================================================管理员对于用户操作====================================================================
 // 批量获取用户信息
 message GetMoreUsersInfoRequest {
     int64 size = 1;
     int64 page = 2;
 }
 message GetMoreUsersInfoResponse {
-    repeated UserInfoResponse UsersInfo = 1;  // 里面又嵌入了Code与Message 在内部先暂时废弃 后续优化
-    string Message = 2;
-    int64 Code = 3;
+    repeated UserInfo UsersInfo = 1;
+    Response Resp = 2;
 }
 
 // 封禁用户
@@ -158,50 +71,27 @@ message BlackUserRequest {
     string ID = 1;
     string Operator = 2;
 }
-message BlackUserResponse {
-    string Message = 1;
-    int64 Code = 2;
-}
 
 // 解封用户
 message UnBlackUserRequest {
     string ID = 1;
     string Operator = 2;
 }
-message UnBlackUserResponse {
-    string Message = 1;
-    int64 Code = 2;
-}
 
 // 服务接口
 service UserService {
-    // 注册账号
-    rpc Register(RegisterRequest) returns(RegisterResponse);
-    // 通过账号登录
-    rpc LoginByID(LoginByIDRequest) returns(LoginByIDResponse);
-    // 通过邮箱验证登录
-    rpc LoginByEmail(LoginByEmailRequest) returns(LoginByEmailResponse);
-    // 忘记密码请求
-    rpc ForgetPassword(ForgetPasswordRequest) returns(ForgetPasswordResponse);
-    // 生成用户Token
-    rpc GenerateToken(GenerateTokenRequest) returns(GenerateTokenResponse);
-    // 刷新用户AccessToken
-    rpc RefreshAccessToken(RefreshAccessTokenARequest) returns(RefreshAccessTokenResponse);
-    // 邮箱辅助功能 发送验证码 调用频率频繁 todo：统计某用户or某ip调用次数
-    rpc SendVerificationCode(SendVerificationCodeRequest) returns(SendVerificationCodeResponse);
-
     // 获取个人信息
     rpc GetSelfInfo(GetUserInfoRequest) returns(UserInfoResponse);
     // 更新个人信息
-    rpc UpdateSelfInfo(UpdateUserInfoRequest) returns(UpdateUserInfoResponse);
+    rpc UpdateSelfInfo(UpdateUserInfoRequest) returns(Response);
     // 通过账号密码认证进行密码修改
-    rpc ChangeSelfPasswordByID(ChangePasswordRequest) returns(ChangePasswordResponse);
+    rpc ChangeSelfPasswordByID(ChangePasswordRequest) returns(Response);
     // 通过邮箱验证修改密码
-    rpc ChangeSelfPasswordByEmail(ChangePasswordByEmailRequest) returns(ChangePasswordByEmailResponse);
+    rpc ChangeSelfPasswordByEmail(ChangePasswordByEmailRequest) returns(Response);
     // 管理员对用户操作 拉黑用户
-    rpc BlackUser(BlackUserRequest) returns(BlackUserResponse);
+    rpc BlackUser(BlackUserRequest) returns(Response);
     // 解封用户 
-    rpc UnBlackUser(UnBlackUserRequest) returns(UnBlackUserResponse);
+    rpc UnBlackUser(UnBlackUserRequest) returns(Response);
     // 管理员批量获取用户信息
     rpc GetMoreUsersInfo(GetMoreUsersInfoRequest) returns(GetMoreUsersInfoResponse);
 }

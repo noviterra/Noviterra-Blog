@@ -6,6 +6,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"mime/multipart"
 	"net/http"
 
 	"Noviterra/server/app/article/articleapi/internal/svc"
@@ -17,10 +18,15 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+type publishArticleCommonUtils interface {
+	SaveImageFile(header *multipart.FileHeader, file multipart.File, fileDie string, fileName string) (string, error)
+}
 type PublishArticleLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
+
+	commonUtils publishArticleCommonUtils
 }
 
 func NewPublishArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PublishArticleLogic {
@@ -28,10 +34,13 @@ func NewPublishArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Pu
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
+
+		commonUtils: svcCtx.CommonUtils,
 	}
 }
 
-func (l *PublishArticleLogic) PublishArticle(req *types.PublishArticleRequest) (resp *types.Response, err error) {
+func (l *PublishArticleLogic) PublishArticle(req *types.PublishArticleRequest,
+	header *multipart.FileHeader, file multipart.File) (resp *types.Response, err error) {
 	// todo: add your logic here and delete this line
 	resp = new(types.Response)
 
@@ -75,7 +84,6 @@ func (l *PublishArticleLogic) PublishArticle(req *types.PublishArticleRequest) (
 		Tags:        req.Tags,
 		Title:       req.Title,
 		Content:     req.Content,
-		Cover:       req.Cover,
 		Information: req.Information,
 	})
 	if err != nil {
@@ -84,15 +92,47 @@ func (l *PublishArticleLogic) PublishArticle(req *types.PublishArticleRequest) (
 		resp.Message = "ERROR:" + err.Error()
 		return resp, nil
 	}
-	if rep.Code != 0 {
+	if rep.Resp.Code != 0 {
 		resp.Status = http.StatusBadRequest
 		resp.Code = 1
-		resp.Message = rep.Message
+		resp.Message = rep.Resp.Message
+		return resp, nil
+	}
+
+	// 文件校验 图片保存的名称格式为  cover*time*.* 保证进入数据库更新操作时rowAffected不为0
+	cover, err := l.commonUtils.SaveImageFile(header, file, "articlecover", rep.ArticleID)
+	if err != nil {
+		resp.Status = http.StatusBadRequest
+		resp.Code = 1
+		resp.Message = "ERROR:" + err.Error()
+		return resp, nil
+	}
+	if cover == "" {
+		resp.Status = http.StatusBadRequest
+		resp.Code = 1
+		resp.Message = "封面为空！"
+		return resp, nil
+	}
+	// 更新cover字段  使用注入了metadata数据的ctx
+	rep2, err := l.svcCtx.ArticleModel.UpdateArticleCover(ctx, &articlerpc.UpdateArticleCoverRequest{
+		NewCover:  cover,
+		ArticleID: rep.ArticleID,
+	})
+	if err != nil {
+		resp.Status = http.StatusBadRequest
+		resp.Code = 1
+		resp.Message = "ERROR:" + err.Error()
+		return resp, nil
+	}
+	if rep2.Resp.Code != 0 {
+		resp.Status = http.StatusBadRequest
+		resp.Code = 1
+		resp.Message = rep2.Resp.Message
 		return resp, nil
 	}
 
 	resp.Code = 0
-	resp.Message = rep.Message
+	resp.Message = "文章发布成功！"
 	resp.Status = http.StatusOK
 
 	return resp, nil

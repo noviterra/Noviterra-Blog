@@ -1,0 +1,123 @@
+syntax = "v1"
+
+info(
+    title: "Noviterra互动服务"
+    desc: "管理Noviterra博客的全部互动服务，包括但不限于用户点赞、收藏文章、评论回复、获取他人或个人点赞列表等"
+    author: "Noviterra"
+)
+
+type (
+    // api层统一响应体 请求状态承载体 需要特殊响应（需要包含数据）的将其嵌入到结构体中
+    Response {
+        Status  int    `json:"status"`
+        Code    int    `json:"errcode"`
+        Message string `json:"message"`
+    }
+
+    // 文章列表中单个实例属性
+    ArticleList {
+        ArticleID   string   `json:"article_id" validate:"required,min=1,max=100"`
+        Title       string   `json:"title" validate:"required,min=1,max=100"`
+        Cover       string   `json:"cover" validate:"required,min=1,max=20"`
+        Tags        []string `json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
+        Information string   `json:"information" validate:"required,min=1,max=200"`
+        CreatedAt   string   `json:"created_at" validate:"required,timeformat=2006-01-02 15:04:05"`
+    }
+
+    // 对一篇文章进行点赞或取消点赞请求
+    LikeArticleRequest {
+        ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
+        Action string `json:"action" validate:"required,oneof=0,1"` // 0为点赞 1为取消点赞
+    }
+
+    // 对文章进行收藏或取消收藏操作
+    CollectArticleRequest {
+        ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
+        Action string `json:"action" validate:"required,oneof=0,1"` // 0为收藏 1为取消收藏
+    }
+
+    // 获得一个用户发布的文章列表
+    GetUsersArticleListRequest {
+        UserID string `json:"user_id" validate:"required,min=1,max=100"`
+    }
+    GetUsersArticleListResponse {
+        ArticleList []ArticleList `json:"articles_list"`
+        Resp Response `json:"response"`
+    }
+
+    // 对一篇博客进行评论 保存为一个会话 从而保存一系列的回复 整体实现类似树的结构
+    CommentArticleRequest {
+        // 唯一标识
+        CommentID string `json:"comment_id" validate:"required,min=1,max=100"`
+        ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
+        // 顶层评论与评论者
+        Root string `json:"root" validate:"required,min=1,max=200"`
+        InitiatorID string `json:"initiator_id" validate:"required,min=1,m  ax=100"`
+        // 被回复的评论与被回复者
+        Original string `json:"original" validate:"required,min=1,max=200"`
+        RecipientID string `json:"recipient_id" validate:"required,min=1,max=100"`
+        // 评论的内容与评论者
+        SpeakerID string `json:"speaker_id" validate:"required,min=1,max=100"`
+        Content string `json:"comment" validate:"required,min=1,max=200"`
+    }
+
+    // 对网页评论
+    CommentNoviterraRequest {
+        CommentID string `json:"comment_id" validate:"required,min=1,max=100"`
+        Root string `json:"root" validate:"required,min=1,max=200"`
+        InitiatorID string `json:"initiator_id" validate:"required,min=1,m  ax=100"`
+        Original string `json:"original" validate:"required,min=1,max=200"`
+        RecipientID string `json:"recipient_id" validate:"required,min=1,max=100"`
+        SpeakerID string `json:"speaker_id" validate:"required,min=1,max=100"`
+        Content string `json:"comment" validate:"required,min=1,max=200"`
+    }
+
+    // 获得用户的点赞文章列表 查看个人或者他人
+    GetUserLikesListRequest {
+        UserID string `json:"user_id" validate:"required,min=1,max=100"`
+    }
+    GetUserLikesListResponse {
+        ArticleList []ArticleList `json:"articles_list"`
+        Resp Response `json:"response"`
+    }
+
+    // 获得用户的收藏点赞列表
+    GetUserCollectListRequest {
+        UserID string `json:"user_id" validate:"required,min=1,max=100"`
+    }
+    GetUserCollectListResponse {
+        ArticleList []ArticleList `json:"articles_list"`
+        Resp Response `json:"response"`
+    }
+)
+
+@server (
+    prefix: novblog/comment
+)
+service CommentService {
+    // @doc "查看用户发布文章列表"
+    @handler GetUsersArticleList
+    get /list/publish (GetUsersArticleListRequest) returns (GetUsersArticleListResponse)
+
+    // @doc "查看用户点赞文章列表"
+    @handler GetUserLikesArticleList
+    get /list/like (GetUserLikesListRequest) returns (GetUserLikesListResponse)
+
+    // @doc "查看用户收藏文章列表"
+    @handler GetUserCollectArticleList
+    get /list/collect (GetUserCollectListRequest) returns (GetUserCollectListResponse)
+
+    // @doc "对一篇文章进行评论"
+    @handler CommentArticle
+    post /comment (CommentArticleRequest) returns (Response)
+
+    // @doc "对文章点赞操作"
+    @handler LikeArticle
+    post /like (LikeArticleRequest) returns (Response)
+
+    // @doc "对文章收藏操作"
+    @handler CollectArticle
+    post /collect (CollectArticleRequest) returns (Response)
+}
+
+// goctl api go -api ./doc/api/comment.api -dir ./server/app/comment/commentapi

@@ -8,8 +8,8 @@ import (
 	"Noviterra/server/app/article/articlerpc/articleservice"
 	"Noviterra/server/app/internal/middleware"
 	"Noviterra/server/utils/common"
-	gormrepo "Noviterra/server/utils/gormRepo"
-	jwtauth "Noviterra/server/utils/jwtAuth"
+	"Noviterra/server/utils/jwtauth"
+	"Noviterra/server/utils/repo"
 
 	"github.com/zeromicro/go-zero/zrpc"
 )
@@ -38,16 +38,16 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	commonUtils := common.NewCommonUtils()
 
 	// 用户仓库实例 用于鉴权中获取用户的信息
-	userRepo := gormrepo.NewRepository(gormrepo.RepoConfig{
+	identityRepo := repo.NewIdentityRespository(repo.RepoConfig{
 		UserName: c.Repo.UserName,
 		Password: c.Repo.Password,
 		Host:     c.Repo.Host,
 		Port:     c.Repo.Port,
 		DBName:   c.Repo.DBName,
-	})
+	}, "user")
 
 	// 集成中间件
-	m := middleware.NewMiddleware(authentication, userRepo)
+	m := middleware.NewMiddleware(authentication, identityRepo)
 
 	return &ServiceContext{
 		Config:       c,

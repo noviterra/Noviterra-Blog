@@ -17,4 +17,9 @@ type Config struct {
 		Port     int
 		DBName   string
 	}
+	Cache struct {
+		Addr     string
+		Password string
+		DB       int
+	}
 }

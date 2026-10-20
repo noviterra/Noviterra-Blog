@@ -9,7 +9,6 @@ import (
 	"Noviterra/server/app/user/userrpc/internal/svc"
 	"Noviterra/server/app/user/userrpc/types/userrpc"
 
-	"github.com/joho/godotenv"
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
@@ -18,21 +17,16 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var configFile = flag.String("f", "etc/userrpc.yaml", "the config file")
+var configFile = flag.String("f", "server/app/user/userrpc/etc/userrpc.yaml", "the config file")
 
 func main() {
-	err := godotenv.Load("D:\\GoProject\\IT\\Noviterra\\.env")
-	if err != nil {
-		panic(err)
-	}
-
 	flag.Parse()
 
 	// 关闭go-zero日志
 	logx.Disable()
 
 	var c config.Config
-	conf.MustLoad(*configFile, &c, conf.UseEnv())
+	conf.MustLoad(*configFile, &c)
 	ctx := svc.NewServiceContext(c)
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {

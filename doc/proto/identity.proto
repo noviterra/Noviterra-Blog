@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package identityrpc;
+
+option go_package = "/identityrpc";
+
+// 统一响应封装 封装请求执行状态code和message 需要附带数据将其嵌入结构体中
+message Response {
+  string Message = 1;
+  int64 Code = 2;
+}
+
+// 用户注册
+message RegisterRequest {
+  string ID  = 1;
+  string Email = 2;
+  string VerificationCode = 3;
+  string Password = 4;
+  string VerifPassword = 5;
+}
+
+// 用户登录 账号密码登录
+message LoginByIDRequest {
+  string ID = 1;
+  string Password = 2;
+}
+
+// 邮箱登录
+message LoginByEmailRequest {
+  string Email = 1;
+  string VerificationCode = 2;
+}
+// 邮箱登录响应 成功后返回邮箱绑定的账号ID
+message LoginByEmailResponse {
+  string ID = 1;
+  Response Resp = 2;
+}
+
+// Token生成
+message GenerateTokenRequest {
+  string ID = 1;
+}
+message GenerateTokenResponse {
+  string AccessToken = 1;
+  string RefreshToken = 2;
+  string Message = 3;
+  int64 Code = 4;
+}
+
+// Token刷新
+message RefreshAccessTokenARequest {
+  string RefreshToken = 1;
+}
+message RefreshAccessTokenResponse {
+  string AccessToken = 1;
+  string RefreshToken = 2;
+  string Message = 3;
+  int64 Code = 4;
+}
+
+// 忘记密码
+message ForgetPasswordRequest {
+  string ID = 1;
+  string Email = 2;
+  string VerificationCode = 3;
+  string NewPassword = 4;
+  string VerifPassword = 5;
+}
+
+// 邮箱辅助
+message SendVerificationCodeRequest {
+  string Email = 1;
+  string Type = 2;
+}
+
+service IdentityService {
+  // 注册账号
+  rpc Register(RegisterRequest) returns(Response);
+  // 通过账号登录
+  rpc LoginByID(LoginByIDRequest) returns(Response);
+  // 通过邮箱验证登录
+  rpc LoginByEmail(LoginByEmailRequest) returns(LoginByEmailResponse);
+  // 忘记密码请求
+  rpc ForgetPassword(ForgetPasswordRequest) returns(Response);
+  // 生成用户Token
+  rpc GenerateToken(GenerateTokenRequest) returns(GenerateTokenResponse);
+  // 刷新用户AccessToken
+  rpc RefreshAccessToken(RefreshAccessTokenARequest) returns(RefreshAccessTokenResponse);
+  // 邮箱辅助功能 发送验证码 调用频率频繁
+  rpc SendVerificationCode(SendVerificationCodeRequest) returns(Response);
+}
+
+// goctl rpc protoc ./doc/proto/identity.proto --go_out=./server/app/identity/identityrpc/types --go-grpc_out=./server/app/identity/identityrpc/types --zrpc_out=./server/app/identity/identityrpc

@@ -7,9 +7,9 @@ import (
 	"Noviterra/server/app/internal/middleware"
 	"Noviterra/server/app/user/userapi/internal/config"
 	"Noviterra/server/app/user/userrpc/userservice"
-	gormrepo "Noviterra/server/utils/gormRepo"
-	jwtauth "Noviterra/server/utils/jwtAuth"
-	zaplogger "Noviterra/server/utils/zapLogger"
+	"Noviterra/server/utils/jwtauth"
+	"Noviterra/server/utils/repo"
+	"Noviterra/server/utils/zaplogger"
 
 	"github.com/zeromicro/go-zero/zrpc"
 )
@@ -37,16 +37,16 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	authentication := jwtauth.NewAuthentication(authenticationConfig)
 
 	// 获取仓库操作实例 用于注入中间件
-	userRepo := gormrepo.NewRepository(gormrepo.RepoConfig{
+	identityRepo := repo.NewIdentityRespository(repo.RepoConfig{
 		UserName: c.Repo.UserName,
 		Password: c.Repo.Password,
 		Host:     c.Repo.Host,
 		Port:     c.Repo.Port,
 		DBName:   c.Repo.DBName,
-	})
+	}, "identity")
 
 	// 中间件
-	m := middleware.NewMiddleware(authentication, userRepo)
+	m := middleware.NewMiddleware(authentication, identityRepo)
 
 	return &ServiceContext{
 		Config:        c,

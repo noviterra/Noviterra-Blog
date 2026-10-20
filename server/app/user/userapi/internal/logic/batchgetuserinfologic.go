@@ -67,10 +67,10 @@ func (l *BatchGetUserInfoLogic) BatchGetUserInfo(req *types.BatchUserInfoRequest
 		resp.Resp.Message = "ERROR:" + err.Error()
 		return resp, nil
 	}
-	if rep.Code != 0 {
+	if rep.Resp.Code != 0 {
 		resp.Resp.Status = http.StatusBadRequest
 		resp.Resp.Code = 1
-		resp.Resp.Message = rep.Message
+		resp.Resp.Message = rep.Resp.Message
 		return resp, nil
 	}
 
@@ -79,14 +79,14 @@ func (l *BatchGetUserInfoLogic) BatchGetUserInfo(req *types.BatchUserInfoRequest
 
 	for _, userInfo := range rep.UsersInfo {
 		user := &types.UserInfoResponse{
-			ID:               userInfo.Data.ID,
-			Role:             int(userInfo.Data.Role),
-			Username:         userInfo.Data.UserName,
-			Email:            userInfo.Data.Email,
-			Avatar:           userInfo.Data.Avatar,
-			Gender:           int(userInfo.Data.Gender),
-			Age:              int(userInfo.Data.Age),
-			SelfIntroduction: userInfo.Data.SelfIntroduction,
+			ID:               userInfo.ID,
+			Role:             int(userInfo.Role),
+			Username:         userInfo.UserName,
+			Email:            userInfo.Email,
+			Avatar:           userInfo.Avatar,
+			Gender:           int(userInfo.Gender),
+			Age:              int(userInfo.Age),
+			SelfIntroduction: userInfo.SelfIntroduction,
 		}
 		resp.Users = append(resp.Users, user)
 	}

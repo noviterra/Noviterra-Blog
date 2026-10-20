@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v5.29.3
-// source: proto/user.proto
+// source: doc/proto/user.proto
 
 package userrpc
 
@@ -19,13 +19,6 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_Register_FullMethodName                  = "/userrpc.UserService/Register"
-	UserService_LoginByID_FullMethodName                 = "/userrpc.UserService/LoginByID"
-	UserService_LoginByEmail_FullMethodName              = "/userrpc.UserService/LoginByEmail"
-	UserService_ForgetPassword_FullMethodName            = "/userrpc.UserService/ForgetPassword"
-	UserService_GenerateToken_FullMethodName             = "/userrpc.UserService/GenerateToken"
-	UserService_RefreshAccessToken_FullMethodName        = "/userrpc.UserService/RefreshAccessToken"
-	UserService_SendVerificationCode_FullMethodName      = "/userrpc.UserService/SendVerificationCode"
 	UserService_GetSelfInfo_FullMethodName               = "/userrpc.UserService/GetSelfInfo"
 	UserService_UpdateSelfInfo_FullMethodName            = "/userrpc.UserService/UpdateSelfInfo"
 	UserService_ChangeSelfPasswordByID_FullMethodName    = "/userrpc.UserService/ChangeSelfPasswordByID"
@@ -41,32 +34,18 @@ const (
 //
 // 服务接口
 type UserServiceClient interface {
-	// 注册账号
-	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
-	// 通过账号登录
-	LoginByID(ctx context.Context, in *LoginByIDRequest, opts ...grpc.CallOption) (*LoginByIDResponse, error)
-	// 通过邮箱验证登录
-	LoginByEmail(ctx context.Context, in *LoginByEmailRequest, opts ...grpc.CallOption) (*LoginByEmailResponse, error)
-	// 忘记密码请求
-	ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, opts ...grpc.CallOption) (*ForgetPasswordResponse, error)
-	// 生成用户Token
-	GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error)
-	// 刷新用户AccessToken
-	RefreshAccessToken(ctx context.Context, in *RefreshAccessTokenARequest, opts ...grpc.CallOption) (*RefreshAccessTokenResponse, error)
-	// 邮箱辅助功能 发送验证码 调用频率频繁 todo：统计某用户or某ip调用次数
-	SendVerificationCode(ctx context.Context, in *SendVerificationCodeRequest, opts ...grpc.CallOption) (*SendVerificationCodeResponse, error)
 	// 获取个人信息
 	GetSelfInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*UserInfoResponse, error)
 	// 更新个人信息
-	UpdateSelfInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoResponse, error)
+	UpdateSelfInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*Response, error)
 	// 通过账号密码认证进行密码修改
-	ChangeSelfPasswordByID(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error)
+	ChangeSelfPasswordByID(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*Response, error)
 	// 通过邮箱验证修改密码
-	ChangeSelfPasswordByEmail(ctx context.Context, in *ChangePasswordByEmailRequest, opts ...grpc.CallOption) (*ChangePasswordByEmailResponse, error)
+	ChangeSelfPasswordByEmail(ctx context.Context, in *ChangePasswordByEmailRequest, opts ...grpc.CallOption) (*Response, error)
 	// 管理员对用户操作 拉黑用户
-	BlackUser(ctx context.Context, in *BlackUserRequest, opts ...grpc.CallOption) (*BlackUserResponse, error)
+	BlackUser(ctx context.Context, in *BlackUserRequest, opts ...grpc.CallOption) (*Response, error)
 	// 解封用户
-	UnBlackUser(ctx context.Context, in *UnBlackUserRequest, opts ...grpc.CallOption) (*UnBlackUserResponse, error)
+	UnBlackUser(ctx context.Context, in *UnBlackUserRequest, opts ...grpc.CallOption) (*Response, error)
 	// 管理员批量获取用户信息
 	GetMoreUsersInfo(ctx context.Context, in *GetMoreUsersInfoRequest, opts ...grpc.CallOption) (*GetMoreUsersInfoResponse, error)
 }
@@ -79,76 +58,6 @@ func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
 	return &userServiceClient{cc}
 }
 
-func (c *userServiceClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RegisterResponse)
-	err := c.cc.Invoke(ctx, UserService_Register_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) LoginByID(ctx context.Context, in *LoginByIDRequest, opts ...grpc.CallOption) (*LoginByIDResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(LoginByIDResponse)
-	err := c.cc.Invoke(ctx, UserService_LoginByID_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) LoginByEmail(ctx context.Context, in *LoginByEmailRequest, opts ...grpc.CallOption) (*LoginByEmailResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(LoginByEmailResponse)
-	err := c.cc.Invoke(ctx, UserService_LoginByEmail_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, opts ...grpc.CallOption) (*ForgetPasswordResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ForgetPasswordResponse)
-	err := c.cc.Invoke(ctx, UserService_ForgetPassword_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GenerateTokenResponse)
-	err := c.cc.Invoke(ctx, UserService_GenerateToken_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) RefreshAccessToken(ctx context.Context, in *RefreshAccessTokenARequest, opts ...grpc.CallOption) (*RefreshAccessTokenResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RefreshAccessTokenResponse)
-	err := c.cc.Invoke(ctx, UserService_RefreshAccessToken_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) SendVerificationCode(ctx context.Context, in *SendVerificationCodeRequest, opts ...grpc.CallOption) (*SendVerificationCodeResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SendVerificationCodeResponse)
-	err := c.cc.Invoke(ctx, UserService_SendVerificationCode_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *userServiceClient) GetSelfInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*UserInfoResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UserInfoResponse)
@@ -159,9 +68,9 @@ func (c *userServiceClient) GetSelfInfo(ctx context.Context, in *GetUserInfoRequ
 	return out, nil
 }
 
-func (c *userServiceClient) UpdateSelfInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoResponse, error) {
+func (c *userServiceClient) UpdateSelfInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateUserInfoResponse)
+	out := new(Response)
 	err := c.cc.Invoke(ctx, UserService_UpdateSelfInfo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -169,9 +78,9 @@ func (c *userServiceClient) UpdateSelfInfo(ctx context.Context, in *UpdateUserIn
 	return out, nil
 }
 
-func (c *userServiceClient) ChangeSelfPasswordByID(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error) {
+func (c *userServiceClient) ChangeSelfPasswordByID(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChangePasswordResponse)
+	out := new(Response)
 	err := c.cc.Invoke(ctx, UserService_ChangeSelfPasswordByID_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -179,9 +88,9 @@ func (c *userServiceClient) ChangeSelfPasswordByID(ctx context.Context, in *Chan
 	return out, nil
 }
 
-func (c *userServiceClient) ChangeSelfPasswordByEmail(ctx context.Context, in *ChangePasswordByEmailRequest, opts ...grpc.CallOption) (*ChangePasswordByEmailResponse, error) {
+func (c *userServiceClient) ChangeSelfPasswordByEmail(ctx context.Context, in *ChangePasswordByEmailRequest, opts ...grpc.CallOption) (*Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChangePasswordByEmailResponse)
+	out := new(Response)
 	err := c.cc.Invoke(ctx, UserService_ChangeSelfPasswordByEmail_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -189,9 +98,9 @@ func (c *userServiceClient) ChangeSelfPasswordByEmail(ctx context.Context, in *C
 	return out, nil
 }
 
-func (c *userServiceClient) BlackUser(ctx context.Context, in *BlackUserRequest, opts ...grpc.CallOption) (*BlackUserResponse, error) {
+func (c *userServiceClient) BlackUser(ctx context.Context, in *BlackUserRequest, opts ...grpc.CallOption) (*Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BlackUserResponse)
+	out := new(Response)
 	err := c.cc.Invoke(ctx, UserService_BlackUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -199,9 +108,9 @@ func (c *userServiceClient) BlackUser(ctx context.Context, in *BlackUserRequest,
 	return out, nil
 }
 
-func (c *userServiceClient) UnBlackUser(ctx context.Context, in *UnBlackUserRequest, opts ...grpc.CallOption) (*UnBlackUserResponse, error) {
+func (c *userServiceClient) UnBlackUser(ctx context.Context, in *UnBlackUserRequest, opts ...grpc.CallOption) (*Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UnBlackUserResponse)
+	out := new(Response)
 	err := c.cc.Invoke(ctx, UserService_UnBlackUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -225,32 +134,18 @@ func (c *userServiceClient) GetMoreUsersInfo(ctx context.Context, in *GetMoreUse
 //
 // 服务接口
 type UserServiceServer interface {
-	// 注册账号
-	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
-	// 通过账号登录
-	LoginByID(context.Context, *LoginByIDRequest) (*LoginByIDResponse, error)
-	// 通过邮箱验证登录
-	LoginByEmail(context.Context, *LoginByEmailRequest) (*LoginByEmailResponse, error)
-	// 忘记密码请求
-	ForgetPassword(context.Context, *ForgetPasswordRequest) (*ForgetPasswordResponse, error)
-	// 生成用户Token
-	GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error)
-	// 刷新用户AccessToken
-	RefreshAccessToken(context.Context, *RefreshAccessTokenARequest) (*RefreshAccessTokenResponse, error)
-	// 邮箱辅助功能 发送验证码 调用频率频繁 todo：统计某用户or某ip调用次数
-	SendVerificationCode(context.Context, *SendVerificationCodeRequest) (*SendVerificationCodeResponse, error)
 	// 获取个人信息
 	GetSelfInfo(context.Context, *GetUserInfoRequest) (*UserInfoResponse, error)
 	// 更新个人信息
-	UpdateSelfInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoResponse, error)
+	UpdateSelfInfo(context.Context, *UpdateUserInfoRequest) (*Response, error)
 	// 通过账号密码认证进行密码修改
-	ChangeSelfPasswordByID(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error)
+	ChangeSelfPasswordByID(context.Context, *ChangePasswordRequest) (*Response, error)
 	// 通过邮箱验证修改密码
-	ChangeSelfPasswordByEmail(context.Context, *ChangePasswordByEmailRequest) (*ChangePasswordByEmailResponse, error)
+	ChangeSelfPasswordByEmail(context.Context, *ChangePasswordByEmailRequest) (*Response, error)
 	// 管理员对用户操作 拉黑用户
-	BlackUser(context.Context, *BlackUserRequest) (*BlackUserResponse, error)
+	BlackUser(context.Context, *BlackUserRequest) (*Response, error)
 	// 解封用户
-	UnBlackUser(context.Context, *UnBlackUserRequest) (*UnBlackUserResponse, error)
+	UnBlackUser(context.Context, *UnBlackUserRequest) (*Response, error)
 	// 管理员批量获取用户信息
 	GetMoreUsersInfo(context.Context, *GetMoreUsersInfoRequest) (*GetMoreUsersInfoResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
@@ -263,43 +158,22 @@ type UserServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedUserServiceServer struct{}
 
-func (UnimplementedUserServiceServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method Register not implemented")
-}
-func (UnimplementedUserServiceServer) LoginByID(context.Context, *LoginByIDRequest) (*LoginByIDResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method LoginByID not implemented")
-}
-func (UnimplementedUserServiceServer) LoginByEmail(context.Context, *LoginByEmailRequest) (*LoginByEmailResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method LoginByEmail not implemented")
-}
-func (UnimplementedUserServiceServer) ForgetPassword(context.Context, *ForgetPasswordRequest) (*ForgetPasswordResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ForgetPassword not implemented")
-}
-func (UnimplementedUserServiceServer) GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GenerateToken not implemented")
-}
-func (UnimplementedUserServiceServer) RefreshAccessToken(context.Context, *RefreshAccessTokenARequest) (*RefreshAccessTokenResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RefreshAccessToken not implemented")
-}
-func (UnimplementedUserServiceServer) SendVerificationCode(context.Context, *SendVerificationCodeRequest) (*SendVerificationCodeResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method SendVerificationCode not implemented")
-}
 func (UnimplementedUserServiceServer) GetSelfInfo(context.Context, *GetUserInfoRequest) (*UserInfoResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSelfInfo not implemented")
 }
-func (UnimplementedUserServiceServer) UpdateSelfInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoResponse, error) {
+func (UnimplementedUserServiceServer) UpdateSelfInfo(context.Context, *UpdateUserInfoRequest) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateSelfInfo not implemented")
 }
-func (UnimplementedUserServiceServer) ChangeSelfPasswordByID(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error) {
+func (UnimplementedUserServiceServer) ChangeSelfPasswordByID(context.Context, *ChangePasswordRequest) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method ChangeSelfPasswordByID not implemented")
 }
-func (UnimplementedUserServiceServer) ChangeSelfPasswordByEmail(context.Context, *ChangePasswordByEmailRequest) (*ChangePasswordByEmailResponse, error) {
+func (UnimplementedUserServiceServer) ChangeSelfPasswordByEmail(context.Context, *ChangePasswordByEmailRequest) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method ChangeSelfPasswordByEmail not implemented")
 }
-func (UnimplementedUserServiceServer) BlackUser(context.Context, *BlackUserRequest) (*BlackUserResponse, error) {
+func (UnimplementedUserServiceServer) BlackUser(context.Context, *BlackUserRequest) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method BlackUser not implemented")
 }
-func (UnimplementedUserServiceServer) UnBlackUser(context.Context, *UnBlackUserRequest) (*UnBlackUserResponse, error) {
+func (UnimplementedUserServiceServer) UnBlackUser(context.Context, *UnBlackUserRequest) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method UnBlackUser not implemented")
 }
 func (UnimplementedUserServiceServer) GetMoreUsersInfo(context.Context, *GetMoreUsersInfoRequest) (*GetMoreUsersInfoResponse, error) {
@@ -324,132 +198,6 @@ func RegisterUserServiceServer(s grpc.ServiceRegistrar, srv UserServiceServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&UserService_ServiceDesc, srv)
-}
-
-func _UserService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).Register(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_Register_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).Register(ctx, req.(*RegisterRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_LoginByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoginByIDRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).LoginByID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_LoginByID_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).LoginByID(ctx, req.(*LoginByIDRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_LoginByEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoginByEmailRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).LoginByEmail(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_LoginByEmail_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).LoginByEmail(ctx, req.(*LoginByEmailRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_ForgetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ForgetPasswordRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).ForgetPassword(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_ForgetPassword_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).ForgetPassword(ctx, req.(*ForgetPasswordRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_GenerateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GenerateTokenRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).GenerateToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_GenerateToken_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GenerateToken(ctx, req.(*GenerateTokenRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_RefreshAccessToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RefreshAccessTokenARequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).RefreshAccessToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_RefreshAccessToken_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).RefreshAccessToken(ctx, req.(*RefreshAccessTokenARequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_SendVerificationCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SendVerificationCodeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).SendVerificationCode(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_SendVerificationCode_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).SendVerificationCode(ctx, req.(*SendVerificationCodeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_GetSelfInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -586,34 +334,6 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Register",
-			Handler:    _UserService_Register_Handler,
-		},
-		{
-			MethodName: "LoginByID",
-			Handler:    _UserService_LoginByID_Handler,
-		},
-		{
-			MethodName: "LoginByEmail",
-			Handler:    _UserService_LoginByEmail_Handler,
-		},
-		{
-			MethodName: "ForgetPassword",
-			Handler:    _UserService_ForgetPassword_Handler,
-		},
-		{
-			MethodName: "GenerateToken",
-			Handler:    _UserService_GenerateToken_Handler,
-		},
-		{
-			MethodName: "RefreshAccessToken",
-			Handler:    _UserService_RefreshAccessToken_Handler,
-		},
-		{
-			MethodName: "SendVerificationCode",
-			Handler:    _UserService_SendVerificationCode_Handler,
-		},
-		{
 			MethodName: "GetSelfInfo",
 			Handler:    _UserService_GetSelfInfo_Handler,
 		},
@@ -643,5 +363,5 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/user.proto",
+	Metadata: "doc/proto/user.proto",
 }

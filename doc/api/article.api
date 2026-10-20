@@ -10,15 +10,17 @@ type (
 	// api层统一响应体 请求状态承载体 需要特殊响应（需要包含数据）的将其嵌入到结构体中
 	Response {
 		Status  int    `json:"status"`
-		Code    int    `json:"code"`
+		Code    int    `json:"errcode"`
 		Message string `json:"message"`
 	}
 	// 文章列表中单个实例属性
 	ArticleList {
+		ArticleID   string   `json:"article_id" validate:"required,min=1,max=100"`
 		Title       string   `json:"title" validate:"required,min=1,max=100"`
-		Cover       string   `json:"cover" validate:"required,url"`
+		Cover       string   `json:"cover" validate:"required,min=1,max=20"`
 		Tags        []string `json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
 		Information string   `json:"information" validate:"required,min=1,max=200"`
+		CreatedAt   string   `json:"created_at" validate:"required,timeformat=2006-01-02 15:04:05"`
 	}
 	// 文章详细属性
 	Article {
@@ -26,7 +28,7 @@ type (
 		ArticleID   string   `json:"article_id" validate:"required,min=1,max=100"`
 		Title       string   `json:"title" validate:"required,min=1,max=100"`
 		Content     string   `json:"content" validate:"required,min=1"`
-		Cover       string   `json:"cover" validate:"required,url"`
+		Cover       string   `json:"cover" validate:"required,min=1,max=20"`
 		Tags        []string `json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
 		Information string   `json:"information" validate:"required,min=1,max=200"`
 		Status      int      `json:"status"` // 0:草稿 1:已发布 2:私密 3:删除
@@ -35,19 +37,19 @@ type (
 	}
 	// 增：发布文章
 	PublishArticleRequest {
-		Title       string   `json:"title" validate:"required,min=1,max=100"`
-		Content     string   `json:"content" validate:"required,min=1"`
-		Cover       string   `json:"cover" validate:"required,url"`
-		Tags        []string `json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
-		Information string   `json:"information" validate:"required,min=1,max=200"` // 作为一篇文章的总结or简短介绍
+		Title   string `form:"title" json:"title" validate:"required,min=1,max=100"`
+		Content string `form:"content" json:"content" validate:"required,min=1"`
+		// Cover       string   `json:"cover" validate:"required,min=1,max=20"`
+		Tags        []string `form:"tags" json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
+		Information string   `form:"information" json:"information" validate:"required,min=1,max=200"` // 作为一篇文章的总结or简短介绍
 	}
 	// 删：删除文章
 	DeleteArticleRequest {
-		ArticleID string `json:"article_id" validate:"required,min=6,max=10"`
+		ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
 	}
 	// 改：修改文章
 	UpdateArticleRequest {
-		ArticleID string `json:"article_id" validate:"required,min=6,max=10"`
+		ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
 		Title     string `json:"title" validate:"omitempty,min=1,max=100"`
 		Content   string `json:"content" validate:"omitempty,min=1"`
 		//Cover       string   `json:"cover" validate:"omitempty,url"`  // 封面单独抽出写一个接口
@@ -56,12 +58,11 @@ type (
 	}
 	// 改：修改文章封面
 	UpdateArticleCoverRequest {
-		NewCover  string `json:"new_cover" validate:"omitempty,url"`
-		ArticleID string `json:"article_id" validate:"required,min=6,max=10"`
+		ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
 	}
 	// 修改封面成功后 将封面重新渲染
 	UpdateArticleCoverResponse {
-		Cover string   `json:"cover" validate:"omitempty,url"`
+		Cover string   `json:"cover" validate:"omitempty,min=1,max=20"`
 		Resp  Response `json:"response"`
 	}
 	// 查：获取文章列表
@@ -76,7 +77,7 @@ type (
 	}
 	// 查：获取文章详情
 	GetArticleDetailRequest {
-		ArticleID string `json:"article_id" validate:"required,min=6,max=10"`
+		ArticleID string `path:"article" validate:"required,min=1,max=100"`
 	}
 	// 文章详情响应体
 	GetArticleDetailResponse {
@@ -101,21 +102,25 @@ type (
 	prefix: novblog/article
 )
 service articleService {
-	// @doc 发布文章
+	// @doc "发布文章"
 	@handler PublishArticle
 	post /publish (PublishArticleRequest) returns (Response)
 
-	// @doc 删除文章
+	// @doc "删除文章"
 	@handler DeleteArticle
 	post /delete (DeleteArticleRequest) returns (Response)
 
-	// @doc 修改文章
+	// @doc "修改文章"
 	@handler UpdateArticle
 	post /update/article (UpdateArticleRequest) returns (Response)
 
-	// @doc 修改文章封面
+	// @doc "修改文章封面"
 	@handler UpdateArticleCover
 	post /update/cover (UpdateArticleCoverRequest) returns (UpdateArticleCoverResponse)
+
+	// @doc "文章点赞 必须登录状态下进行"
+	@handler LikeArticle
+	post /like (LikeArticleRequest) returns (Response)
 }
 
 // 不需要鉴权中间件的
@@ -123,15 +128,15 @@ service articleService {
 	prefix: novblog/article
 )
 service articleService {
-	// @doc 获取文章列表
+	// @doc "获取文章列表"
 	@handler GetArticleList
 	get /list (GetArticleListRequest) returns (GetArticleListResponse)
 
-	// @doc 获取文章详情
+	// @doc "获取文章详情"
 	@handler GetArticleDetail
 	get /:article (GetArticleDetailRequest) returns (GetArticleDetailResponse)
 
-	// @doc 搜索文章
+	// @doc "搜索文章"
 	@handler SearchArticle
 	post /search (SearchArticleRequest) returns (SearchArticleResponse)
 }

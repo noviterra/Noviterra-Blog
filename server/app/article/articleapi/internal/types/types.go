@@ -8,7 +8,7 @@ type Article struct {
 	ArticleID   string   `json:"article_id" validate:"required,min=1,max=100"`
 	Title       string   `json:"title" validate:"required,min=1,max=100"`
 	Content     string   `json:"content" validate:"required,min=1"`
-	Cover       string   `json:"cover" validate:"required,url"`
+	Cover       string   `json:"cover" validate:"required,min=1,max=20"`
 	Tags        []string `json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
 	Information string   `json:"information" validate:"required,min=1,max=200"`
 	Status      int      `json:"status"` // 0:草稿 1:已发布 2:私密 3:删除
@@ -17,18 +17,20 @@ type Article struct {
 }
 
 type ArticleList struct {
+	ArticleID   string   `json:"article_id" validate:"required,min=1,max=100"`
 	Title       string   `json:"title" validate:"required,min=1,max=100"`
-	Cover       string   `json:"cover" validate:"required,url"`
+	Cover       string   `json:"cover" validate:"required,min=1,max=20"`
 	Tags        []string `json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
 	Information string   `json:"information" validate:"required,min=1,max=200"`
+	CreatedAt   string   `json:"created_at" validate:"required,timeformat=2006-01-02 15:04:05"`
 }
 
 type DeleteArticleRequest struct {
-	ArticleID string `json:"article_id" validate:"required,min=6,max=10"`
+	ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
 }
 
 type GetArticleDetailRequest struct {
-	ArticleID string `json:"article_id" validate:"required,min=6,max=10"`
+	ArticleID string `path:"article" validate:"required,min=1,max=100"`
 }
 
 type GetArticleDetailResponse struct {
@@ -47,16 +49,15 @@ type GetArticleListResponse struct {
 }
 
 type PublishArticleRequest struct {
-	Title       string   `json:"title" validate:"required,min=1,max=100"`
-	Content     string   `json:"content" validate:"required,min=1"`
-	Cover       string   `json:"cover" validate:"required,url"`
-	Tags        []string `json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
-	Information string   `json:"information" validate:"required,min=1,max=200"` // 作为一篇文章的总结or简短介绍
+	Title       string   `form:"title" json:"title" validate:"required,min=1,max=100"`
+	Content     string   `form:"content" json:"content" validate:"required,min=1"`
+	Tags        []string `form:"tags" json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
+	Information string   `form:"information" json:"information" validate:"required,min=1,max=200"` // 作为一篇文章的总结or简短介绍
 }
 
 type Response struct {
 	Status  int    `json:"status"`
-	Code    int    `json:"code"`
+	Code    int    `json:"errcode"`
 	Message string `json:"message"`
 }
 
@@ -72,17 +73,16 @@ type SearchArticleResponse struct {
 }
 
 type UpdateArticleCoverRequest struct {
-	NewCover  string `json:"new_cover" validate:"omitempty,url"`
-	ArticleID string `json:"article_id" validate:"required,min=6,max=10"`
+	ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
 }
 
 type UpdateArticleCoverResponse struct {
-	Cover string   `json:"cover" validate:"omitempty,url"`
+	Cover string   `json:"cover" validate:"omitempty,min=1,max=20"`
 	Resp  Response `json:"response"`
 }
 
 type UpdateArticleRequest struct {
-	ArticleID   string   `json:"article_id" validate:"required,min=6,max=10"`
+	ArticleID   string   `json:"article_id" validate:"required,min=1,max=100"`
 	Title       string   `json:"title" validate:"omitempty,min=1,max=100"`
 	Content     string   `json:"content" validate:"omitempty,min=1"`
 	Tags        []string `json:"tags" validate:"omitempty,min=1,max=5,dive,required,min=1,max=20"`

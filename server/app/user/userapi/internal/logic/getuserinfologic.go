@@ -49,10 +49,10 @@ func (l *GetUserInfoLogic) GetUserInfo() (resp *types.UserInfoResponse, err erro
 		resp.Resp.Code = 1
 		return resp, nil
 	}
-	if rep.Code != 0 {
+	if rep.Resp.Code != 0 {
 		resp.Resp.Status = http.StatusBadRequest
 		resp.Resp.Code = 1
-		resp.Resp.Message = rep.Message
+		resp.Resp.Message = rep.Resp.Message
 	}
 
 	resp.Resp.Status = http.StatusOK

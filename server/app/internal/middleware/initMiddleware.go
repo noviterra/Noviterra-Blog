@@ -1,6 +1,6 @@
 package middleware
 
-import jwtauth "Noviterra/server/utils/jwtAuth"
+import jwtauth "Noviterra/server/utils/jwtauth"
 
 type UserGormOP interface {
 	GetUserAccountStatus(id string) (int, error)

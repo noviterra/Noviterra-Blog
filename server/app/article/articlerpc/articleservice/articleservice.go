@@ -22,6 +22,7 @@ type (
 	GetArticleListRequest      = articlerpc.GetArticleListRequest
 	GetArticleListResponse     = articlerpc.GetArticleListResponse
 	PublishArticleRequest      = articlerpc.PublishArticleRequest
+	PublishArticleResponse     = articlerpc.PublishArticleResponse
 	Response                   = articlerpc.Response
 	SearchArticleRequest       = articlerpc.SearchArticleRequest
 	SearchArticleResponse      = articlerpc.SearchArticleResponse
@@ -31,7 +32,7 @@ type (
 
 	ArticleService interface {
 		// 发布文章
-		PublishArticle(ctx context.Context, in *PublishArticleRequest, opts ...grpc.CallOption) (*Response, error)
+		PublishArticle(ctx context.Context, in *PublishArticleRequest, opts ...grpc.CallOption) (*PublishArticleResponse, error)
 		// 删除文章
 		DeleteArticle(ctx context.Context, in *DeleteArticleRequest, opts ...grpc.CallOption) (*Response, error)
 		// 修改文章
@@ -58,7 +59,7 @@ func NewArticleService(cli zrpc.Client) ArticleService {
 }
 
 // 发布文章
-func (m *defaultArticleService) PublishArticle(ctx context.Context, in *PublishArticleRequest, opts ...grpc.CallOption) (*Response, error) {
+func (m *defaultArticleService) PublishArticle(ctx context.Context, in *PublishArticleRequest, opts ...grpc.CallOption) (*PublishArticleResponse, error) {
 	client := articlerpc.NewArticleServiceClient(m.cli.Conn())
 	return client.PublishArticle(ctx, in, opts...)
 }

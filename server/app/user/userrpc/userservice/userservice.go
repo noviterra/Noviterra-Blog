@@ -14,63 +14,31 @@ import (
 )
 
 type (
-	BlackUserRequest              = userrpc.BlackUserRequest
-	BlackUserResponse             = userrpc.BlackUserResponse
-	ChangePasswordByEmailRequest  = userrpc.ChangePasswordByEmailRequest
-	ChangePasswordByEmailResponse = userrpc.ChangePasswordByEmailResponse
-	ChangePasswordRequest         = userrpc.ChangePasswordRequest
-	ChangePasswordResponse        = userrpc.ChangePasswordResponse
-	ForgetPasswordRequest         = userrpc.ForgetPasswordRequest
-	ForgetPasswordResponse        = userrpc.ForgetPasswordResponse
-	GenerateTokenRequest          = userrpc.GenerateTokenRequest
-	GenerateTokenResponse         = userrpc.GenerateTokenResponse
-	GetMoreUsersInfoRequest       = userrpc.GetMoreUsersInfoRequest
-	GetMoreUsersInfoResponse      = userrpc.GetMoreUsersInfoResponse
-	GetUserInfoRequest            = userrpc.GetUserInfoRequest
-	LoginByEmailRequest           = userrpc.LoginByEmailRequest
-	LoginByEmailResponse          = userrpc.LoginByEmailResponse
-	LoginByIDRequest              = userrpc.LoginByIDRequest
-	LoginByIDResponse             = userrpc.LoginByIDResponse
-	RefreshAccessTokenARequest    = userrpc.RefreshAccessTokenARequest
-	RefreshAccessTokenResponse    = userrpc.RefreshAccessTokenResponse
-	RegisterRequest               = userrpc.RegisterRequest
-	RegisterResponse              = userrpc.RegisterResponse
-	SendVerificationCodeRequest   = userrpc.SendVerificationCodeRequest
-	SendVerificationCodeResponse  = userrpc.SendVerificationCodeResponse
-	UnBlackUserRequest            = userrpc.UnBlackUserRequest
-	UnBlackUserResponse           = userrpc.UnBlackUserResponse
-	UpdateUserInfoRequest         = userrpc.UpdateUserInfoRequest
-	UpdateUserInfoResponse        = userrpc.UpdateUserInfoResponse
-	UserInfoResponse              = userrpc.UserInfoResponse
-	UserInfoResponse_Data         = userrpc.UserInfoResponse_Data
+	BlackUserRequest             = userrpc.BlackUserRequest
+	ChangePasswordByEmailRequest = userrpc.ChangePasswordByEmailRequest
+	ChangePasswordRequest        = userrpc.ChangePasswordRequest
+	GetMoreUsersInfoRequest      = userrpc.GetMoreUsersInfoRequest
+	GetMoreUsersInfoResponse     = userrpc.GetMoreUsersInfoResponse
+	GetUserInfoRequest           = userrpc.GetUserInfoRequest
+	Response                     = userrpc.Response
+	UnBlackUserRequest           = userrpc.UnBlackUserRequest
+	UpdateUserInfoRequest        = userrpc.UpdateUserInfoRequest
+	UserInfo                     = userrpc.UserInfo
+	UserInfoResponse             = userrpc.UserInfoResponse
 
 	UserService interface {
-		// 注册账号
-		Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
-		// 通过账号登录
-		LoginByID(ctx context.Context, in *LoginByIDRequest, opts ...grpc.CallOption) (*LoginByIDResponse, error)
-		// 通过邮箱验证登录
-		LoginByEmail(ctx context.Context, in *LoginByEmailRequest, opts ...grpc.CallOption) (*LoginByEmailResponse, error)
-		// 忘记密码请求
-		ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, opts ...grpc.CallOption) (*ForgetPasswordResponse, error)
-		// 生成用户Token
-		GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error)
-		// 刷新用户AccessToken
-		RefreshAccessToken(ctx context.Context, in *RefreshAccessTokenARequest, opts ...grpc.CallOption) (*RefreshAccessTokenResponse, error)
-		// 邮箱辅助功能 发送验证码 调用频率频繁 todo：统计某用户or某ip调用次数
-		SendVerificationCode(ctx context.Context, in *SendVerificationCodeRequest, opts ...grpc.CallOption) (*SendVerificationCodeResponse, error)
 		// 获取个人信息
 		GetSelfInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*UserInfoResponse, error)
 		// 更新个人信息
-		UpdateSelfInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoResponse, error)
+		UpdateSelfInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*Response, error)
 		// 通过账号密码认证进行密码修改
-		ChangeSelfPasswordByID(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error)
+		ChangeSelfPasswordByID(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*Response, error)
 		// 通过邮箱验证修改密码
-		ChangeSelfPasswordByEmail(ctx context.Context, in *ChangePasswordByEmailRequest, opts ...grpc.CallOption) (*ChangePasswordByEmailResponse, error)
+		ChangeSelfPasswordByEmail(ctx context.Context, in *ChangePasswordByEmailRequest, opts ...grpc.CallOption) (*Response, error)
 		// 管理员对用户操作 拉黑用户
-		BlackUser(ctx context.Context, in *BlackUserRequest, opts ...grpc.CallOption) (*BlackUserResponse, error)
+		BlackUser(ctx context.Context, in *BlackUserRequest, opts ...grpc.CallOption) (*Response, error)
 		// 解封用户
-		UnBlackUser(ctx context.Context, in *UnBlackUserRequest, opts ...grpc.CallOption) (*UnBlackUserResponse, error)
+		UnBlackUser(ctx context.Context, in *UnBlackUserRequest, opts ...grpc.CallOption) (*Response, error)
 		// 管理员批量获取用户信息
 		GetMoreUsersInfo(ctx context.Context, in *GetMoreUsersInfoRequest, opts ...grpc.CallOption) (*GetMoreUsersInfoResponse, error)
 	}
@@ -86,48 +54,6 @@ func NewUserService(cli zrpc.Client) UserService {
 	}
 }
 
-// 注册账号
-func (m *defaultUserService) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
-	client := userrpc.NewUserServiceClient(m.cli.Conn())
-	return client.Register(ctx, in, opts...)
-}
-
-// 通过账号登录
-func (m *defaultUserService) LoginByID(ctx context.Context, in *LoginByIDRequest, opts ...grpc.CallOption) (*LoginByIDResponse, error) {
-	client := userrpc.NewUserServiceClient(m.cli.Conn())
-	return client.LoginByID(ctx, in, opts...)
-}
-
-// 通过邮箱验证登录
-func (m *defaultUserService) LoginByEmail(ctx context.Context, in *LoginByEmailRequest, opts ...grpc.CallOption) (*LoginByEmailResponse, error) {
-	client := userrpc.NewUserServiceClient(m.cli.Conn())
-	return client.LoginByEmail(ctx, in, opts...)
-}
-
-// 忘记密码请求
-func (m *defaultUserService) ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, opts ...grpc.CallOption) (*ForgetPasswordResponse, error) {
-	client := userrpc.NewUserServiceClient(m.cli.Conn())
-	return client.ForgetPassword(ctx, in, opts...)
-}
-
-// 生成用户Token
-func (m *defaultUserService) GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error) {
-	client := userrpc.NewUserServiceClient(m.cli.Conn())
-	return client.GenerateToken(ctx, in, opts...)
-}
-
-// 刷新用户AccessToken
-func (m *defaultUserService) RefreshAccessToken(ctx context.Context, in *RefreshAccessTokenARequest, opts ...grpc.CallOption) (*RefreshAccessTokenResponse, error) {
-	client := userrpc.NewUserServiceClient(m.cli.Conn())
-	return client.RefreshAccessToken(ctx, in, opts...)
-}
-
-// 邮箱辅助功能 发送验证码 调用频率频繁 todo：统计某用户or某ip调用次数
-func (m *defaultUserService) SendVerificationCode(ctx context.Context, in *SendVerificationCodeRequest, opts ...grpc.CallOption) (*SendVerificationCodeResponse, error) {
-	client := userrpc.NewUserServiceClient(m.cli.Conn())
-	return client.SendVerificationCode(ctx, in, opts...)
-}
-
 // 获取个人信息
 func (m *defaultUserService) GetSelfInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*UserInfoResponse, error) {
 	client := userrpc.NewUserServiceClient(m.cli.Conn())
@@ -135,31 +61,31 @@ func (m *defaultUserService) GetSelfInfo(ctx context.Context, in *GetUserInfoReq
 }
 
 // 更新个人信息
-func (m *defaultUserService) UpdateSelfInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoResponse, error) {
+func (m *defaultUserService) UpdateSelfInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*Response, error) {
 	client := userrpc.NewUserServiceClient(m.cli.Conn())
 	return client.UpdateSelfInfo(ctx, in, opts...)
 }
 
 // 通过账号密码认证进行密码修改
-func (m *defaultUserService) ChangeSelfPasswordByID(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error) {
+func (m *defaultUserService) ChangeSelfPasswordByID(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*Response, error) {
 	client := userrpc.NewUserServiceClient(m.cli.Conn())
 	return client.ChangeSelfPasswordByID(ctx, in, opts...)
 }
 
 // 通过邮箱验证修改密码
-func (m *defaultUserService) ChangeSelfPasswordByEmail(ctx context.Context, in *ChangePasswordByEmailRequest, opts ...grpc.CallOption) (*ChangePasswordByEmailResponse, error) {
+func (m *defaultUserService) ChangeSelfPasswordByEmail(ctx context.Context, in *ChangePasswordByEmailRequest, opts ...grpc.CallOption) (*Response, error) {
 	client := userrpc.NewUserServiceClient(m.cli.Conn())
 	return client.ChangeSelfPasswordByEmail(ctx, in, opts...)
 }
 
 // 管理员对用户操作 拉黑用户
-func (m *defaultUserService) BlackUser(ctx context.Context, in *BlackUserRequest, opts ...grpc.CallOption) (*BlackUserResponse, error) {
+func (m *defaultUserService) BlackUser(ctx context.Context, in *BlackUserRequest, opts ...grpc.CallOption) (*Response, error) {
 	client := userrpc.NewUserServiceClient(m.cli.Conn())
 	return client.BlackUser(ctx, in, opts...)
 }
 
 // 解封用户
-func (m *defaultUserService) UnBlackUser(ctx context.Context, in *UnBlackUserRequest, opts ...grpc.CallOption) (*UnBlackUserResponse, error) {
+func (m *defaultUserService) UnBlackUser(ctx context.Context, in *UnBlackUserRequest, opts ...grpc.CallOption) (*Response, error) {
 	client := userrpc.NewUserServiceClient(m.cli.Conn())
 	return client.UnBlackUser(ctx, in, opts...)
 }

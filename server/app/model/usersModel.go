@@ -35,7 +35,7 @@ type UserInfo struct {
 	Gender           int        `gorm:"default:0;comment:性别 0未知 1男 2女"`
 	Avatar           string     `gorm:"size:255;default:'';comment:头像URL"`
 	SelfIntroduction string     `gorm:"size:512;default:'';comment:个人简介"`
-	Role             int        `gorm:"default:0;comment:用户身份 0普通 1超级管理员"`
+	Role             int        `gorm:"default:0;comment:用户身份 0普通 1管理员 2超级管理员（站主）"`
 	IsDeleted        bool       `gorm:"default:false;index;comment:是否删除"`
 	DeletedAt        *time.Time `gorm:"index;comment:删除时间"`
 	CreatedAt        time.Time  `gorm:"comment:创建时间"`

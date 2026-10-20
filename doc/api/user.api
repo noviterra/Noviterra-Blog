@@ -1,44 +1,12 @@
 syntax = "v1"
 
-// 对于响应 除特殊情况外进行统一封装
-type Response {
-	Status  int    `json:"status"`
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-}
-
-// 用户注册
 type (
-	RegisterRequest {
-		ID               string `json:"id" validate:"required,min=6,max=10"`
-		Password         string `json:"password" validate:"required,min=6,max=20"`
-		Email            string `json:"email" validate:"required,email"`
-		VerificationCode string `json:"verification_code" validate:"required,len=6"`
-		VerifPassword    string `json:"verif_password" validate:"required,min=6,max=20"`
+	// 对于响应 除特殊情况外进行统一封装
+	Response {
+		Status  int    `json:"status"`
+		Code    int    `json:"errcode"`
+		Message string `json:"message"`
 	}
-)
-
-// 用户登录
-type (
-	// 对于?type=ID即账号密码登录
-	LoginByIDRequest {
-		ID       string `json:"id" validate:"required,min=6,max=10"`
-		Password string `json:"password" validate:"required,min=6,max=20"`
-	}
-	// 对于?type=Email即邮箱登录
-	LoginByEmailRequest {
-		Email            string `json:"email" validate:"required,email"`
-		VerificationCode string `json:"verification_code" validate:"required,len=6"`
-	}
-	LoginResponse {
-		RefreshToken string `json:"refreshToken"`
-		AccessToken  string `json:"accessToken"`
-		Resp         Response `json:"resp"`
-	}
-)
-
-// 密码操作
-type (
 	// 修改密码 ?type=ID
 	ChangePasswordByIDRequest {
 		//ID          string `json:"id" validate:"required,min=6,max=10"`  // 通过鉴权中间件获取
@@ -51,26 +19,6 @@ type (
 		VerificationCode string `json:"verification_code" validate:"required,len=6"`
 		NewPassword      string `json:"new_password" validate:"required,min=6,max=20"`
 	}
-	// 忘记密码
-	ForgetPasswordRequest {
-		ID               string `json:"id" validate:"required,min=6,max=10"`
-		Email            string `json:"email" validate:"required,email"`
-		VerificationCode string `json:"verification_code" validate:"required,len=6"`
-		NewPassword      string `json:"new_password" validate:"required,min=6,max=20"`
-		VerifPassowrd    string `json:"verif_password" validate:"required,min=6,max=20"`
-	}
-)
-
-// 发送邮箱验证码 注册、登录、修改密码、忘记密码
-type (
-	SendEmailVerificationCodeRequest {
-		Email string `json:"email" validate:"required,email"`
-		Type  string `json:"type" validate:"required,oneof=register login change_password forget_password"`
-	}
-)
-
-// 管理员对用户的管理
-type (
 	// 拉黑用户
 	BlacklistUserRequest {
 		ID string `json:"id" validate:"required,min=6,max=10"`
@@ -79,10 +27,6 @@ type (
 	UnblacklistUserRequest {
 		ID string `json:"id" validate:"required,min=6,max=10"`
 	}
-)
-
-// 用户信息
-type (
 	// 获取用户信息
 	UserInfoResponse {
 		ID               string   `json:"id"`
@@ -116,64 +60,32 @@ type (
 	}
 )
 
-type (
-	RefreshAccessTokenRequest {
-		RefreshToken string `json:"refreshToken" validate:"required"`
-	}
-	RefreshAccessTokenResponse {
-		RefreshToken string   `json:"refreshToken"`
-		AccessToken  string   `json:"accessToken"`
-		Resp         Response `json:"response"`
-	}
-)
-
-// 不需要鉴权的
+// 需要鉴权的
 @server (
 	prefix: novblog/user
 )
 service usersService {
-	@handler register
-	post /register (RegisterRequest) returns (Response)
-
-	@handler loginByID
-	post /login/id (LoginByIDRequest) returns (LoginResponse)
-
-	@handler loginByEmail
-	post /login/email (LoginByEmailRequest) returns (LoginResponse)
-
-	@handler sendEmailVerificationCode
-	post /server/verificationcode (SendEmailVerificationCodeRequest) returns (Response)
-
-	@handler forgetPassword
-	post /forgetpassword (ForgetPasswordRequest) returns (Response)
-
-	@handler refreshAccessToken
-	post /server/refreshaccesstoken (RefreshAccessTokenRequest) returns (RefreshAccessTokenResponse)
-}
-
-// 需要鉴权的
-	@server (
-		prefix: novblog/user
-		jwt:    JWT
-	)
-service usersService {
+	@doc "通过账号密码认证修改密码"
 	@handler changePasswordByID
 	post /changepassword/id (ChangePasswordByIDRequest) returns (Response)
 
+	@doc "通过邮箱辅助认证修改个人密码"
 	@handler changePasswordByEmail
 	post /changepassword/email (ChangePasswordByEmailRequest) returns (Response)
 
+	@doc "得到个人信息"
 	@handler getUserInfo
 	get /info returns (UserInfoResponse)
 
-	// 管理员操作
+	@doc "批量获取用户信息"
 	@handler batchGetUserInfo
 	get /batchinfo (BatchUserInfoRequest) returns (BatchUserInfoResponse)
 
-	// 拉黑用户
+	@doc "封禁用户"
 	@handler blacklistUser
 	post /blackusers (BlacklistUserRequest) returns (Response)
 
+	@doc "解封用户"
 	@handler unblacklistUser
 	post /unblackusers (UnblacklistUserRequest) returns (Response)
 

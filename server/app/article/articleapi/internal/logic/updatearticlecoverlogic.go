@@ -4,23 +4,28 @@
 package logic
 
 import (
+	"Noviterra/server/app/article/articleapi/internal/svc"
+	"Noviterra/server/app/article/articleapi/internal/types"
 	"Noviterra/server/app/article/articlerpc/types/articlerpc"
 	"context"
 	"errors"
+	"mime/multipart"
 	"net/http"
-
-	"Noviterra/server/app/article/articleapi/internal/svc"
-	"Noviterra/server/app/article/articleapi/internal/types"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/grpc/metadata"
 )
 
+type updatearticlecoverCommonutils interface {
+	SaveImageFile(header *multipart.FileHeader, file multipart.File, saveDir, fileName string) (string, error)
+}
+
 type UpdateArticleCoverLogic struct {
 	logx.Logger
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx         context.Context
+	svcCtx      *svc.ServiceContext
+	commonUtils updatearticlecoverCommonutils
 }
 
 func NewUpdateArticleCoverLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UpdateArticleCoverLogic {
@@ -28,10 +33,13 @@ func NewUpdateArticleCoverLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
+
+		commonUtils: svcCtx.CommonUtils,
 	}
 }
 
-func (l *UpdateArticleCoverLogic) UpdateArticleCover(req *types.UpdateArticleCoverRequest) (resp *types.UpdateArticleCoverResponse, err error) {
+func (l *UpdateArticleCoverLogic) UpdateArticleCover(req *types.UpdateArticleCoverRequest,
+	header *multipart.FileHeader, file multipart.File) (resp *types.UpdateArticleCoverResponse, err error) {
 	// todo: add your logic here and delete this line
 	resp = new(types.UpdateArticleCoverResponse)
 
@@ -69,10 +77,25 @@ func (l *UpdateArticleCoverLogic) UpdateArticleCover(req *types.UpdateArticleCov
 		"user-id", publisherID,
 	)
 
+	// 文件校验 图片保存的名称格式为  cover*time*.*
+	cover, err := l.commonUtils.SaveImageFile(header, file, "articlecover", req.ArticleID)
+	if err != nil {
+		resp.Resp.Status = http.StatusBadRequest
+		resp.Resp.Code = 1
+		resp.Resp.Message = "ERROR:" + err.Error()
+		return resp, nil
+	}
+	if cover == "" {
+		resp.Resp.Status = http.StatusBadRequest
+		resp.Resp.Code = 1
+		resp.Resp.Message = "封面为空！"
+		return resp, nil
+	}
+
 	// 调用rpc服务方法 执行核心业务
 	rep, err := l.svcCtx.ArticleModel.UpdateArticleCover(ctx, &articlerpc.UpdateArticleCoverRequest{
-		NewCover:  req.NewCover,
 		ArticleID: req.ArticleID,
+		NewCover:  cover,
 	})
 	if err != nil {
 		resp.Resp.Status = http.StatusBadRequest

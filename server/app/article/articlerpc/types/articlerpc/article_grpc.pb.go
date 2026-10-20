@@ -33,7 +33,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ArticleServiceClient interface {
 	// 发布文章
-	PublishArticle(ctx context.Context, in *PublishArticleRequest, opts ...grpc.CallOption) (*Response, error)
+	PublishArticle(ctx context.Context, in *PublishArticleRequest, opts ...grpc.CallOption) (*PublishArticleResponse, error)
 	// 删除文章
 	DeleteArticle(ctx context.Context, in *DeleteArticleRequest, opts ...grpc.CallOption) (*Response, error)
 	// 修改文章
@@ -56,9 +56,9 @@ func NewArticleServiceClient(cc grpc.ClientConnInterface) ArticleServiceClient {
 	return &articleServiceClient{cc}
 }
 
-func (c *articleServiceClient) PublishArticle(ctx context.Context, in *PublishArticleRequest, opts ...grpc.CallOption) (*Response, error) {
+func (c *articleServiceClient) PublishArticle(ctx context.Context, in *PublishArticleRequest, opts ...grpc.CallOption) (*PublishArticleResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Response)
+	out := new(PublishArticleResponse)
 	err := c.cc.Invoke(ctx, ArticleService_PublishArticle_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func (c *articleServiceClient) GetArticleDetail(ctx context.Context, in *GetArti
 // for forward compatibility.
 type ArticleServiceServer interface {
 	// 发布文章
-	PublishArticle(context.Context, *PublishArticleRequest) (*Response, error)
+	PublishArticle(context.Context, *PublishArticleRequest) (*PublishArticleResponse, error)
 	// 删除文章
 	DeleteArticle(context.Context, *DeleteArticleRequest) (*Response, error)
 	// 修改文章
@@ -154,7 +154,7 @@ type ArticleServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedArticleServiceServer struct{}
 
-func (UnimplementedArticleServiceServer) PublishArticle(context.Context, *PublishArticleRequest) (*Response, error) {
+func (UnimplementedArticleServiceServer) PublishArticle(context.Context, *PublishArticleRequest) (*PublishArticleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method PublishArticle not implemented")
 }
 func (UnimplementedArticleServiceServer) DeleteArticle(context.Context, *DeleteArticleRequest) (*Response, error) {

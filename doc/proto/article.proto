@@ -10,22 +10,25 @@ message Response {
 
 // 列表中单个文章属性 显示除内容之外的数据
 message ArticleList {
-    string Title = 1;
-    string Cover = 2;
-    repeated string Tags = 3;
-    string Information = 4;
+    string ArticleID = 1;
+    string Title = 2;
+    string Cover = 3;
+    repeated string Tags = 4;
+    string Information = 5;
+    int64 CreatedAt = 6;
 }
 
 // 文章详细属性
 message Article {
-    string ID = 1;
-    string Title = 2;
-    string Content = 3;
-    string Cover = 4;
-    repeated string Tags = 5;
-    string Information = 6;
-    int64 CreatedAt = 7;
-    int64 UpdatedAt = 8;
+    string ArticleID = 1;
+    string PublisherID = 2;
+    string Title = 3;
+    string Content = 4;
+    string Cover = 5;
+    repeated string Tags = 6;
+    string Information = 7;
+    int64 CreatedAt = 8;
+    int64 UpdatedAt = 9;
 }
 
 // 发布文章请求体
@@ -35,6 +38,11 @@ message PublishArticleRequest {
     string Cover = 3;
     string Information = 4;
     repeated string Tags = 5;
+}
+// 发布文章响应体 返回articleID
+message PublishArticleResponse {
+    string ArticleID = 1;
+    Response Resp = 2;
 }
 
 // 删除文章请求体
@@ -99,7 +107,7 @@ message GetArticleDetailResponse {
 
 service ArticleService {
     // 发布文章
-    rpc PublishArticle(PublishArticleRequest) returns (Response);
+    rpc PublishArticle(PublishArticleRequest) returns (PublishArticleResponse);
     // 删除文章
     rpc DeleteArticle(DeleteArticleRequest) returns (Response);
     // 修改文章

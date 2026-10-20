@@ -15,79 +15,47 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(
 		[]rest.Route{
 			{
+				// 批量获取用户信息
+				Method:  http.MethodGet,
+				Path:    "/batchinfo",
+				Handler: batchGetUserInfoHandler(serverCtx),
+			},
+			{
+				// 封禁用户
 				Method:  http.MethodPost,
-				Path:    "/forgetpassword",
-				Handler: forgetPasswordHandler(serverCtx),
+				Path:    "/blackusers",
+				Handler: blacklistUserHandler(serverCtx),
+			},
+			{
+				// 通过邮箱辅助认证修改个人密码
+				Method:  http.MethodPost,
+				Path:    "/changepassword/email",
+				Handler: changePasswordByEmailHandler(serverCtx),
+			},
+			{
+				// 通过账号密码认证修改密码
+				Method:  http.MethodPost,
+				Path:    "/changepassword/id",
+				Handler: changePasswordByIDHandler(serverCtx),
+			},
+			{
+				// 得到个人信息
+				Method:  http.MethodGet,
+				Path:    "/info",
+				Handler: getUserInfoHandler(serverCtx),
+			},
+			{
+				// 解封用户
+				Method:  http.MethodPost,
+				Path:    "/unblackusers",
+				Handler: unblacklistUserHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodPost,
-				Path:    "/login/email",
-				Handler: loginByEmailHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/login/id",
-				Handler: loginByIDHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/register",
-				Handler: registerHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/server/refreshaccesstoken",
-				Handler: refreshAccessTokenHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/server/verificationcode",
-				Handler: sendEmailVerificationCodeHandler(serverCtx),
+				Path:    "/updateinfo",
+				Handler: updateUserInfoHandler(serverCtx),
 			},
 		},
-		rest.WithPrefix("/novblog/user"),
-	)
-
-	authRouters := []rest.Route{
-		{
-			Method:  http.MethodGet,
-			Path:    "/batchinfo",
-			Handler: batchGetUserInfoHandler(serverCtx),
-		},
-		{
-			Method:  http.MethodPost,
-			Path:    "/blackusers",
-			Handler: blacklistUserHandler(serverCtx),
-		},
-		{
-			Method:  http.MethodPost,
-			Path:    "/changepassword/email",
-			Handler: changePasswordByEmailHandler(serverCtx),
-		},
-		{
-			Method:  http.MethodPost,
-			Path:    "/changepassword/id",
-			Handler: changePasswordByIDHandler(serverCtx),
-		},
-		{
-			Method:  http.MethodGet,
-			Path:    "/info",
-			Handler: getUserInfoHandler(serverCtx),
-		},
-		{
-			Method:  http.MethodPost,
-			Path:    "/unblackusers",
-			Handler: unblacklistUserHandler(serverCtx),
-		},
-		{
-			Method:  http.MethodPost,
-			Path:    "/updateinfo",
-			Handler: updateUserInfoHandler(serverCtx),
-		},
-	}
-	authRouters = rest.WithMiddleware(serverCtx.Middleware.JwtAuthMiddleware(), authRouters...)
-	server.AddRoutes(
-		authRouters,
 		rest.WithPrefix("/novblog/user"),
 	)
 }

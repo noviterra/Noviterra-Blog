@@ -12,29 +12,31 @@ import (
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
-	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodPost,
-				Path:    "/delete",
-				Handler: DeleteArticleHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/publish",
-				Handler: PublishArticleHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/update/article",
-				Handler: UpdateArticleHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/update/cover",
-				Handler: UpdateArticleCoverHandler(serverCtx),
-			},
+	authRouters := []rest.Route{
+		{
+			Method:  http.MethodPost,
+			Path:    "/delete",
+			Handler: DeleteArticleHandler(serverCtx),
 		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/publish",
+			Handler: PublishArticleHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/update/article",
+			Handler: UpdateArticleHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/update/cover",
+			Handler: UpdateArticleCoverHandler(serverCtx),
+		},
+	}
+	authRouters = rest.WithMiddleware(serverCtx.Middleware.JwtAuthMiddleware(), authRouters...)
+	server.AddRoutes(
+		authRouters,
 		rest.WithPrefix("/novblog/article"),
 	)
 

@@ -1,5 +1,5 @@
 Name: articlerpc.rpc
-ListenOn: 0.0.0.0:8080
+ListenOn: 0.0.0.0:9001
 Etcd:
   Hosts:
   - 127.0.0.1:2379
@@ -15,3 +15,8 @@ Repo:
   Host: 127.0.0.1
   Port: 3306
   DBName: noviterra
+
+Cache:
+  Addr: 127.0.0.1:6379
+  Password:
+  DB: 0

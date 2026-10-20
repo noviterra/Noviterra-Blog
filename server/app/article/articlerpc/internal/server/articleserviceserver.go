@@ -24,7 +24,7 @@ func NewArticleServiceServer(svcCtx *svc.ServiceContext) *ArticleServiceServer {
 }
 
 // 发布文章
-func (s *ArticleServiceServer) PublishArticle(ctx context.Context, in *articlerpc.PublishArticleRequest) (*articlerpc.Response, error) {
+func (s *ArticleServiceServer) PublishArticle(ctx context.Context, in *articlerpc.PublishArticleRequest) (*articlerpc.PublishArticleResponse, error) {
 	l := logic.NewPublishArticleLogic(ctx, s.svcCtx)
 	return l.PublishArticle(in)
 }

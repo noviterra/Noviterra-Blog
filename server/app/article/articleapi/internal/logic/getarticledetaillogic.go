@@ -76,7 +76,7 @@ func (l *GetArticleDetailLogic) GetArticleDetail(req *types.GetArticleDetailRequ
 	resp.Article.Status = 1
 	resp.Article.CreatedAt = l.svcCtx.CommonUtils.ToStringTime(rep.A.CreatedAt)
 	resp.Article.UpdatedAt = l.svcCtx.CommonUtils.ToStringTime(rep.A.UpdatedAt)
-	resp.Article.ArticleID = rep.A.ID
+	resp.Article.ArticleID = rep.A.ArticleID
 
 	resp.Resp.Code = 0
 	resp.Resp.Message = rep.Resp.Message

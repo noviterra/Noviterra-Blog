@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"strconv"
 	"time"
 )
 
@@ -55,4 +56,14 @@ func (c *CommonUtils) ToStringTime(ts int64) string {
 	}
 
 	return t.Format("2006-01-02 15:04:05")
+}
+
+// ToString int64转为string类型
+func (c *CommonUtils) ToString(num int64) string {
+	return strconv.FormatInt(num, 10)
+}
+
+// ToInt64 string类型转为int64类型
+func (c *CommonUtils) ToInt64(data string) (int64, error) {
+	return strconv.ParseInt(data, 10, 64)
 }
