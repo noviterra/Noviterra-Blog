@@ -64,3 +64,9 @@ func (s *ArticleServiceServer) GetArticleDetail(ctx context.Context, in *article
 	l := logic.NewGetArticleDetailLogic(ctx, s.svcCtx)
 	return l.GetArticleDetail(in)
 }
+
+// 得到文章归档
+func (s *ArticleServiceServer) GetArchive(ctx context.Context, in *articlerpc.GetArchiveRequest) (*articlerpc.GetArchiveResponse, error) {
+	l := logic.NewGetArchiveLogic(ctx, s.svcCtx)
+	return l.GetArchive(in)
+}

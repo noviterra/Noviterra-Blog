@@ -4,8 +4,8 @@
 package types
 
 type BatchUserInfoRequest struct {
-	Size int `json:"size"`
-	Page int `json:"page"`
+	Size int `json:"size" validate:"required,min=5,max=15"`
+	Page int `json:"page" validate:"required,min=1"`
 }
 
 type BatchUserInfoResponse struct {

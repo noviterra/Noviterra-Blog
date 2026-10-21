@@ -3,6 +3,12 @@
 
 package types
 
+type ArchiveArticle struct {
+	Title      string `json:"title" validate:"required,min=1,max=100"`
+	Action     string `json:"action" validate:"required,min=1,max=10,oneof=create update"` // 创建与更新
+	ActionTime int64  `json:"action_time" validate:"required"`
+}
+
 type Article struct {
 	PublisherID string   `json:"publisher_id" validate:"required,min=1,max=100"`
 	ArticleID   string   `json:"article_id" validate:"required,min=1,max=100"`
@@ -27,6 +33,11 @@ type ArticleList struct {
 
 type DeleteArticleRequest struct {
 	ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
+}
+
+type GetArchiveResponse struct {
+	ArticleList []ArchiveArticle `json:"article_list" validate:"required"`
+	Resp        Response         `json:"response"`
 }
 
 type GetArticleDetailRequest struct {

@@ -4,30 +4,44 @@
 package logic
 
 import (
-	"Noviterra/server/app/article/articlerpc/types/articlerpc"
-	"context"
-	"errors"
-	"net/http"
-
 	"Noviterra/server/app/article/articleapi/internal/svc"
 	"Noviterra/server/app/article/articleapi/internal/types"
+	"Noviterra/server/app/article/articlerpc/types/articlerpc"
+	"Noviterra/server/utils/errcode"
+	"context"
+	"errors"
+	"fmt"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
+type deleteArticleServiceTokenInterceptor interface {
+	GetServiceTokenInConf() string
+}
+
+type deleteArticleAuthMiddleware interface {
+	GetUserIDFromContext(ctx context.Context) string
+	GetUserRoleFromContext(ctx context.Context) int
+}
+
+type deleteArticleModel interface {
+	DeleteArticle(ctx context.Context, in *articlerpc.DeleteArticleRequest, opts ...grpc.CallOption) (*articlerpc.Response, error)
+}
 type DeleteArticleLogic struct {
-	logx.Logger
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx                     context.Context
+	articleModel            deleteArticleModel
+	authMiddleware          deleteArticleAuthMiddleware
+	serviceTokenInterceptor deleteArticleServiceTokenInterceptor
 }
 
 func NewDeleteArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *DeleteArticleLogic {
 	return &DeleteArticleLogic{
-		Logger: logx.WithContext(ctx),
-		ctx:    ctx,
-		svcCtx: svcCtx,
+		ctx:                     ctx,
+		authMiddleware:          svcCtx.AuthMiddleware,
+		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
+		articleModel:            svcCtx.ArticleModel,
 	}
 }
 
@@ -38,56 +52,65 @@ func (l *DeleteArticleLogic) DeleteArticle(req *types.DeleteArticleRequest) (res
 	if err := Validate.Struct(*req); err != nil {
 		var errs validator.ValidationErrors
 		if errors.As(err, &errs) && len(errs) > 0 {
-			resp.Status = http.StatusBadRequest
-			resp.Code = 1
-			resp.Message = TypeName[errs[0].Field()] + "格式错误！"
+			return failResponse(resp, TypeName[errs[0].Field()]+"格式错误！", errcode.InvalidParam, errcode.Failed)
 		}
-		return resp, nil
+		return failResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 
 	// 从上下文中获取用户ID
-	publisherID := l.svcCtx.Middleware.GetUserIDFromContext(l.ctx)
+	publisherID := l.authMiddleware.GetUserIDFromContext(l.ctx)
 	if publisherID == "" {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = "用户ID为空！"
-		return resp, nil
+
 	}
 
 	// 获取用户身份权限
-	role := l.svcCtx.Middleware.GetUserRoleFromContext(l.ctx)
+	role := l.authMiddleware.GetUserRoleFromContext(l.ctx)
 	if role != 1 { // 1为管理员
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = "用户身份权限不足！"
-		return resp, nil
+		return failResponse(resp, "用户身份权限不足！", errcode.InvalidParam, errcode.Failed)
 	}
 
 	// 用户信息与服务凭证注入metadata中
 	ctx := metadata.AppendToOutgoingContext(l.ctx,
-		"service-token", l.svcCtx.Config.Interceptor.ServiceToken,
+		"service-token", l.serviceTokenInterceptor.GetServiceTokenInConf(),
 		"user-id", publisherID,
 	)
 
-	rep, err := l.svcCtx.ArticleModel.DeleteArticle(ctx, &articlerpc.DeleteArticleRequest{
+	rep, err := l.articleModel.DeleteArticle(ctx, &articlerpc.DeleteArticleRequest{
 		ArticleID: req.ArticleID,
 	})
 	if err != nil {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = "ERROR:" + err.Error()
-		return resp, nil
+		return failResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 	if rep.Code != 0 {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = rep.Message
-		return resp, nil
+		return failResponse(resp, rep.Message, errcode.InvalidParam, int(rep.Code))
 	}
 
-	resp.Code = 0
-	resp.Message = rep.Message
-	resp.Status = http.StatusOK
+	return successResponse(resp, fmt.Sprintf("文章：%s删除成功！", req.ArticleID))
+}
+
+// 封装Response的对外导出 不绑定结构体之下
+
+func failResponse(resp *types.Response, msg string, status, code int) (*types.Response, error) {
+	resp.Status = status
+	resp.Code = code
+	resp.Message = msg
+
+	return resp, nil
+}
+
+func failResponseWithErr(resp *types.Response, err error, status, code int) (*types.Response, error) {
+	resp.Status = status
+	resp.Code = code
+	resp.Message = "服务错误：" + err.Error()
+
+	return resp, nil
+}
+
+// 多个logic调用 msg自定义传入
+func successResponse(resp *types.Response, msg string) (*types.Response, error) {
+	resp.Status = errcode.RequestSuccess
+	resp.Code = errcode.Success
+	resp.Message = msg
 
 	return resp, nil
 }

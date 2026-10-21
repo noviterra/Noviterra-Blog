@@ -52,7 +52,7 @@ type (
         ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
         // 顶层评论与评论者
         Root string `json:"root" validate:"required,min=1,max=200"`
-        InitiatorID string `json:"initiator_id" validate:"required,min=1,m  ax=100"`
+        InitiatorID string `json:"initiator_id" validate:"required,min=1,max=100"`
         // 被回复的评论与被回复者
         Original string `json:"original" validate:"required,min=1,max=200"`
         RecipientID string `json:"recipient_id" validate:"required,min=1,max=100"`
@@ -65,7 +65,7 @@ type (
     CommentNoviterraRequest {
         CommentID string `json:"comment_id" validate:"required,min=1,max=100"`
         Root string `json:"root" validate:"required,min=1,max=200"`
-        InitiatorID string `json:"initiator_id" validate:"required,min=1,m  ax=100"`
+        InitiatorID string `json:"initiator_id" validate:"required,min=1,max=100"`
         Original string `json:"original" validate:"required,min=1,max=200"`
         RecipientID string `json:"recipient_id" validate:"required,min=1,max=100"`
         SpeakerID string `json:"speaker_id" validate:"required,min=1,max=100"`

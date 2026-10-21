@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"Noviterra/server/utils/jwtauth"
 	"context"
 	"errors"
 	"fmt"
@@ -11,6 +12,24 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
+type UserRepository interface {
+	GetUserAccountStatus(id string) (int, error)
+	GetUserRole(id string) (int, error)
+	CheckIDExists(id string) (bool, error)
+}
+
+type AuthMiddleware struct {
+	authorization *jwtauth.Authentication
+	userRepo      UserRepository
+}
+
+func NewAuthMiddleware(authorization *jwtauth.Authentication, userRepo UserRepository) *AuthMiddleware {
+	return &AuthMiddleware{
+		authorization: authorization,
+		userRepo:      userRepo,
+	}
+}
+
 type ctxKeyID string
 type ctxKeyRole string
 
@@ -19,7 +38,7 @@ const (
 	ctxKeyUserRole ctxKeyRole = "userRole"
 )
 
-func (m *Middleware) JwtAuthMiddleware() rest.Middleware {
+func (am *AuthMiddleware) JwtAuthMiddleware() rest.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			// 从请求头中获取Token
@@ -38,7 +57,7 @@ func (m *Middleware) JwtAuthMiddleware() rest.Middleware {
 			tokenStr := parts[1]
 
 			// 解析Token--AccessToken
-			claim, err := m.authorization.ParseAccessToken(tokenStr)
+			claim, err := am.authorization.ParseAccessToken(tokenStr)
 			if err != nil {
 				httpx.ErrorCtx(r.Context(), w, fmt.Errorf("Token解析失败：%v", err))
 				return
@@ -49,7 +68,7 @@ func (m *Middleware) JwtAuthMiddleware() rest.Middleware {
 			}
 
 			// todo: 用户状态校验 账号校验与身份校验
-			idExist, err := m.userRepo.CheckIDExists(claim.ID)
+			idExist, err := am.userRepo.CheckIDExists(claim.ID)
 			if err != nil {
 				httpx.ErrorCtx(r.Context(), w, errors.New("用户校验失败！"))
 				return
@@ -58,7 +77,7 @@ func (m *Middleware) JwtAuthMiddleware() rest.Middleware {
 				httpx.ErrorCtx(r.Context(), w, errors.New("疑似伪造用户，劝你心善！"))
 				return
 			}
-			status, err := m.userRepo.GetUserAccountStatus(claim.ID)
+			status, err := am.userRepo.GetUserAccountStatus(claim.ID)
 			if err != nil {
 				httpx.ErrorCtx(r.Context(), w, errors.New("状态校验失败！"))
 				return
@@ -67,7 +86,7 @@ func (m *Middleware) JwtAuthMiddleware() rest.Middleware {
 				httpx.ErrorCtx(r.Context(), w, errors.New("账号被封禁，操作失败！"))
 				return
 			}
-			role, err := m.userRepo.GetUserRole(claim.ID)
+			role, err := am.userRepo.GetUserRole(claim.ID)
 			if err != nil {
 				httpx.ErrorCtx(r.Context(), w, errors.New("身份校验失败！"))
 				return
@@ -83,7 +102,7 @@ func (m *Middleware) JwtAuthMiddleware() rest.Middleware {
 }
 
 // 从context中获取用户ID
-func (m *Middleware) GetUserIDFromContext(ctx context.Context) string {
+func (am *AuthMiddleware) GetUserIDFromContext(ctx context.Context) string {
 	if v, ok := ctx.Value(ctxKeyUserID).(string); ok {
 		return v
 	}
@@ -91,7 +110,7 @@ func (m *Middleware) GetUserIDFromContext(ctx context.Context) string {
 }
 
 // 从context中获取用户身份
-func (m *Middleware) GetUserRoleFromContext(ctx context.Context) int {
+func (am *AuthMiddleware) GetUserRoleFromContext(ctx context.Context) int {
 	if v, ok := ctx.Value(ctxKeyUserRole).(int); ok {
 		return v
 	}

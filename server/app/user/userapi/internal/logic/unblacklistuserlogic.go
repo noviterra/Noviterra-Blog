@@ -57,7 +57,7 @@ func (l *UnblacklistUserLogic) UnblacklistUser(req *types.UnblacklistUserRequest
 		resp.Message = "未登录，身份验证失败！"
 		return resp, nil
 	}
-	if role != 1 {
+	if role < 1 {
 		resp.Status = http.StatusBadRequest
 		resp.Code = 1
 		resp.Message = "权限不足，无法解封用户！"

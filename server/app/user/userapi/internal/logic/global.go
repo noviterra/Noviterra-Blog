@@ -16,4 +16,6 @@ var TypeName = class{
 	"VerifPassword":    "确认新密码",
 	"RefreshToken":     "身份凭证",
 	"OldPassword":      "旧密码",
+	"Page":             "页数",
+	"Size":             "页面展示用户数量",
 }

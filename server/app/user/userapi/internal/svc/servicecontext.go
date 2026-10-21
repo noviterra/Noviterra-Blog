@@ -19,7 +19,7 @@ type ServiceContext struct {
 	Logger        *zaplogger.Logger
 	UserModel     userservice.UserService
 	Authorization *jwtauth.Authentication
-	Middleware    *middleware.Middleware
+	Middleware    *middleware.AuthMiddleware
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -46,7 +46,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	}, "identity")
 
 	// 中间件
-	m := middleware.NewMiddleware(authentication, identityRepo)
+	m := middleware.NewAuthMiddleware(authentication, identityRepo)
 
 	return &ServiceContext{
 		Config:        c,

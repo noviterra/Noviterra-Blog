@@ -12,47 +12,54 @@ import (
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
-	authRouters := []rest.Route{
-		{
-			Method:  http.MethodPost,
-			Path:    "/delete",
-			Handler: DeleteArticleHandler(serverCtx),
-		},
-		{
-			Method:  http.MethodPost,
-			Path:    "/publish",
-			Handler: PublishArticleHandler(serverCtx),
-		},
-		{
-			Method:  http.MethodPost,
-			Path:    "/update/article",
-			Handler: UpdateArticleHandler(serverCtx),
-		},
-		{
-			Method:  http.MethodPost,
-			Path:    "/update/cover",
-			Handler: UpdateArticleCoverHandler(serverCtx),
-		},
-	}
-	authRouters = rest.WithMiddleware(serverCtx.Middleware.JwtAuthMiddleware(), authRouters...)
 	server.AddRoutes(
-		authRouters,
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/delete",
+				Handler: DeleteArticleHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/publish",
+				Handler: PublishArticleHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/update/article",
+				Handler: UpdateArticleHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/update/cover",
+				Handler: UpdateArticleCoverHandler(serverCtx),
+			},
+		},
 		rest.WithPrefix("/novblog/article"),
 	)
 
 	server.AddRoutes(
 		[]rest.Route{
 			{
+				// 获取文章详情
 				Method:  http.MethodGet,
 				Path:    "/:article",
 				Handler: GetArticleDetailHandler(serverCtx),
 			},
 			{
+				// 归档 时间轴展示博客与
+				Method:  http.MethodGet,
+				Path:    "/archive",
+				Handler: GetArchiveHandler(serverCtx),
+			},
+			{
+				// 获取文章列表
 				Method:  http.MethodGet,
 				Path:    "/list",
 				Handler: GetArticleListHandler(serverCtx),
 			},
 			{
+				// 搜索文章
 				Method:  http.MethodPost,
 				Path:    "/search",
 				Handler: SearchArticleHandler(serverCtx),

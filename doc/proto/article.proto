@@ -31,6 +31,13 @@ message Article {
     int64 UpdatedAt = 9;
 }
 
+// 归档中单个文章详细属性
+message ArchiveArticle {
+    string Title = 1;
+    string Action = 2;
+    int64 Time = 3;
+}
+
 // 发布文章请求体
 message PublishArticleRequest {
     string Title = 1;
@@ -105,6 +112,15 @@ message GetArticleDetailResponse {
     Response Resp = 2;
 }
 
+// 得到文章归档请求体
+message GetArchiveRequest {  // 无实际字段 但使用是必要的
+}
+// 文章归档响应体
+message GetArchiveResponse {
+    repeated ArchiveArticle Archives = 1;
+    Response Resp = 2;
+}
+
 service ArticleService {
     // 发布文章
     rpc PublishArticle(PublishArticleRequest) returns (PublishArticleResponse);
@@ -120,6 +136,8 @@ service ArticleService {
     rpc SearchArticle(SearchArticleRequest) returns (SearchArticleResponse);
     // 查询文章详细信息
     rpc GetArticleDetail(GetArticleDetailRequest) returns (GetArticleDetailResponse);
+    // 得到文章归档
+    rpc GetArchive(GetArchiveRequest) returns (GetArchiveResponse);
 }
 
 // goctl rpc protoc ./doc/proto/article.proto --go_out=./server/app/article/articlerpc/types --go-grpc_out=./server/app/article/articlerpc/types --zrpc_out=./server/app/article/articlerpc

@@ -6,8 +6,10 @@ package svc
 import (
 	"Noviterra/server/app/article/articleapi/internal/config"
 	"Noviterra/server/app/article/articlerpc/articleservice"
+	"Noviterra/server/app/internal/interceptor"
 	"Noviterra/server/app/internal/middleware"
 	"Noviterra/server/utils/common"
+	"Noviterra/server/utils/ctxdata"
 	"Noviterra/server/utils/jwtauth"
 	"Noviterra/server/utils/repo"
 
@@ -15,10 +17,11 @@ import (
 )
 
 type ServiceContext struct {
-	Config       config.Config
-	ArticleModel articleservice.ArticleService
-	Middleware   *middleware.Middleware
-	CommonUtils  *common.CommonUtils
+	Config                  config.Config
+	ArticleModel            articleservice.ArticleService
+	AuthMiddleware          *middleware.AuthMiddleware
+	CommonUtils             *common.CommonUtils
+	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -46,13 +49,23 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		DBName:   c.Repo.DBName,
 	}, "user")
 
-	// 集成中间件
-	m := middleware.NewMiddleware(authentication, identityRepo)
+	// 认证中间件
+	m := middleware.NewAuthMiddleware(authentication, identityRepo)
+
+	// ctxdata
+	ctxData := ctxdata.NewCtxData()
+
+	// 拦截器
+	serviceTokenInterceptor := interceptor.NewServiceTokenInterceptor(ctxData, interceptor.ServiceTokenConfig{
+		SecretToken: c.Interceptor.ServiceToken,
+		SkipToken:   c.Interceptor.SkipToken,
+	})
 
 	return &ServiceContext{
-		Config:       c,
-		ArticleModel: articleService,
-		Middleware:   m,
-		CommonUtils:  commonUtils,
+		Config:                  c,
+		ArticleModel:            articleService,
+		AuthMiddleware:          m,
+		CommonUtils:             commonUtils,
+		ServiceTokenInterceptor: serviceTokenInterceptor,
 	}
 }

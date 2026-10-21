@@ -1,0 +1,29 @@
+syntax = "v1"
+
+info(
+    title: "Noviterra通知服务"
+    desc: "管理Noviterra的全部通知模块，包括但不限于订阅通知、站内信息通知等等"
+    author: "Noviterra"
+)
+
+type (
+    Response {
+        Status  int    `json:"status"`
+        Code    int    `json:"errcode"`
+        Message string `json:"message"`
+    }
+    // 对订阅者发送信息 仅rpc方法 发布文章时向订阅者发送信息
+
+    // 发布站内公告
+    PublishStationNoticeRequest {
+        Message string `json:"message" validate:"required,min=10,max=100"`
+    }
+
+    // 站内信息 非互聊 是站点对用户的通知
+    SendMessageToUserRequest {
+        UserID string `json:"user_id" validate:"required,min=1,max=20"`
+        Message string `json:"message" validate:"required,min=10,max=100"`
+    }
+
+    // 用户评论时 向文章发布者、站主发送信息 也仅rpc方法 评论时调用
+)

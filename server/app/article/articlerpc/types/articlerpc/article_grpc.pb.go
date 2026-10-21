@@ -26,6 +26,7 @@ const (
 	ArticleService_GetArticleList_FullMethodName     = "/articlerpc.ArticleService/GetArticleList"
 	ArticleService_SearchArticle_FullMethodName      = "/articlerpc.ArticleService/SearchArticle"
 	ArticleService_GetArticleDetail_FullMethodName   = "/articlerpc.ArticleService/GetArticleDetail"
+	ArticleService_GetArchive_FullMethodName         = "/articlerpc.ArticleService/GetArchive"
 )
 
 // ArticleServiceClient is the client API for ArticleService service.
@@ -46,6 +47,8 @@ type ArticleServiceClient interface {
 	SearchArticle(ctx context.Context, in *SearchArticleRequest, opts ...grpc.CallOption) (*SearchArticleResponse, error)
 	// 查询文章详细信息
 	GetArticleDetail(ctx context.Context, in *GetArticleDetailRequest, opts ...grpc.CallOption) (*GetArticleDetailResponse, error)
+	// 得到文章归档
+	GetArchive(ctx context.Context, in *GetArchiveRequest, opts ...grpc.CallOption) (*GetArchiveResponse, error)
 }
 
 type articleServiceClient struct {
@@ -126,6 +129,16 @@ func (c *articleServiceClient) GetArticleDetail(ctx context.Context, in *GetArti
 	return out, nil
 }
 
+func (c *articleServiceClient) GetArchive(ctx context.Context, in *GetArchiveRequest, opts ...grpc.CallOption) (*GetArchiveResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetArchiveResponse)
+	err := c.cc.Invoke(ctx, ArticleService_GetArchive_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ArticleServiceServer is the server API for ArticleService service.
 // All implementations must embed UnimplementedArticleServiceServer
 // for forward compatibility.
@@ -144,6 +157,8 @@ type ArticleServiceServer interface {
 	SearchArticle(context.Context, *SearchArticleRequest) (*SearchArticleResponse, error)
 	// 查询文章详细信息
 	GetArticleDetail(context.Context, *GetArticleDetailRequest) (*GetArticleDetailResponse, error)
+	// 得到文章归档
+	GetArchive(context.Context, *GetArchiveRequest) (*GetArchiveResponse, error)
 	mustEmbedUnimplementedArticleServiceServer()
 }
 
@@ -174,6 +189,9 @@ func (UnimplementedArticleServiceServer) SearchArticle(context.Context, *SearchA
 }
 func (UnimplementedArticleServiceServer) GetArticleDetail(context.Context, *GetArticleDetailRequest) (*GetArticleDetailResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetArticleDetail not implemented")
+}
+func (UnimplementedArticleServiceServer) GetArchive(context.Context, *GetArchiveRequest) (*GetArchiveResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetArchive not implemented")
 }
 func (UnimplementedArticleServiceServer) mustEmbedUnimplementedArticleServiceServer() {}
 func (UnimplementedArticleServiceServer) testEmbeddedByValue()                        {}
@@ -322,6 +340,24 @@ func _ArticleService_GetArticleDetail_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ArticleService_GetArchive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetArchiveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticleServiceServer).GetArchive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ArticleService_GetArchive_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticleServiceServer).GetArchive(ctx, req.(*GetArchiveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ArticleService_ServiceDesc is the grpc.ServiceDesc for ArticleService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -356,6 +392,10 @@ var ArticleService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetArticleDetail",
 			Handler:    _ArticleService_GetArticleDetail_Handler,
+		},
+		{
+			MethodName: "GetArchive",
+			Handler:    _ArticleService_GetArchive_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

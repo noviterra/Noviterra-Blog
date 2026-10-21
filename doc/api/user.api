@@ -1,5 +1,11 @@
 syntax = "v1"
 
+info (
+	title:  "Noviterra用户信息服务"
+	desc:   "管理Noviterra的全部用户信息模块，包括但不限于获取用户信息、修改信息等等"
+	author: "Noviterra"
+)
+
 type (
 	// 对于响应 除特殊情况外进行统一封装
 	Response {
@@ -41,8 +47,8 @@ type (
 	}
 	// 管理员批量获取用户信息  分页查询
 	BatchUserInfoRequest {
-		size int `json:"size"`
-		page int `json:"page"`
+		size int `json:"size" validate:"required,min=5,max=15"`
+		page int `json:"page" validate:"required,min=1"`
 	}
 	BatchUserInfoResponse {
 		Users []*UserInfoResponse `json:"users"`

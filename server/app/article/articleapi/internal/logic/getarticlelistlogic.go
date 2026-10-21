@@ -4,30 +4,38 @@
 package logic
 
 import (
-	"Noviterra/server/app/article/articlerpc/types/articlerpc"
-	"context"
-	"errors"
-	"net/http"
-
 	"Noviterra/server/app/article/articleapi/internal/svc"
 	"Noviterra/server/app/article/articleapi/internal/types"
+	"Noviterra/server/app/article/articlerpc/types/articlerpc"
+	"Noviterra/server/utils/errcode"
+	"context"
+	"errors"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
+type getArticleListArticleModel interface {
+	GetArticleList(ctx context.Context, in *articlerpc.GetArticleListRequest, opts ...grpc.CallOption) (*articlerpc.GetArticleListResponse, error)
+}
+
+type getArticleListServiceTokenInterceptor interface {
+	GetServiceTokenInConf() string
+	GetSkipTokenInConf() string
+}
+
 type GetArticleListLogic struct {
-	logx.Logger
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx                     context.Context
+	articleModel            getArticleListArticleModel
+	serviceTokenInterceptor getArticleListServiceTokenInterceptor
 }
 
 func NewGetArticleListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetArticleListLogic {
 	return &GetArticleListLogic{
-		Logger: logx.WithContext(ctx),
-		ctx:    ctx,
-		svcCtx: svcCtx,
+		ctx:                     ctx,
+		articleModel:            svcCtx.ArticleModel,
+		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
 
@@ -38,36 +46,56 @@ func (l *GetArticleListLogic) GetArticleList(req *types.GetArticleListRequest) (
 	if err := Validate.Struct(*req); err != nil {
 		var errs validator.ValidationErrors
 		if errors.As(err, &errs) && len(errs) > 0 {
-			resp.Resp.Status = http.StatusBadRequest
-			resp.Resp.Code = 1
-			resp.Resp.Message = TypeName[errs[0].Field()] + "格式错误！"
+			return l.failGetArticleListResponse(resp, TypeName[errs[0].Field()]+"格式错误！", errcode.InvalidParam, errcode.Failed)
 		}
-		return resp, nil
+		return l.failGetArticleListResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 
 	// 对于api层不需要鉴权的接口 也要将rpc服务凭证传入到metadata中
 	ctx := metadata.AppendToOutgoingContext(l.ctx,
-		"service-token", l.svcCtx.Config.Interceptor.ServiceToken,
-		"skip-token", l.svcCtx.Config.Interceptor.SkipToken,
+		"service-token", l.serviceTokenInterceptor.GetServiceTokenInConf(),
+		"skip-token", l.serviceTokenInterceptor.GetSkipTokenInConf(),
 	)
 
-	rep, err := l.svcCtx.ArticleModel.GetArticleList(ctx, &articlerpc.GetArticleListRequest{
+	rep, err := l.articleModel.GetArticleList(ctx, &articlerpc.GetArticleListRequest{
 		Page:     int32(req.Page),
 		PageSize: int32(req.PageSize),
 	})
 	if err != nil {
-		resp.Resp.Status = http.StatusBadRequest
-		resp.Resp.Code = 1
-		resp.Resp.Message = "ERROR:" + err.Error()
-		return resp, nil
+		return l.failGetArticleListResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 	if rep.Resp.Code != 0 {
-		resp.Resp.Status = http.StatusBadRequest
-		resp.Resp.Code = 1
-		resp.Resp.Message = rep.Resp.Message
-		return resp, nil
+		return l.failGetArticleListResponse(resp, rep.Resp.Message, errcode.InvalidParam, int(rep.Resp.Code))
 	}
 
+	return l.successGetArticleListResponse(resp, rep)
+}
+
+func (l *GetArticleListLogic) failGetArticleListResponse(resp *types.GetArticleListResponse, msg string, status, code int) (*types.GetArticleListResponse, error) {
+	resp.ArticlesList = nil
+
+	resp.Resp = types.Response{
+		Status:  status,
+		Code:    code,
+		Message: msg,
+	}
+
+	return resp, nil
+}
+
+func (l *GetArticleListLogic) failGetArticleListResponseWithErr(resp *types.GetArticleListResponse, err error, status, code int) (*types.GetArticleListResponse, error) {
+	resp.ArticlesList = nil
+
+	resp.Resp = types.Response{
+		Status:  status,
+		Code:    code,
+		Message: "服务失败：" + err.Error(),
+	}
+
+	return resp, nil
+}
+
+func (l *GetArticleListLogic) successGetArticleListResponse(resp *types.GetArticleListResponse, rep *articlerpc.GetArticleListResponse) (*types.GetArticleListResponse, error) {
 	// 文章列表内容映射
 	for _, a := range rep.Articles {
 		var elem types.ArticleList
@@ -79,9 +107,11 @@ func (l *GetArticleListLogic) GetArticleList(req *types.GetArticleListRequest) (
 		resp.ArticlesList = append(resp.ArticlesList, elem)
 	}
 
-	resp.Resp.Code = 0
-	resp.Resp.Message = rep.Resp.Message
-	resp.Resp.Status = http.StatusOK
+	resp.Resp = types.Response{
+		Status:  errcode.RequestSuccess,
+		Code:    errcode.Success,
+		Message: "文章列表加载完成！",
+	}
 
 	return resp, nil
 }

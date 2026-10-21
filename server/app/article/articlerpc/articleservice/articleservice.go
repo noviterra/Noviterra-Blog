@@ -14,9 +14,12 @@ import (
 )
 
 type (
+	ArchiveArticle             = articlerpc.ArchiveArticle
 	Article                    = articlerpc.Article
 	ArticleList                = articlerpc.ArticleList
 	DeleteArticleRequest       = articlerpc.DeleteArticleRequest
+	GetArchiveRequest          = articlerpc.GetArchiveRequest
+	GetArchiveResponse         = articlerpc.GetArchiveResponse
 	GetArticleDetailRequest    = articlerpc.GetArticleDetailRequest
 	GetArticleDetailResponse   = articlerpc.GetArticleDetailResponse
 	GetArticleListRequest      = articlerpc.GetArticleListRequest
@@ -45,6 +48,8 @@ type (
 		SearchArticle(ctx context.Context, in *SearchArticleRequest, opts ...grpc.CallOption) (*SearchArticleResponse, error)
 		// 查询文章详细信息
 		GetArticleDetail(ctx context.Context, in *GetArticleDetailRequest, opts ...grpc.CallOption) (*GetArticleDetailResponse, error)
+		// 得到文章归档
+		GetArchive(ctx context.Context, in *GetArchiveRequest, opts ...grpc.CallOption) (*GetArchiveResponse, error)
 	}
 
 	defaultArticleService struct {
@@ -98,4 +103,10 @@ func (m *defaultArticleService) SearchArticle(ctx context.Context, in *SearchArt
 func (m *defaultArticleService) GetArticleDetail(ctx context.Context, in *GetArticleDetailRequest, opts ...grpc.CallOption) (*GetArticleDetailResponse, error) {
 	client := articlerpc.NewArticleServiceClient(m.cli.Conn())
 	return client.GetArticleDetail(ctx, in, opts...)
+}
+
+// 得到文章归档
+func (m *defaultArticleService) GetArchive(ctx context.Context, in *GetArchiveRequest, opts ...grpc.CallOption) (*GetArchiveResponse, error) {
+	client := articlerpc.NewArticleServiceClient(m.cli.Conn())
+	return client.GetArchive(ctx, in, opts...)
 }

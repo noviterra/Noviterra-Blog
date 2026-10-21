@@ -4,30 +4,37 @@
 package logic
 
 import (
-	"Noviterra/server/app/article/articlerpc/types/articlerpc"
-	"context"
-	"errors"
-	"net/http"
-
 	"Noviterra/server/app/article/articleapi/internal/svc"
 	"Noviterra/server/app/article/articleapi/internal/types"
+	"Noviterra/server/app/article/articlerpc/types/articlerpc"
+	"Noviterra/server/utils/errcode"
+	"context"
+	"errors"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
+type searchArticleModel interface {
+	SearchArticle(ctx context.Context, in *articlerpc.SearchArticleRequest, opts ...grpc.CallOption) (*articlerpc.SearchArticleResponse, error)
+}
+
+type searchArticleServiceTokenInterceptor interface {
+	GetServiceTokenInConf() string
+	GetSkipTokenInConf() string
+}
 type SearchArticleLogic struct {
-	logx.Logger
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx                     context.Context
+	articleModel            searchArticleModel
+	serviceTokenInterceptor searchArticleServiceTokenInterceptor
 }
 
 func NewSearchArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SearchArticleLogic {
 	return &SearchArticleLogic{
-		Logger: logx.WithContext(ctx),
-		ctx:    ctx,
-		svcCtx: svcCtx,
+		ctx:                     ctx,
+		articleModel:            svcCtx.ArticleModel,
+		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
 
@@ -38,37 +45,57 @@ func (l *SearchArticleLogic) SearchArticle(req *types.SearchArticleRequest) (res
 	if err := Validate.Struct(*req); err != nil {
 		var errs validator.ValidationErrors
 		if errors.As(err, &errs) && len(errs) > 0 {
-			resp.Resp.Status = http.StatusBadRequest
-			resp.Resp.Code = 1
-			resp.Resp.Message = TypeName[errs[0].Field()] + "格式错误！"
+			return l.failSearchArticleResponse(resp, TypeName[errs[0].Field()]+"格式错误！", errcode.InvalidParam, errcode.Failed)
 		}
-		return resp, nil
+		return l.failSearchArticleResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 
 	// 对于api层不需要鉴权的接口 也要将rpc服务凭证传入到metadata中
 	ctx := metadata.AppendToOutgoingContext(l.ctx,
-		"service-token", l.svcCtx.Config.Interceptor.ServiceToken,
-		"skip-token", l.svcCtx.Config.Interceptor.SkipToken,
+		"service-token", l.serviceTokenInterceptor.GetServiceTokenInConf(),
+		"skip-token", l.serviceTokenInterceptor.GetSkipTokenInConf(),
 	)
 
-	rep, err := l.svcCtx.ArticleModel.SearchArticle(ctx, &articlerpc.SearchArticleRequest{
+	rep, err := l.articleModel.SearchArticle(ctx, &articlerpc.SearchArticleRequest{
 		Query:    req.Query,
 		Page:     int32(req.Page),
 		PageSize: int32(req.PageSize),
 	})
 	if err != nil {
-		resp.Resp.Status = http.StatusBadRequest
-		resp.Resp.Code = 1
-		resp.Resp.Message = "ERROR:" + err.Error()
-		return resp, nil
+		return l.failSearchArticleResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 	if rep.Resp.Code != 0 {
-		resp.Resp.Status = http.StatusBadRequest
-		resp.Resp.Code = 1
-		resp.Resp.Message = rep.Resp.Message
-		return resp, nil
+		return l.failSearchArticleResponse(resp, rep.Resp.Message, errcode.InvalidParam, int(rep.Resp.Code))
 	}
 
+	return l.successSearchArticleResponse(resp, rep)
+}
+
+func (l *SearchArticleLogic) failSearchArticleResponse(resp *types.SearchArticleResponse, msg string, status, code int) (*types.SearchArticleResponse, error) {
+	resp.ArticlesList = nil
+
+	resp.Resp = types.Response{
+		Status:  status,
+		Code:    code,
+		Message: msg,
+	}
+
+	return resp, nil
+}
+
+func (l *SearchArticleLogic) failSearchArticleResponseWithErr(resp *types.SearchArticleResponse, err error, status, code int) (*types.SearchArticleResponse, error) {
+	resp.ArticlesList = nil
+
+	resp.Resp = types.Response{
+		Status:  status,
+		Code:    code,
+		Message: "服务错误：" + err.Error(),
+	}
+
+	return resp, nil
+}
+
+func (l *SearchArticleLogic) successSearchArticleResponse(resp *types.SearchArticleResponse, rep *articlerpc.SearchArticleResponse) (*types.SearchArticleResponse, error) {
 	// 文章列表内容映射
 	for _, a := range rep.Articles {
 		var elem types.ArticleList
@@ -80,9 +107,11 @@ func (l *SearchArticleLogic) SearchArticle(req *types.SearchArticleRequest) (res
 		resp.ArticlesList = append(resp.ArticlesList, elem)
 	}
 
-	resp.Resp.Code = 0
-	resp.Resp.Message = rep.Resp.Message
-	resp.Resp.Status = http.StatusOK
+	resp.Resp = types.Response{
+		Status:  errcode.RequestSuccess,
+		Code:    errcode.Success,
+		Message: "文章修改成功！",
+	}
 
 	return resp, nil
 }

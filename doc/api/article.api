@@ -35,6 +35,12 @@ type (
 		CreatedAt   string   `json:"created_at" validate:"required,timeformat=2006-01-02 15:04:05"`
 		UpdatedAt   string   `json:"updated_at" validate:"required,timeformat=2006-01-02 15:04:05"`
 	}
+	// 归档文章体
+	ArchiveArticle {
+		Title      string `json:"title" validate:"required,min=1,max=100"`
+		Action     string `json:"action" validate:"required,min=1,max=10,oneof=create update"` // 创建与更新
+		ActionTime int64  `json:"action_time" validate:"required"`
+	}
 	// 增：发布文章
 	PublishArticleRequest {
 		Title   string `form:"title" json:"title" validate:"required,min=1,max=100"`
@@ -95,6 +101,11 @@ type (
 		ArticlesList []ArticleList `json:"articles_list"`
 		Resp         Response      `json:"response"`
 	}
+	// 归档 得到归档格式的文章列表
+	GetArchiveResponse {
+		ArticleList []ArchiveArticle `json:"article_list" validate:"required"`
+		Resp        Response         `json:"response"`
+	}
 )
 
 // 需要鉴权中间件的
@@ -117,10 +128,6 @@ service articleService {
 	// @doc "修改文章封面"
 	@handler UpdateArticleCover
 	post /update/cover (UpdateArticleCoverRequest) returns (UpdateArticleCoverResponse)
-
-	// @doc "文章点赞 必须登录状态下进行"
-	@handler LikeArticle
-	post /like (LikeArticleRequest) returns (Response)
 }
 
 // 不需要鉴权中间件的
@@ -128,17 +135,21 @@ service articleService {
 	prefix: novblog/article
 )
 service articleService {
-	// @doc "获取文章列表"
+	@doc "获取文章列表"
 	@handler GetArticleList
 	get /list (GetArticleListRequest) returns (GetArticleListResponse)
 
-	// @doc "获取文章详情"
+	@doc "获取文章详情"
 	@handler GetArticleDetail
 	get /:article (GetArticleDetailRequest) returns (GetArticleDetailResponse)
 
-	// @doc "搜索文章"
+	@doc "搜索文章"
 	@handler SearchArticle
 	post /search (SearchArticleRequest) returns (SearchArticleResponse)
+
+	@doc "归档 时间轴展示博客与"
+	@handler GetArchive
+	get /archive returns (GetArchiveResponse)
 }
 
 // goctl api go -api ./doc/api/article.api -dir ./server/app/article/articleapi

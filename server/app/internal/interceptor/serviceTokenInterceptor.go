@@ -1,6 +1,7 @@
 package interceptor
 
 import (
+	"Noviterra/server/utils/ctxdata"
 	"context"
 	"errors"
 	"fmt"
@@ -9,13 +10,29 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+type ServiceTokenConfig struct {
+	SecretToken string
+	SkipToken   string
+}
+type ServiceTokenInterceptor struct {
+	CtxData *ctxdata.CtxData
+	conf    ServiceTokenConfig
+}
+
+func NewServiceTokenInterceptor(ctxdata *ctxdata.CtxData, serviceTokenConfig ServiceTokenConfig) *ServiceTokenInterceptor {
+	return &ServiceTokenInterceptor{
+		CtxData: ctxdata,
+		conf:    serviceTokenConfig,
+	}
+}
+
 // 白名单 不做校验
 var skipMethods = map[string]bool{
 	"/grpc.health.v1.Health/Check": true,
 	"/grpc.health.v1.Health/Watch": true,
 }
 
-func (i *Interceptor) ServiceTokenInterceptor(secretToken, skipToken string) grpc.UnaryServerInterceptor {
+func (si *ServiceTokenInterceptor) ServiceTokenInterceptor(secretToken, skipToken string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 		// 白名单跳过
 		if skipMethods[info.FullMethod] {
@@ -47,10 +64,18 @@ func (i *Interceptor) ServiceTokenInterceptor(secretToken, skipToken string) grp
 				return nil, errors.New("无效的user-id！")
 			}
 			fmt.Println(id)
-			ctx = i.CtxData.StoreUserID(ctx, id)
+			ctx = si.CtxData.StoreUserID(ctx, id)
 			return handler(ctx, req)
 		}
 		// 存在正确的跳过令牌 直接返回ctx 不写入ID
 		return handler(ctx, req)
 	}
+}
+
+func (si *ServiceTokenInterceptor) GetServiceTokenInConf() string {
+	return si.conf.SecretToken
+}
+
+func (si *ServiceTokenInterceptor) GetSkipTokenInConf() string {
+	return si.conf.SkipToken
 }
