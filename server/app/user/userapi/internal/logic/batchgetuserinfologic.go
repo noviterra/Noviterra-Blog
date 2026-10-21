@@ -60,7 +60,7 @@ func (l *BatchGetUserInfoLogic) BatchGetUserInfo(req *types.BatchUserInfoRequest
 	ctx := metadata.AppendToOutgoingContext(l.ctx,
 		"service-token")
 
-	rep, err := l.userModel.GetMoreUsersInfo(l.ctx, &userrpc.GetMoreUsersInfoRequest{
+	rep, err := l.userModel.GetMoreUsersInfo(ctx, &userrpc.GetMoreUsersInfoRequest{
 		Size: int64(req.Size),
 		Page: int64(req.Page),
 	})
