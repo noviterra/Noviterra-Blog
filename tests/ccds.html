@@ -1,0 +1,2782 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="折页，一份由大学生共同写作的校园内容博客。">
+  <title>折页｜课堂之外的认真与好奇</title>
+  <script>
+    document.documentElement.classList.add('js');
+    try {
+      const savedTheme = localStorage.getItem('zheye-theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = savedTheme || (prefersDark ? 'dark' : 'light');
+    } catch (error) {
+      document.documentElement.dataset.theme = 'light';
+    }
+  </script>
+  <style>
+    :root {
+      --paper: #f1f3ef;
+      --surface: #fafbf7;
+      --surface-raised: #ffffff;
+      --surface-muted: #e6ebe4;
+      --ink: #18211c;
+      --ink-soft: #4c5851;
+      --ink-faint: #6d7871;
+      --line: #cbd3ca;
+      --line-strong: #9eaaa1;
+      --accent: #315b8a;
+      --accent-strong: #234569;
+      --accent-soft: #dce7f2;
+      --accent-ink: #f7fbff;
+      --error: #9f3f2e;
+      --error-soft: #f3ded8;
+      --shadow: 0 20px 60px rgba(37, 55, 45, 0.09);
+      --font-display: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", STSong, serif;
+      --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --radius: 4px;
+      --container: 1320px;
+      --header-height: 72px;
+      color-scheme: light;
+    }
+
+    html[data-theme="dark"] {
+      --paper: #131815;
+      --surface: #1a211d;
+      --surface-raised: #202822;
+      --surface-muted: #27322b;
+      --ink: #edf1eb;
+      --ink-soft: #bdc8c0;
+      --ink-faint: #94a198;
+      --line: #35423a;
+      --line-strong: #59675e;
+      --accent: #8eb3dd;
+      --accent-strong: #b8d0ea;
+      --accent-soft: #24364a;
+      --accent-ink: #101a23;
+      --error: #f0a190;
+      --error-soft: #41251f;
+      --shadow: 0 22px 70px rgba(0, 0, 0, 0.26);
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: calc(var(--header-height) + 24px);
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 78% 5%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 28rem),
+        linear-gradient(90deg, transparent 0, transparent calc(100% - 1px), color-mix(in srgb, var(--line) 42%, transparent) calc(100% - 1px)),
+        var(--paper);
+      background-size: auto, 80px 100%, auto;
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.72;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background-image: radial-gradient(color-mix(in srgb, var(--ink) 10%, transparent) 0.55px, transparent 0.55px);
+      background-size: 5px 5px;
+      content: "";
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .skip-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 120;
+      padding: 10px 14px;
+      background: var(--ink);
+      color: var(--surface);
+      transform: translateY(-160%);
+      transition: transform 180ms ease;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    .container {
+      width: min(calc(100% - 48px), var(--container));
+      margin-inline: auto;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      height: var(--header-height);
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      background: color-mix(in srgb, var(--paper) 89%, transparent);
+      backdrop-filter: blur(18px) saturate(130%);
+    }
+
+    .header-inner {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      height: 100%;
+      gap: 30px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      flex-shrink: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: var(--paper);
+      font-family: var(--font-display);
+      font-size: 19px;
+      line-height: 1;
+    }
+
+    .brand-copy {
+      display: grid;
+      gap: 1px;
+    }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      line-height: 1.1;
+    }
+
+    .brand-subtitle {
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .primary-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 26px;
+      min-width: 0;
+    }
+
+    .primary-nav a {
+      position: relative;
+      padding: 9px 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: color 180ms ease;
+    }
+
+    .primary-nav a::after {
+      position: absolute;
+      right: 0;
+      bottom: 2px;
+      left: 0;
+      height: 2px;
+      background: var(--accent);
+      content: "";
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .primary-nav a:hover,
+    .primary-nav a[aria-current="page"] {
+      color: var(--ink);
+    }
+
+    .primary-nav a:hover::after,
+    .primary-nav a[aria-current="page"]::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .icon-button,
+    .text-button,
+    .primary-button,
+    .secondary-button,
+    .ghost-button {
+      min-height: 40px;
+      border-radius: var(--radius);
+      transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        color 180ms ease,
+        transform 160ms ease;
+    }
+
+    .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--ink-soft);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .icon-button:hover {
+      border-color: var(--line);
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    .search-shortcut {
+      display: inline-grid;
+      min-width: 19px;
+      height: 19px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    .text-button {
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .text-button:hover {
+      border-color: var(--ink-soft);
+    }
+
+    .primary-button,
+    .secondary-button,
+    .ghost-button {
+      display: inline-flex;
+      min-height: 46px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 19px;
+      border: 1px solid transparent;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .primary-button {
+      background: var(--accent-strong);
+      color: var(--accent-ink);
+    }
+
+    .primary-button:hover {
+      background: var(--accent);
+    }
+
+    .secondary-button {
+      border-color: var(--line-strong);
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .secondary-button:hover {
+      border-color: var(--ink);
+      background: var(--surface);
+    }
+
+    .ghost-button {
+      min-height: 40px;
+      padding: 0 12px;
+      border-color: var(--line);
+      background: transparent;
+      color: var(--ink-soft);
+      font-size: 13px;
+    }
+
+    .ghost-button:hover {
+      border-color: var(--ink-soft);
+      color: var(--ink);
+    }
+
+    .icon-button:active,
+    .text-button:active,
+    .primary-button:active,
+    .secondary-button:active,
+    .ghost-button:active,
+    .tab-button:active,
+    .poll-option:active {
+      transform: scale(0.985);
+    }
+
+    .mobile-menu-button {
+      display: none;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero {
+      padding: clamp(42px, 5.5vw, 78px) 0 44px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.06fr) minmax(420px, 0.94fr);
+      align-items: center;
+      gap: clamp(38px, 6vw, 92px);
+    }
+
+    .hero-copy {
+      max-width: 710px;
+    }
+
+    .section-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 20px;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      line-height: 1.4;
+    }
+
+    .section-kicker::before {
+      width: 28px;
+      height: 1px;
+      background: currentColor;
+      content: "";
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    .hero h1 {
+      max-width: 700px;
+      margin-bottom: 24px;
+      font-family: var(--font-display);
+      font-size: clamp(42px, 5.2vw, 76px);
+      font-weight: 700;
+      letter-spacing: -0.055em;
+      line-height: 1.17;
+      text-wrap: balance;
+    }
+
+    .hero-description {
+      max-width: 580px;
+      margin-bottom: 30px;
+      color: var(--ink-soft);
+      font-size: clamp(16px, 1.5vw, 18px);
+      line-height: 1.8;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hero-visual {
+      min-width: 0;
+    }
+
+    .cover-frame {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--accent) 78%, var(--ink)), var(--accent-soft) 58%, var(--surface-muted)),
+        var(--accent-soft);
+      box-shadow: var(--shadow);
+      isolation: isolate;
+    }
+
+    .cover-frame::before {
+      position: absolute;
+      inset: 18px;
+      z-index: 1;
+      border: 1px solid color-mix(in srgb, white 40%, transparent);
+      content: "";
+      pointer-events: none;
+    }
+
+    .cover-frame::after {
+      position: absolute;
+      right: -12%;
+      bottom: -42%;
+      z-index: 0;
+      width: 72%;
+      aspect-ratio: 1;
+      border: 1px solid color-mix(in srgb, var(--accent-ink) 34%, transparent);
+      border-radius: 50%;
+      content: "";
+    }
+
+    .cover-frame img {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(0.72) contrast(1.06);
+    }
+
+    .cover-index {
+      position: absolute;
+      top: 34px;
+      left: 34px;
+      z-index: 3;
+      color: white;
+      font-family: var(--font-display);
+      font-size: clamp(44px, 6vw, 84px);
+      font-weight: 700;
+      letter-spacing: -0.08em;
+      line-height: 0.86;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.26);
+    }
+
+    .cover-caption {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 22px;
+      align-items: start;
+      padding: 18px 18px 0;
+    }
+
+    .cover-caption h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(20px, 2vw, 27px);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.45;
+    }
+
+    .cover-date {
+      padding-top: 5px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      line-height: 1.5;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .edition {
+      padding: 44px 0 76px;
+    }
+
+    .section-heading {
+      display: grid;
+      gap: 9px;
+      margin-bottom: 26px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(30px, 3.2vw, 44px);
+      letter-spacing: -0.04em;
+      line-height: 1.2;
+    }
+
+    .section-heading p {
+      max-width: 680px;
+      margin-bottom: 0;
+      color: var(--ink-soft);
+      font-size: 15px;
+    }
+
+    .brief-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(230px, 0.9fr) minmax(230px, 0.9fr);
+      gap: 16px;
+    }
+
+    .brief-card {
+      position: relative;
+      min-height: 295px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .brief-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 170px;
+      gap: 24px;
+      padding: clamp(25px, 3vw, 38px);
+    }
+
+    .brief-main::after {
+      position: absolute;
+      right: -42px;
+      bottom: -70px;
+      width: 230px;
+      height: 230px;
+      border: 34px solid var(--accent-soft);
+      border-radius: 50%;
+      content: "";
+      opacity: 0.8;
+    }
+
+    .brief-main h3 {
+      position: relative;
+      z-index: 1;
+      max-width: 490px;
+      margin-bottom: 14px;
+      font-family: var(--font-display);
+      font-size: clamp(28px, 3vw, 43px);
+      letter-spacing: -0.04em;
+      line-height: 1.27;
+    }
+
+    .brief-main > div > p {
+      position: relative;
+      z-index: 1;
+      max-width: 430px;
+      margin-bottom: 24px;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    .numbered-list {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      align-content: end;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .numbered-list li {
+      display: grid;
+      grid-template-columns: 25px minmax(0, 1fr);
+      gap: 8px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .numbered-list span:first-child {
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .poll-card,
+    .quote-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px;
+    }
+
+    .card-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      line-height: 1.4;
+    }
+
+    .poll-card h3 {
+      margin: 20px 0 18px;
+      font-family: var(--font-display);
+      font-size: 23px;
+      letter-spacing: -0.025em;
+      line-height: 1.46;
+    }
+
+    .poll-options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .poll-option {
+      display: flex;
+      min-height: 36px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--ink);
+      text-align: left;
+      transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+    }
+
+    .poll-option:hover,
+    .poll-option[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .poll-option small {
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+
+    .poll-result {
+      margin-top: 12px;
+      color: var(--ink-soft);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .quote-card {
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--accent) 13%, var(--surface)), var(--surface));
+    }
+
+    .quote-mark {
+      color: var(--accent);
+      font-family: var(--font-display);
+      font-size: 58px;
+      line-height: 0.8;
+    }
+
+    .quote-card blockquote {
+      margin: 12px 0 22px;
+      font-family: var(--font-display);
+      font-size: 23px;
+      letter-spacing: -0.02em;
+      line-height: 1.55;
+    }
+
+    .quote-author {
+      display: grid;
+      gap: 3px;
+      color: var(--ink-soft);
+      font-size: 12px;
+    }
+
+    .quote-author strong {
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .reading-section {
+      padding: 10px 0 90px;
+    }
+
+    .reading-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .reading-header .section-heading {
+      margin-bottom: 0;
+    }
+
+    .feed-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .tab-button {
+      min-height: 34px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 2px;
+      background: transparent;
+      color: var(--ink-soft);
+      font-size: 12px;
+      font-weight: 600;
+      transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .tab-button:hover {
+      background: var(--surface-muted);
+      color: var(--ink);
+    }
+
+    .tab-button[aria-selected="true"] {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .reading-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 38px;
+      align-items: start;
+    }
+
+    .story-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .article-card {
+      position: relative;
+      display: flex;
+      min-height: 250px;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      transition: border-color 200ms ease, transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .article-card:hover {
+      border-color: var(--line-strong);
+      transform: translateY(-2px);
+    }
+
+    .article-card.article-wide {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      min-height: 330px;
+    }
+
+    .article-card.article-featured .article-media {
+      min-height: 100%;
+      aspect-ratio: auto;
+    }
+
+    .article-media {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--accent) 72%, var(--ink)), var(--accent-soft) 55%, var(--surface-muted));
+    }
+
+    .article-media::before {
+      position: absolute;
+      right: 12%;
+      bottom: -22%;
+      width: 62%;
+      aspect-ratio: 1;
+      border: 1px solid color-mix(in srgb, var(--accent-ink) 36%, transparent);
+      border-radius: 50%;
+      content: "";
+    }
+
+    .article-media img {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(0.75);
+      transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .article-card:hover .article-media img {
+      transform: scale(1.025);
+    }
+
+    .article-body {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      padding: 22px;
+    }
+
+    .article-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 14px;
+      margin-bottom: 14px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .category-label {
+      color: var(--accent);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .article-title {
+      margin-bottom: 10px;
+      font-family: var(--font-display);
+      font-size: clamp(22px, 2vw, 29px);
+      letter-spacing: -0.028em;
+      line-height: 1.4;
+    }
+
+    .article-title a {
+      display: inline;
+      background-image: linear-gradient(var(--accent), var(--accent));
+      background-position: 0 100%;
+      background-repeat: no-repeat;
+      background-size: 0 1px;
+      transition: background-size 220ms ease;
+    }
+
+    .article-title a:hover {
+      background-size: 100% 1px;
+    }
+
+    .article-excerpt {
+      margin-bottom: 20px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.72;
+    }
+
+    .article-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: auto;
+    }
+
+    .author {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 9px;
+      color: var(--ink-soft);
+      font-size: 12px;
+    }
+
+    .avatar-initial {
+      display: grid;
+      width: 27px;
+      height: 27px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: var(--surface-muted);
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .bookmark-button {
+      flex: 0 0 auto;
+      padding: 5px 8px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--ink-faint);
+      font-size: 11px;
+      transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+    }
+
+    .bookmark-button:hover {
+      border-color: var(--line);
+      color: var(--ink);
+    }
+
+    .bookmark-button[aria-pressed="true"] {
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+    }
+
+    .article-quote {
+      justify-content: space-between;
+      background:
+        linear-gradient(155deg, color-mix(in srgb, var(--accent) 16%, var(--surface)), var(--surface) 66%);
+    }
+
+    .article-quote .article-body {
+      padding: clamp(28px, 4vw, 44px);
+    }
+
+    .article-quote .article-title {
+      max-width: 760px;
+      font-size: clamp(27px, 3.4vw, 44px);
+    }
+
+    .load-area {
+      display: grid;
+      justify-items: center;
+      gap: 12px;
+      padding-top: 26px;
+    }
+
+    .load-note {
+      color: var(--ink-faint);
+      font-size: 11px;
+    }
+
+    .load-skeletons {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      width: 100%;
+    }
+
+    .skeleton-card {
+      min-height: 250px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .skeleton-line {
+      height: 11px;
+      margin-bottom: 12px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--surface-muted) 20%, var(--line) 48%, var(--surface-muted) 75%);
+      background-size: 220% 100%;
+      animation: shimmer 1.3s infinite linear;
+    }
+
+    .skeleton-line:nth-child(1) {
+      width: 35%;
+      margin-bottom: 28px;
+    }
+
+    .skeleton-line:nth-child(2) {
+      width: 92%;
+      height: 22px;
+    }
+
+    .skeleton-line:nth-child(3) {
+      width: 76%;
+      height: 22px;
+    }
+
+    .skeleton-line:nth-child(4) {
+      width: 100%;
+      margin-top: 26px;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 28px;
+      min-width: 0;
+    }
+
+    .sidebar-panel {
+      padding: 20px 0;
+      border-top: 2px solid var(--ink);
+    }
+
+    .sidebar-panel h3 {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-family: var(--font-display);
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+    }
+
+    .sidebar-panel h3 span {
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+    }
+
+    .book-list,
+    .discussion-list {
+      display: grid;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .book-list li {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr);
+      gap: 13px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .book-cover {
+      position: relative;
+      display: grid;
+      width: 38px;
+      height: 52px;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 2px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .book-cover::after {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 6px;
+      width: 1px;
+      background: color-mix(in srgb, var(--accent-ink) 28%, transparent);
+      content: "";
+    }
+
+    .book-list strong {
+      display: block;
+      margin-bottom: 2px;
+      font-family: var(--font-display);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .book-list small {
+      color: var(--ink-faint);
+      font-size: 11px;
+    }
+
+    .discussion-list li {
+      display: grid;
+      grid-template-columns: 25px minmax(0, 1fr);
+      gap: 8px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .discussion-list li > span {
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.8;
+    }
+
+    .discussion-list a {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.65;
+    }
+
+    .discussion-list a:hover {
+      color: var(--accent);
+    }
+
+    .discussion-list small {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink-faint);
+      font-size: 10px;
+      font-weight: 400;
+    }
+
+    .editor-note {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .editor-note p {
+      margin-bottom: 16px;
+      font-family: var(--font-display);
+      font-size: 18px;
+      line-height: 1.65;
+    }
+
+    .editor-note footer {
+      color: var(--ink-faint);
+      font-size: 11px;
+    }
+
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag-cloud a {
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink-soft);
+      font-size: 11px;
+      transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
+    }
+
+    .tag-cloud a:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+    }
+
+    .events {
+      padding: 64px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-muted) 46%, transparent);
+    }
+
+    .events-layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1.28fr);
+      gap: clamp(36px, 6vw, 90px);
+      align-items: start;
+    }
+
+    .events-intro {
+      position: sticky;
+      top: calc(var(--header-height) + 28px);
+    }
+
+    .events-intro h2 {
+      margin-bottom: 14px;
+      font-family: var(--font-display);
+      font-size: clamp(34px, 4vw, 54px);
+      letter-spacing: -0.055em;
+      line-height: 1.2;
+    }
+
+    .events-intro p {
+      max-width: 390px;
+      margin-bottom: 22px;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    .event-list {
+      border-top: 2px solid var(--ink);
+    }
+
+    .event-row {
+      display: grid;
+      grid-template-columns: 84px minmax(0, 1fr) auto;
+      gap: 22px;
+      align-items: center;
+      padding: 23px 0;
+    }
+
+    .event-row + .event-row {
+      border-top: 1px solid var(--line);
+    }
+
+    .event-date {
+      display: grid;
+      gap: 1px;
+      font-family: var(--font-mono);
+      line-height: 1.25;
+    }
+
+    .event-date strong {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.06em;
+    }
+
+    .event-date span {
+      color: var(--ink-faint);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+
+    .event-copy h3 {
+      margin-bottom: 4px;
+      font-family: var(--font-display);
+      font-size: 20px;
+      line-height: 1.4;
+    }
+
+    .event-copy p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 12px;
+    }
+
+    .event-action {
+      min-width: 76px;
+    }
+
+    .newsletter {
+      padding: 42px 0;
+    }
+
+    .newsletter-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+      gap: clamp(34px, 7vw, 104px);
+      align-items: center;
+      padding: clamp(30px, 5vw, 60px);
+      border-radius: var(--radius);
+      background:
+        radial-gradient(circle at 85% 15%, color-mix(in srgb, var(--accent-ink) 18%, transparent), transparent 17rem),
+        var(--accent-strong);
+      color: var(--accent-ink);
+    }
+
+    .newsletter-panel h2 {
+      margin-bottom: 12px;
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4vw, 48px);
+      letter-spacing: -0.045em;
+      line-height: 1.22;
+    }
+
+    .newsletter-panel p {
+      max-width: 490px;
+      margin: 0;
+      color: color-mix(in srgb, var(--accent-ink) 78%, transparent);
+      font-size: 14px;
+    }
+
+    .newsletter-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      color: var(--accent-ink);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .field input {
+      width: 100%;
+      height: 48px;
+      padding: 0 14px;
+      border: 1px solid color-mix(in srgb, var(--accent-ink) 45%, transparent);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--accent-ink) 93%, transparent);
+      color: #1b2a36;
+      outline: none;
+    }
+
+    .field input::placeholder {
+      color: #61717e;
+    }
+
+    .field input:focus {
+      border-color: var(--accent-ink);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-ink) 24%, transparent);
+    }
+
+    .field input[aria-invalid="true"] {
+      border-color: #ffd2c5;
+      box-shadow: 0 0 0 3px color-mix(in srgb, #ffd2c5 23%, transparent);
+    }
+
+    .field-error {
+      min-height: 18px;
+      margin: 4px 0 0;
+      color: #ffe0d8;
+      font-size: 11px;
+      grid-column: 1 / -1;
+    }
+
+    .newsletter-form .primary-button {
+      min-width: 112px;
+      background: var(--accent-ink);
+      color: var(--accent-strong);
+    }
+
+    .newsletter-form .primary-button:hover {
+      background: white;
+    }
+
+    .site-footer {
+      padding: 54px 0 26px;
+      border-top: 1px solid var(--line);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: minmax(230px, 1.1fr) repeat(3, minmax(120px, 0.55fr));
+      gap: 30px;
+      padding-bottom: 42px;
+    }
+
+    .footer-about p {
+      max-width: 300px;
+      margin: 15px 0 0;
+      color: var(--ink-soft);
+      font-size: 12px;
+    }
+
+    .footer-column {
+      display: grid;
+      align-content: start;
+      gap: 8px;
+    }
+
+    .footer-column strong {
+      margin-bottom: 5px;
+      font-family: var(--font-display);
+      font-size: 15px;
+    }
+
+    .footer-column a {
+      color: var(--ink-soft);
+      font-size: 12px;
+    }
+
+    .footer-column a:hover {
+      color: var(--accent);
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+
+    .search-dialog {
+      width: min(calc(100% - 32px), 760px);
+      max-height: min(84dvh, 760px);
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 30px 100px rgba(0, 0, 0, 0.25);
+    }
+
+    .search-dialog::backdrop {
+      background: color-mix(in srgb, var(--ink) 50%, transparent);
+      backdrop-filter: blur(7px);
+    }
+
+    .search-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      max-height: min(84dvh, 760px);
+    }
+
+    .search-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .search-input-wrap {
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 48px;
+      padding: 0 15px 0 44px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      color: var(--ink);
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+
+    .search-glyph {
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 15px;
+      transform: translateY(-50%);
+    }
+
+    .search-body {
+      min-height: 290px;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .search-section-title {
+      margin-bottom: 12px;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+    }
+
+    .search-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 24px;
+    }
+
+    .search-suggestions button {
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--ink-soft);
+      font-size: 12px;
+    }
+
+    .search-suggestions button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .search-result-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .search-result-list a {
+      display: grid;
+      gap: 4px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      transition: border-color 160ms ease, background-color 160ms ease;
+    }
+
+    .search-result-list a:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .search-result-list strong {
+      font-family: var(--font-display);
+      font-size: 16px;
+      line-height: 1.45;
+    }
+
+    .search-result-list span {
+      color: var(--ink-faint);
+      font-size: 11px;
+    }
+
+    .empty-state {
+      display: grid;
+      min-height: 230px;
+      place-items: center;
+      padding: 30px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      color: var(--ink-soft);
+      text-align: center;
+    }
+
+    .empty-state strong {
+      display: block;
+      margin-bottom: 6px;
+      font-family: var(--font-display);
+      font-size: 22px;
+      color: var(--ink);
+    }
+
+    .search-loading {
+      display: grid;
+      gap: 8px;
+    }
+
+    .search-loading .skeleton-line {
+      height: 48px;
+      margin: 0;
+      border-radius: var(--radius);
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 100;
+      max-width: min(360px, calc(100% - 44px));
+      padding: 13px 16px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: var(--paper);
+      box-shadow: var(--shadow);
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .js [data-reveal] {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 600ms ease, transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .js [data-reveal].is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes shimmer {
+      to {
+        background-position: -220% 0;
+      }
+    }
+
+    @media (max-width: 1120px) {
+      .primary-nav {
+        gap: 18px;
+      }
+
+      .header-actions .search-label,
+      .header-actions .theme-label {
+        display: none;
+      }
+
+      .reading-layout {
+        grid-template-columns: minmax(0, 1fr) 280px;
+        gap: 28px;
+      }
+
+      .hero-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(360px, 0.86fr);
+        gap: 42px;
+      }
+
+      .brief-grid {
+        grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(210px, 0.75fr));
+      }
+
+      .brief-main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        width: min(calc(100% - 32px), var(--container));
+      }
+
+      .header-inner {
+        grid-template-columns: auto 1fr auto;
+      }
+
+      .mobile-menu-button {
+        display: inline-flex;
+      }
+
+      .primary-nav {
+        position: absolute;
+        top: calc(var(--header-height) - 1px);
+        right: 16px;
+        left: 16px;
+        display: none;
+        align-items: stretch;
+        gap: 0;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .primary-nav.is-open {
+        display: grid;
+      }
+
+      .primary-nav a {
+        padding: 10px 12px;
+      }
+
+      .primary-nav a::after {
+        display: none;
+      }
+
+      .header-actions .write-label {
+        display: none;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy {
+        max-width: 760px;
+      }
+
+      .hero h1 {
+        max-width: 760px;
+      }
+
+      .hero-visual {
+        max-width: 720px;
+      }
+
+      .brief-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .brief-main {
+        grid-column: 1 / -1;
+        grid-template-columns: minmax(0, 1fr) minmax(180px, 0.62fr);
+      }
+
+      .reading-header {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .reading-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .sidebar-panel:first-child,
+      .sidebar .editor-note,
+      .sidebar-panel:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .events-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .events-intro {
+        position: static;
+      }
+
+      .newsletter-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      :root {
+        --header-height: 64px;
+      }
+
+      body {
+        background-size: auto, auto, auto;
+      }
+
+      .container {
+        width: min(calc(100% - 24px), var(--container));
+      }
+
+      .brand-subtitle,
+      .header-actions .icon-button:not(.theme-toggle):not(.mobile-menu-button) {
+        display: none;
+      }
+
+      .header-inner {
+        gap: 10px;
+      }
+
+      .header-actions {
+        gap: 2px;
+      }
+
+      .icon-button {
+        min-width: 38px;
+        padding: 0 9px;
+      }
+
+      .text-button {
+        min-width: 64px;
+        padding: 0 10px;
+      }
+
+      .hero {
+        padding-top: 38px;
+      }
+
+      .hero h1 {
+        font-size: clamp(38px, 12vw, 56px);
+      }
+
+      .hero-description {
+        font-size: 15px;
+      }
+
+      .hero-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .hero-actions a {
+        padding-inline: 12px;
+      }
+
+      .cover-caption {
+        grid-template-columns: 1fr;
+        gap: 7px;
+        padding-inline: 0;
+      }
+
+      .cover-date {
+        padding: 0;
+        text-align: left;
+      }
+
+      .brief-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .brief-main {
+        grid-column: auto;
+        grid-template-columns: 1fr;
+      }
+
+      .brief-main,
+      .poll-card,
+      .quote-card {
+        min-height: auto;
+      }
+
+      .reading-section {
+        padding-bottom: 64px;
+      }
+
+      .reading-header {
+        gap: 16px;
+      }
+
+      .feed-tools,
+      .filter-tabs {
+        width: 100%;
+      }
+
+      .filter-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+      }
+
+      .filter-tabs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .tab-button {
+        flex: 0 0 auto;
+      }
+
+      .story-grid,
+      .load-skeletons {
+        grid-template-columns: 1fr;
+      }
+
+      .article-card.article-wide {
+        grid-column: auto;
+        display: flex;
+        min-height: 250px;
+      }
+
+      .article-card.article-featured .article-media {
+        min-height: auto;
+        aspect-ratio: 16 / 9;
+      }
+
+      .article-card.article-featured .article-body {
+        min-height: 260px;
+      }
+
+      .sidebar {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar-panel:first-child,
+      .sidebar .editor-note,
+      .sidebar-panel:last-child {
+        grid-column: auto;
+      }
+
+      .event-row {
+        grid-template-columns: 62px minmax(0, 1fr);
+        gap: 14px;
+      }
+
+      .event-action {
+        grid-column: 2;
+        justify-self: start;
+      }
+
+      .newsletter-form {
+        grid-template-columns: 1fr;
+      }
+
+      .newsletter-form .primary-button {
+        width: 100%;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .footer-about {
+        grid-column: 1 / -1;
+      }
+
+      .footer-bottom {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .search-dialog {
+        width: calc(100% - 20px);
+      }
+
+      .search-top {
+        padding: 12px;
+      }
+
+      .search-body {
+        padding: 14px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      .js [data-reveal] {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="折页首页">
+        <span class="brand-mark" aria-hidden="true">折</span>
+        <span class="brand-copy">
+          <span class="brand-name">折页</span>
+          <span class="brand-subtitle">Student journal</span>
+        </span>
+      </a>
+
+      <nav class="primary-nav" id="primary-nav" aria-label="主导航">
+        <a href="#top" aria-current="page">首页</a>
+        <a href="#reading">阅读</a>
+        <a href="#events">校园</a>
+        <a href="#bookshelf">书架</a>
+        <a href="#submit">投稿</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-button search-open" type="button" aria-label="打开搜索">
+          <span aria-hidden="true">⌕</span>
+          <span class="search-label">搜索</span>
+          <span class="search-shortcut" aria-hidden="true">/</span>
+        </button>
+        <button class="icon-button theme-toggle" type="button" aria-label="切换深浅色">
+          <span class="theme-symbol" aria-hidden="true">◐</span>
+          <span class="theme-label">主题</span>
+        </button>
+        <a class="text-button" href="#submit" aria-label="写文章">
+          <span class="write-label">写文章</span>
+          <span class="write-plus" aria-hidden="true">＋</span>
+        </a>
+        <button class="icon-button mobile-menu-button" type="button" aria-expanded="false" aria-controls="primary-nav">菜单</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="section-kicker">独立校园刊物</p>
+          <h1 id="hero-title">别让大学生活只剩绩点和截止日期。</h1>
+          <p class="hero-description">把课堂、城市和年轻人的困惑，写成值得慢慢读完的文章。</p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#story-library">读本期封面</a>
+            <a class="secondary-button" href="#reading">查看全部专题</a>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <figure class="cover-frame">
+            <img
+              src="https://picsum.photos/seed/campus-reading-room-window/1280/960"
+              alt="安静的校园阅读空间"
+              loading="eager"
+              fetchpriority="high"
+              referrerpolicy="no-referrer"
+              onerror="this.style.display='none'; this.parentElement.classList.add('image-failed');"
+            >
+            <span class="cover-index" aria-hidden="true">10</span>
+          </figure>
+          <figcaption class="cover-caption">
+            <h2>图书馆闭馆以后，公共讨论去了哪里</h2>
+            <span class="cover-date">十月封面<br>阅读 12 分钟</span>
+          </figcaption>
+        </div>
+      </div>
+    </section>
+
+    <section class="edition" aria-labelledby="edition-title" data-reveal>
+      <div class="container">
+        <div class="section-heading">
+          <h2 id="edition-title">今天，从这里开始</h2>
+          <p>编辑挑选了几篇值得完整读完的内容，也给正在发生的校园讨论留出位置。</p>
+        </div>
+
+        <div class="brief-grid">
+          <article class="brief-card brief-main">
+            <div>
+              <div class="card-label">
+                <span>编辑推荐</span>
+                <span>4 篇</span>
+              </div>
+              <h3>如果只读四篇，先从这里开始</h3>
+              <p>不追热点，只留下那些读完以后还能继续想一会儿的问题。</p>
+              <a class="ghost-button" href="#reading">进入阅读清单</a>
+            </div>
+            <ol class="numbered-list" aria-label="编辑推荐文章">
+              <li><span>01</span><span>在图书馆闭馆以后，我们还在讨论什么</span></li>
+              <li><span>02</span><span>把一天切成四块：一个月的注意力实验</span></li>
+              <li><span>03</span><span>从食堂到城中村，一张公交卡的距离</span></li>
+              <li><span>04</span><span>转专业之后，我重新学会做一个新手</span></li>
+            </ol>
+          </article>
+
+          <article class="brief-card poll-card">
+            <div>
+              <div class="card-label">
+                <span>本周小调查</span>
+                <span>示例投票</span>
+              </div>
+              <h3>最近一次真正读完一本书，是在哪里？</h3>
+            </div>
+            <div class="poll-options" role="group" aria-label="选择阅读地点">
+              <button class="poll-option" type="button" data-votes="31" aria-pressed="false"><span>图书馆</span><small>选这个</small></button>
+              <button class="poll-option" type="button" data-votes="24" aria-pressed="false"><span>宿舍</span><small>选这个</small></button>
+              <button class="poll-option" type="button" data-votes="17" aria-pressed="false"><span>通勤路上</span><small>选这个</small></button>
+              <button class="poll-option" type="button" data-votes="9" aria-pressed="false"><span>还没读完</span><small>选这个</small></button>
+              <p class="poll-result" aria-live="polite">选一个答案，看看大家的阅读地点。</p>
+            </div>
+          </article>
+
+          <article class="brief-card quote-card">
+            <div class="card-label">
+              <span>读者手记</span>
+              <span>第 07 封</span>
+            </div>
+            <span class="quote-mark" aria-hidden="true">“</span>
+            <blockquote>真正有用的笔记，不是把书抄薄，而是把自己的问题写清楚。</blockquote>
+            <div class="quote-author">
+              <strong>顾念川</strong>
+              <span>新闻学 · 大三</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="reading-section" id="reading" aria-labelledby="reading-title" data-reveal>
+      <div class="container">
+        <div class="reading-header">
+          <div class="section-heading">
+            <h2 id="reading-title">新近发布</h2>
+            <p>校园现场、学习方法、城市漫游与年轻人的观点。</p>
+          </div>
+          <div class="feed-tools">
+            <div class="filter-tabs" role="tablist" aria-label="文章分类">
+              <button class="tab-button" type="button" role="tab" aria-selected="true" data-filter="全部">全部</button>
+              <button class="tab-button" type="button" role="tab" aria-selected="false" data-filter="校园">校园</button>
+              <button class="tab-button" type="button" role="tab" aria-selected="false" data-filter="学习">学习</button>
+              <button class="tab-button" type="button" role="tab" aria-selected="false" data-filter="生活">生活</button>
+              <button class="tab-button" type="button" role="tab" aria-selected="false" data-filter="观点">观点</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="reading-layout">
+          <div>
+            <div class="story-grid" id="story-library">
+              <article class="article-card article-wide article-featured" id="article-1" data-category="校园" data-reveal>
+                <div class="article-media">
+                  <img
+                    src="https://picsum.photos/seed/campus-library-study-table/1000/720"
+                    alt="阳光下的校园学习空间"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                    onerror="this.style.display='none';"
+                  >
+                </div>
+                <div class="article-body">
+                  <div class="article-meta">
+                    <span class="category-label">校园</span>
+                    <span>10 月 18 日</span>
+                    <span>9 分钟阅读</span>
+                  </div>
+                  <h3 class="article-title"><a href="#article-1">在图书馆闭馆以后，我们还在讨论什么</a></h3>
+                  <p class="article-excerpt">熄灯之后，宿舍楼道、便利店和操场边仍在继续白天未完成的对话。我们记录了五个普通夜晚。</p>
+                  <div class="article-footer">
+                    <div class="author">
+                      <span class="avatar-initial" aria-hidden="true">周</span>
+                      <span>周知遥 · 中文系大四</span>
+                    </div>
+                    <button class="bookmark-button" type="button" aria-pressed="false">收藏</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="article-card" id="article-2" data-category="学习" data-reveal>
+                <div class="article-body">
+                  <div class="article-meta">
+                    <span class="category-label">学习</span>
+                    <span>10 月 17 日</span>
+                    <span>7 分钟阅读</span>
+                  </div>
+                  <h3 class="article-title"><a href="#article-2">把一天切成四块：一个月的注意力实验</a></h3>
+                  <p class="article-excerpt">从“今天要学很久”改成“下一块时间只做一件事”，效率没有突然翻倍，焦虑却先安静下来。</p>
+                  <div class="article-footer">
+                    <div class="author">
+                      <span class="avatar-initial" aria-hidden="true">陈</span>
+                      <span>陈可屿 · 计算机系大二</span>
+                    </div>
+                    <button class="bookmark-button" type="button" aria-pressed="false">收藏</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="article-card" id="article-3" data-category="生活" data-reveal>
+                <div class="article-body">
+                  <div class="article-meta">
+                    <span class="category-label">生活</span>
+                    <span>10 月 16 日</span>
+                    <span>11 分钟阅读</span>
+                  </div>
+                  <h3 class="article-title"><a href="#article-3">从食堂到城中村，一张公交卡能带你走多远</a></h3>
+                  <p class="article-excerpt">周末不设目的地，只沿着公交线路向外坐。城市第一次从“学校周边”变成了可以阅读的文本。</p>
+                  <div class="article-footer">
+                    <div class="author">
+                      <span class="avatar-initial" aria-hidden="true">林</span>
+                      <span>林小满 · 社会学系大三</span>
+                    </div>
+                    <button class="bookmark-button" type="button" aria-pressed="false">收藏</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="article-card" id="article-4" data-category="校园" data-reveal>
+                <div class="article-body">
+                  <div class="article-meta">
+                    <span class="category-label">校园</span>
+                    <span>10 月 15 日</span>
+                    <span>6 分钟阅读</span>
+                  </div>
+                  <h3 class="article-title"><a href="#article-4">公告栏上的三十七张便签，拼出一个公共空间</a></h3>
+                  <p class="article-excerpt">有人寻找丢失的水杯，有人征集合唱搭子，也有人认真写下对食堂新菜品的建议。</p>
+                  <div class="article-footer">
+                    <div class="author">
+                      <span class="avatar-initial" aria-hidden="true">许</span>
+                      <span>许南禾 · 建筑系大三</span>
+                    </div>
+                    <button class="bookmark-button" type="button" aria-pressed="false">收藏</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="article-card article-featured" id="article-5" data-category="观点" data-reveal>
+                <div class="article-media">
+                  <img
+                    src="https://picsum.photos/seed/student-city-bus-evening/1000/650"
+                    alt="傍晚城市中的公交站"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                    onerror="this.style.display='none';"
+                  >
+                </div>
+                <div class="article-body">
+                  <div class="article-meta">
+                    <span class="category-label">观点</span>
+                    <span>10 月 14 日</span>
+                    <span>8 分钟阅读</span>
+                  </div>
+                  <h3 class="article-title"><a href="#article-5">宿舍夜谈：我们为什么害怕错过群里消息</a></h3>
+                  <p class="article-excerpt">不断亮起的屏幕把休息切成了碎片。一次没有手机的夜谈，让六个人重新辨认自己的社交节奏。</p>
+                  <div class="article-footer">
+                    <div class="author">
+                      <span class="avatar-initial" aria-hidden="true">六</span>
+                      <span>六位同学的共同记录</span>
+                    </div>
+                    <button class="bookmark-button" type="button" aria-pressed="false">收藏</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="article-card article-wide article-quote" id="article-6" data-category="学习" data-reveal>
+                <div class="article-body">
+                  <div class="article-meta">
+                    <span class="category-label">学习</span>
+                    <span>10 月 12 日</span>
+                    <span>5 分钟阅读</span>
+                  </div>
+                  <h3 class="article-title"><a href="#article-6">转专业之后，我重新学会做一个新手</a></h3>
+                  <p class="article-excerpt">从熟悉的排名里退出来，承认自己不会，可能是大学里更难也更重要的功课。</p>
+                  <div class="article-footer">
+                    <div class="author">
+                      <span class="avatar-initial" aria-hidden="true">裴</span>
+                      <span>裴子言 · 工科实验班大二</span>
+                    </div>
+                    <button class="bookmark-button" type="button" aria-pressed="false">收藏</button>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div class="load-area" id="load-area">
+              <button class="secondary-button" id="load-more" type="button">再看两篇</button>
+              <span class="load-note">每周更新，不追赶无限滚动</span>
+            </div>
+          </div>
+
+          <aside class="sidebar" aria-label="侧栏">
+            <section class="sidebar-panel" id="bookshelf" aria-labelledby="bookshelf-title">
+              <h3 id="bookshelf-title">编辑正在看 <span>本月书架</span></h3>
+              <ul class="book-list">
+                <li>
+                  <span class="book-cover" aria-hidden="true">读</span>
+                  <div><strong>《如何阅读一本书》</strong><small>莫提默·艾德勒 / 查尔斯·范多伦</small></div>
+                </li>
+                <li>
+                  <span class="book-cover" aria-hidden="true">城</span>
+                  <div><strong>《看不见的城市》</strong><small>伊塔洛·卡尔维诺</small></div>
+                </li>
+                <li>
+                  <span class="book-cover" aria-hidden="true">土</span>
+                  <div><strong>《乡土中国》</strong><small>费孝通</small></div>
+                </li>
+              </ul>
+            </section>
+
+            <section class="sidebar-panel" aria-labelledby="discussion-title">
+              <h3 id="discussion-title">热门讨论 <span>过去七天</span></h3>
+              <ol class="discussion-list">
+                <li><span>01</span><div><a href="#article-5">大学生到底需不需要“有效社交”？<small>26 条回应</small></a></div></li>
+                <li><span>02</span><div><a href="#article-2">早八课怎样安排才不再靠意志力？<small>19 条回应</small></a></div></li>
+                <li><span>03</span><div><a href="#article-3">周末一个人出门，可以去哪里？<small>14 条回应</small></a></div></li>
+                <li><span>04</span><div><a href="#article-4">校园里哪些角落最适合安静待着？<small>11 条回应</small></a></div></li>
+                <li><span>05</span><div><a href="#article-6">转专业前最应该问自己的问题<small>8 条回应</small></a></div></li>
+              </ol>
+            </section>
+
+            <div class="editor-note">
+              <p>“我们不想把每一种校园经验都包装成答案，先把它准确地写下来。”</p>
+              <footer>本期编辑 林一澄</footer>
+            </div>
+
+            <section class="sidebar-panel" aria-labelledby="tags-title">
+              <h3 id="tags-title">常读标签</h3>
+              <div class="tag-cloud">
+                <a href="#reading">大学适应</a>
+                <a href="#reading">阅读方法</a>
+                <a href="#reading">宿舍关系</a>
+                <a href="#reading">城市观察</a>
+                <a href="#reading">转专业</a>
+                <a href="#reading">时间管理</a>
+                <a href="#reading">公共空间</a>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="events" id="events" aria-labelledby="events-title" data-reveal>
+      <div class="container events-layout">
+        <div class="events-intro">
+          <h2 id="events-title">把兴趣变成下一步</h2>
+          <p>不设门槛的小型活动。带着问题来，也可以只带着好奇心。</p>
+          <button class="ghost-button search-open" type="button">查找相关文章</button>
+        </div>
+
+        <div class="event-list">
+          <article class="event-row">
+            <div class="event-date"><strong>22</strong><span>OCT / 周三</span></div>
+            <div class="event-copy">
+              <h3>城市观察散步：沿着旧铁路走两公里</h3>
+              <p>18:30 校西门集合，不限专业，步行约 90 分钟。</p>
+            </div>
+            <button class="ghost-button event-action" type="button" aria-pressed="false">记下</button>
+          </article>
+          <article class="event-row">
+            <div class="event-date"><strong>24</strong><span>OCT / 周五</span></div>
+            <div class="event-copy">
+              <h3>公开写作工作坊：把一次争论写清楚</h3>
+              <p>19:00 图书馆研讨室，带一段真实经历来即可。</p>
+            </div>
+            <button class="ghost-button event-action" type="button" aria-pressed="false">记下</button>
+          </article>
+          <article class="event-row">
+            <div class="event-date"><strong>26</strong><span>OCT / 周六</span></div>
+            <div class="event-copy">
+              <h3>宿舍电影夜：一起看一部关于教育的纪录片</h3>
+              <p>20:00 线上放映，结束后留半小时自由讨论。</p>
+            </div>
+            <button class="ghost-button event-action" type="button" aria-pressed="false">记下</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="newsletter" id="submit" aria-labelledby="newsletter-title" data-reveal>
+      <div class="container">
+        <div class="newsletter-panel">
+          <div>
+            <h2 id="newsletter-title">每周日，读一封慢一点的来信</h2>
+            <p>更新一篇长文，附上编辑手记和下周值得留意的校园活动。随时可以退订。</p>
+          </div>
+          <form class="newsletter-form" id="newsletter-form" novalidate>
+            <div class="field">
+              <label for="email">校园邮箱或常用邮箱</label>
+              <input id="email" name="email" type="email" autocomplete="email" placeholder="name@school.edu.cn" aria-describedby="email-error">
+              <p class="field-error" id="email-error" aria-live="polite"></p>
+            </div>
+            <button class="primary-button" type="submit">订阅周末版</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <a class="brand" href="#top">
+            <span class="brand-mark" aria-hidden="true">折</span>
+            <span class="brand-copy">
+              <span class="brand-name">折页</span>
+              <span class="brand-subtitle">Student journal</span>
+            </span>
+          </a>
+          <p>一份由大学生共同写作的校园内容博客。记录正在发生的事，也保留尚未想明白的问题。</p>
+        </div>
+        <div class="footer-column">
+          <strong>阅读</strong>
+          <a href="#reading">最新文章</a>
+          <a href="#bookshelf">本月书架</a>
+          <a href="#events">校园活动</a>
+        </div>
+        <div class="footer-column">
+          <strong>参与</strong>
+          <a href="#submit">订阅周末版</a>
+          <a href="mailto:hello@example.com">投稿与联络</a>
+          <a href="#reading">加入讨论</a>
+        </div>
+        <div class="footer-column">
+          <strong>关于</strong>
+          <a href="#top">编辑原则</a>
+          <a href="#top">隐私说明</a>
+          <a href="#top">内容授权</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>折页编辑部 · 学生独立内容项目</span>
+        <span>内容为界面演示，人物与活动均为示例</span>
+      </div>
+    </div>
+  </footer>
+
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-panel">
+      <div class="search-top">
+        <div class="search-input-wrap">
+          <span class="search-glyph" aria-hidden="true">⌕</span>
+          <label class="sr-only" for="site-search" id="search-title">搜索文章</label>
+          <input class="search-input" id="site-search" type="search" placeholder="搜索文章、作者或标签" autocomplete="off">
+        </div>
+        <button class="ghost-button" id="close-search" type="button">关闭</button>
+      </div>
+      <div class="search-body" id="search-body">
+        <div id="search-initial">
+          <p class="search-section-title">热门搜索</p>
+          <div class="search-suggestions">
+            <button type="button" data-query="图书馆">图书馆</button>
+            <button type="button" data-query="转专业">转专业</button>
+            <button type="button" data-query="时间管理">时间管理</button>
+            <button type="button" data-query="城市">城市</button>
+            <button type="button" data-query="宿舍">宿舍</button>
+          </div>
+          <p class="search-section-title">最近更新</p>
+          <ul class="search-result-list">
+            <li><a href="#article-1"><strong>在图书馆闭馆以后，我们还在讨论什么</strong><span>校园 / 周知遥 / 9 分钟阅读</span></a></li>
+            <li><a href="#article-2"><strong>把一天切成四块：一个月的注意力实验</strong><span>学习 / 陈可屿 / 7 分钟阅读</span></a></li>
+            <li><a href="#article-5"><strong>宿舍夜谈：我们为什么害怕错过群里消息</strong><span>观点 / 六位同学 / 8 分钟阅读</span></a></li>
+          </ul>
+        </div>
+        <div id="search-state" aria-live="polite"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const root = document.documentElement;
+    const themeToggle = document.querySelector('.theme-toggle');
+    const menuButton = document.querySelector('.mobile-menu-button');
+    const primaryNav = document.querySelector('.primary-nav');
+    const searchDialog = document.getElementById('search-dialog');
+    const searchInput = document.getElementById('site-search');
+    const searchInitial = document.getElementById('search-initial');
+    const searchState = document.getElementById('search-state');
+    const toast = document.getElementById('toast');
+    let searchTimer;
+    let toastTimer;
+
+    const articles = [
+      { title: '在图书馆闭馆以后，我们还在讨论什么', category: '校园', author: '周知遥', time: '9 分钟阅读', href: '#article-1', keywords: '图书馆 夜晚 公共空间 校园' },
+      { title: '把一天切成四块：一个月的注意力实验', category: '学习', author: '陈可屿', time: '7 分钟阅读', href: '#article-2', keywords: '时间管理 注意力 学习方法 效率' },
+      { title: '从食堂到城中村，一张公交卡能带你走多远', category: '生活', author: '林小满', time: '11 分钟阅读', href: '#article-3', keywords: '城市 公交 城中村 周末' },
+      { title: '公告栏上的三十七张便签，拼出一个公共空间', category: '校园', author: '许南禾', time: '6 分钟阅读', href: '#article-4', keywords: '公告栏 公共空间 校园 食堂' },
+      { title: '宿舍夜谈：我们为什么害怕错过群里消息', category: '观点', author: '六位同学', time: '8 分钟阅读', href: '#article-5', keywords: '宿舍 社交 手机 群消息' },
+      { title: '转专业之后，我重新学会做一个新手', category: '学习', author: '裴子言', time: '5 分钟阅读', href: '#article-6', keywords: '转专业 新手 学习方法 大学适应' }
+    ];
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add('is-visible');
+      toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2800);
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = nextTheme;
+      try {
+        localStorage.setItem('zheye-theme', nextTheme);
+      } catch (error) {
+        // File previews can block local storage. The theme still changes for this visit.
+      }
+      showToast(nextTheme === 'dark' ? '已切换到深色主题' : '已切换到浅色主题');
+    });
+
+    menuButton.addEventListener('click', () => {
+      const isOpen = menuButton.getAttribute('aria-expanded') === 'true';
+      menuButton.setAttribute('aria-expanded', String(!isOpen));
+      primaryNav.classList.toggle('is-open', !isOpen);
+    });
+
+    primaryNav.addEventListener('click', (event) => {
+      if (event.target.closest('a')) {
+        primaryNav.classList.remove('is-open');
+        menuButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    function openSearch() {
+      if (!searchDialog.open) searchDialog.showModal();
+      setTimeout(() => searchInput.focus(), 20);
+    }
+
+    document.querySelectorAll('.search-open').forEach((button) => {
+      button.addEventListener('click', openSearch);
+    });
+
+    document.getElementById('close-search').addEventListener('click', () => {
+      searchDialog.close();
+    });
+
+    searchDialog.addEventListener('click', (event) => {
+      if (event.target === searchDialog) searchDialog.close();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+      if (event.key === '/' && !typing && !searchDialog.open) {
+        event.preventDefault();
+        openSearch();
+      }
+      if (event.key === 'Escape' && primaryNav.classList.contains('is-open')) {
+        primaryNav.classList.remove('is-open');
+        menuButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    function renderSearchResults(query) {
+      const normalized = query.trim().toLowerCase();
+      if (!normalized) {
+        searchInitial.hidden = false;
+        searchState.innerHTML = '';
+        return;
+      }
+
+      searchInitial.hidden = true;
+      searchState.innerHTML = '<div class="search-loading" aria-label="正在搜索"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div>';
+
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        const results = articles.filter((article) => {
+          const haystack = `${article.title} ${article.category} ${article.author} ${article.keywords}`.toLowerCase();
+          return haystack.includes(normalized);
+        });
+
+        if (!results.length) {
+          searchState.innerHTML = `
+            <div class="empty-state">
+              <div><strong>没有找到相关文章</strong><span>换一个更短的关键词，或试试“图书馆”“城市”“转专业”。</span></div>
+            </div>`;
+          return;
+        }
+
+        searchState.innerHTML = `
+          <p class="search-section-title">找到 ${results.length} 篇内容</p>
+          <ul class="search-result-list">
+            ${results.map((article) => `
+              <li>
+                <a href="${article.href}">
+                  <strong>${article.title}</strong>
+                  <span>${article.category} / ${article.author} / ${article.time}</span>
+                </a>
+              </li>`).join('')}
+          </ul>`;
+      }, 260);
+    }
+
+    searchInput.addEventListener('input', () => {
+      renderSearchResults(searchInput.value);
+    });
+
+    document.querySelectorAll('[data-query]').forEach((button) => {
+      button.addEventListener('click', () => {
+        searchInput.value = button.dataset.query;
+        renderSearchResults(searchInput.value);
+      });
+    });
+
+    searchState.addEventListener('click', (event) => {
+      if (event.target.closest('a')) searchDialog.close();
+    });
+
+    document.querySelectorAll('.tab-button').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab-button').forEach((item) => {
+          item.setAttribute('aria-selected', String(item === tab));
+        });
+        const filter = tab.dataset.filter;
+        document.querySelectorAll('.article-card').forEach((card) => {
+          card.hidden = filter !== '全部' && card.dataset.category !== filter;
+        });
+      });
+    });
+
+    document.querySelectorAll('.bookmark-button').forEach((button) => {
+      button.addEventListener('click', () => {
+        const active = button.getAttribute('aria-pressed') === 'true';
+        button.setAttribute('aria-pressed', String(!active));
+        button.textContent = active ? '收藏' : '已收藏';
+        showToast(active ? '已取消收藏' : '已加入你的阅读清单');
+      });
+    });
+
+    const pollButtons = document.querySelectorAll('.poll-option');
+    pollButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        pollButtons.forEach((item) => {
+          item.setAttribute('aria-pressed', String(item === button));
+          item.querySelector('small').textContent = item === button ? '已选择' : '选这个';
+        });
+        const total = Array.from(pollButtons).reduce((sum, item) => sum + Number(item.dataset.votes), 0) + 1;
+        document.querySelector('.poll-result').textContent = `示例结果：共 ${total} 票，图书馆目前有 ${31 + (button.dataset.votes === '31' ? 1 : 0)} 票。`;
+      });
+    });
+
+    document.querySelectorAll('.event-action').forEach((button) => {
+      button.addEventListener('click', () => {
+        const active = button.getAttribute('aria-pressed') === 'true';
+        button.setAttribute('aria-pressed', String(!active));
+        button.textContent = active ? '记下' : '已记下';
+        showToast(active ? '已从日程中移除' : '活动已记下');
+      });
+    });
+
+    const loadButton = document.getElementById('load-more');
+    const loadArea = document.getElementById('load-area');
+    const storyGrid = document.getElementById('story-library');
+
+    loadButton.addEventListener('click', () => {
+      loadButton.disabled = true;
+      loadButton.textContent = '正在整理文章';
+      const skeletons = document.createElement('div');
+      skeletons.className = 'load-skeletons';
+      skeletons.innerHTML = `
+        <div class="skeleton-card"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div>
+        <div class="skeleton-card"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div>`;
+      storyGrid.appendChild(skeletons);
+
+      setTimeout(() => {
+        skeletons.remove();
+        const extraArticles = [
+          {
+            id: 'article-7',
+            category: '生活',
+            date: '10 月 11 日',
+            time: '6 分钟阅读',
+            title: '一个人吃晚饭，不必急着证明什么',
+            excerpt: '独处不是社交失败的反面。它也可以只是今天想安静地吃完一碗面。',
+            author: '沈棠',
+            role: '心理系大三',
+            initial: '沈'
+          },
+          {
+            id: 'article-8',
+            category: '观点',
+            date: '10 月 09 日',
+            time: '7 分钟阅读',
+            title: '“提前规划”这四个字，应该从什么时候开始',
+            excerpt: '计划给人方向，也可能制造新的焦虑。几位不同年级的同学聊了聊自己的时间表。',
+            author: '宋予安',
+            role: '经济学系大四',
+            initial: '宋'
+          }
+        ];
+
+        extraArticles.forEach((article) => {
+          const card = document.createElement('article');
+          card.className = 'article-card';
+          card.id = article.id;
+          card.dataset.category = article.category;
+          card.innerHTML = `
+            <div class="article-body">
+              <div class="article-meta">
+                <span class="category-label">${article.category}</span>
+                <span>${article.date}</span>
+                <span>${article.time}</span>
+              </div>
+              <h3 class="article-title"><a href="#${article.id}">${article.title}</a></h3>
+              <p class="article-excerpt">${article.excerpt}</p>
+              <div class="article-footer">
+                <div class="author">
+                  <span class="avatar-initial" aria-hidden="true">${article.initial}</span>
+                  <span>${article.author} · ${article.role}</span>
+                </div>
+                <button class="bookmark-button" type="button" aria-pressed="false">收藏</button>
+              </div>
+            </div>`;
+          storyGrid.appendChild(card);
+          card.querySelector('.bookmark-button').addEventListener('click', (event) => {
+            const button = event.currentTarget;
+            const active = button.getAttribute('aria-pressed') === 'true';
+            button.setAttribute('aria-pressed', String(!active));
+            button.textContent = active ? '收藏' : '已收藏';
+            showToast(active ? '已取消收藏' : '已加入你的阅读清单');
+          });
+        });
+
+        loadArea.hidden = true;
+        showToast('又找到了两篇值得读的文章');
+      }, 700);
+    });
+
+    const newsletterForm = document.getElementById('newsletter-form');
+    const emailInput = document.getElementById('email');
+    const emailError = document.getElementById('email-error');
+
+    newsletterForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const value = emailInput.value.trim();
+      const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+      if (!isValid) {
+        emailInput.setAttribute('aria-invalid', 'true');
+        emailError.textContent = value ? '这个邮箱地址还不完整，请检查后重试。' : '请先填写你的邮箱地址。';
+        emailInput.focus();
+        return;
+      }
+
+      emailInput.removeAttribute('aria-invalid');
+      emailError.textContent = '';
+      newsletterForm.querySelector('button').textContent = '订阅成功';
+      showToast('周末版订阅已记录，演示界面未发送真实邮件');
+    });
+
+    emailInput.addEventListener('input', () => {
+      if (emailInput.getAttribute('aria-invalid') === 'true') {
+        emailInput.removeAttribute('aria-invalid');
+        emailError.textContent = '';
+      }
+    });
+
+    const revealItems = document.querySelectorAll('[data-reveal]');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      revealItems.forEach((item) => item.classList.add('is-visible'));
+    } else {
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px' });
+
+      revealItems.forEach((item) => revealObserver.observe(item));
+    }
+  </script>
+</body>
+</html>

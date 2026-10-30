@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拾光集 · 个人博客</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf7f2;
+  --bg-card:#ffffff;
+  --bg-nav:rgba(250,247,242,0.85);
+  --text:#2c2416;
+  --text-secondary:#6b5e4a;
+  --text-muted:#9b8d7a;
+  --accent:#d4745b;
+  --accent-soft:#fdf0eb;
+  --border:#e8e0d5;
+  --shadow-sm:0 1px 3px rgba(44,36,22,0.06);
+  --shadow-md:0 4px 20px rgba(44,36,22,0.08);
+  --shadow-lg:0 12px 40px rgba(44,36,22,0.12);
+  --radius-sm:8px;
+  --radius:14px;
+  --radius-lg:20px;
+  --radius-xl:28px;
+  --transition:0.3s cubic-bezier(0.4,0,0.2,1);
+  --serif:'Noto Serif SC',Georgia,serif;
+  --sans:'Noto Sans SC',-apple-system,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --tag-dev:#e8f0fe;--tag-dev-text:#1a6fb5;
+  --tag-life:#fef3e4;--tag-life-text:#c2780a;
+  --tag-think:#f0ebe4;--tag-think-text:#5e4a32;
+  --tag-design:#fce4ec;--tag-design-text:#b5446e;
+  --tag-ai:#e8f5e9;--tag-ai-text:#2e7d32;
+}
+[data-theme="dark"]{
+  --bg:#1a1815;
+  --bg-card:#252320;
+  --bg-nav:rgba(26,24,21,0.88);
+  --text:#e8e0d0;
+  --text-secondary:#b0a590;
+  --text-muted:#7a7060;
+  --accent:#e8957a;
+  --accent-soft:#3a2820;
+  --border:#3a3530;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.2);
+  --shadow-md:0 4px 20px rgba(0,0,0,0.3);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.4);
+  --tag-dev:#1a2a3a;--tag-dev-text:#6db3e0;
+  --tag-life:#3a2a1a;--tag-life-text:#e0a840;
+  --tag-think:#2a2520;--tag-think-text:#a09070;
+  --tag-design:#3a1a2a;--tag-design-text:#e07090;
+  --tag-ai:#1a2a1a;--tag-ai-text:#60b870;
+}
+html{scroll-behavior:smooth;font-size:16px;}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.7;
+  transition:background var(--transition),color var(--transition);
+  -webkit-font-smoothing:antialiased;
+}
+#progress-bar{
+  position:fixed;top:0;left:0;height:3px;
+  background:linear-gradient(90deg,var(--accent),#e8a87c,#d4745b);
+  z-index:1000;transition:width 0.1s linear;
+}
+nav{
+  position:sticky;top:0;z-index:999;
+  background:var(--bg-nav);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid var(--border);
+  transition:all var(--transition);
+}
+.nav-inner{
+  max-width:1280px;margin:0 auto;padding:0 32px;
+  display:flex;align-items:center;justify-content:space-between;height:64px;
+}
+.logo{
+  font-family:var(--serif);font-size:1.5rem;font-weight:700;
+  color:var(--text);letter-spacing:-0.02em;
+  display:flex;align-items:center;gap:10px;text-decoration:none;
+}
+.logo-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--accent);display:inline-block;
+}
+.nav-links{display:flex;gap:32px;list-style:none;align-items:center;}
+.nav-links a{
+  text-decoration:none;color:var(--text-secondary);font-size:0.95rem;
+  font-weight:500;transition:color var(--transition);position:relative;
+}
+.nav-links a:hover,.nav-links a.active{color:var(--accent);}
+.nav-links a.active::after{
+  content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;border-radius:50%;background:var(--accent);
+}
+.nav-actions{display:flex;align-items:center;gap:16px;}
+#theme-toggle{
+  background:none;border:1px solid var(--border);color:var(--text-secondary);
+  width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;
+  transition:all var(--transition);display:flex;align-items:center;justify-content:center;
+}
+#theme-toggle:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+.btn-subscribe{
+  background:var(--accent);color:#fff;border:none;
+  padding:10px 22px;border-radius:100px;font-size:0.9rem;font-weight:600;
+  cursor:pointer;transition:all var(--transition);font-family:var(--sans);
+}
+.btn-subscribe:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(212,116,91,0.35);}
+.main-container{
+  max-width:1280px;margin:0 auto;padding:0 32px;
+  display:grid;grid-template-columns:1fr 340px;gap:48px;
+}
+.hero-section{padding:48px 0 20px;grid-column:1 / -1;}
+.hero-card{
+  background:var(--bg-card);border-radius:var(--radius-xl);
+  overflow:hidden;display:grid;grid-template-columns:1fr 1fr;
+  box-shadow:var(--shadow-md);border:1px solid var(--border);
+  transition:all var(--transition);cursor:pointer;
+}
+.hero-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);}
+.hero-image{
+  position:relative;overflow:hidden;min-height:320px;
+  background:linear-gradient(135deg,#d4a88c,#c47a6a,#a8907a,#8c9eaa);
+  background-size:400% 400%;animation:heroGradient 12s ease infinite;
+}
+@keyframes heroGradient{
+  0%,100%{background-position:0% 50%}
+  25%{background-position:100% 0%}
+  50%{background-position:100% 100%}
+  75%{background-position:0% 100%}
+}
+.hero-image-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 60%);
+  display:flex;align-items:flex-end;padding:32px;
+}
+.hero-image .featured-badge{
+  background:var(--accent);color:#fff;font-size:0.8rem;font-weight:600;
+  padding:6px 16px;border-radius:100px;letter-spacing:0.05em;
+}
+.hero-content{padding:40px;display:flex;flex-direction:column;justify-content:center;gap:16px;}
+.hero-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.hero-category{font-size:0.82rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;}
+.hero-date{font-size:0.85rem;color:var(--text-muted);}
+.hero-content h1{font-family:var(--serif);font-size:2rem;font-weight:700;line-height:1.35;letter-spacing:-0.01em;color:var(--text);}
+.hero-excerpt{font-size:1rem;color:var(--text-secondary);line-height:1.75;}
+.hero-footer{display:flex;align-items:center;gap:16px;margin-top:4px;}
+.author-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#d4745b,#e8a87c);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:0.85rem;}
+.author-name{font-size:0.9rem;font-weight:600;color:var(--text);}
+.read-time{font-size:0.82rem;color:var(--text-muted);}
+.content-area{display:flex;flex-direction:column;gap:40px;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.section-title{font-family:var(--serif);font-size:1.5rem;font-weight:700;color:var(--text);}
+.section-link{font-size:0.9rem;color:var(--accent);text-decoration:none;font-weight:500;transition:opacity var(--transition);}
+.section-link:hover{opacity:0.75;}
+.posts-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.post-card{
+  background:var(--bg-card);border-radius:var(--radius-lg);
+  overflow:hidden;border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);transition:all var(--transition);
+  cursor:pointer;display:flex;flex-direction:column;
+}
+.post-card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px);}
+.post-card-image{aspect-ratio:16/10;overflow:hidden;position:relative;}
+.post-card-image .gradient-a{background:linear-gradient(135deg,#c8d6e5,#8395a7,#576574);}
+.post-card-image .gradient-b{background:linear-gradient(135deg,#f8c291,#e55039,#b71540);}
+.post-card-image .gradient-c{background:linear-gradient(135deg,#a29bfe,#6c5ce7,#4834d4);}
+.post-card-image .gradient-d{background:linear-gradient(135deg,#55efc4,#00b894,#00a381);}
+.post-card-image .gradient-e{background:linear-gradient(135deg,#fdcb6e,#e17055,#d63031);}
+.post-card-image .gradient-f{background:linear-gradient(135deg,#81ecec,#00cec9,#0984e3);}
+.post-card-image-inner{width:100%;height:100%;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);}
+.post-card:hover .post-card-image-inner{transform:scale(1.05);}
+.post-card-body{padding:20px 24px 24px;flex:1;display:flex;flex-direction:column;gap:10px;}
+.post-card-tags{display:flex;gap:8px;flex-wrap:wrap;}
+.tag{font-size:0.75rem;font-weight:600;padding:3px 10px;border-radius:100px;letter-spacing:0.02em;text-decoration:none;}
+.tag-dev{background:var(--tag-dev);color:var(--tag-dev-text);}
+.tag-life{background:var(--tag-life);color:var(--tag-life-text);}
+.tag-think{background:var(--tag-think);color:var(--tag-think-text);}
+.tag-design{background:var(--tag-design);color:var(--tag-design-text);}
+.tag-ai{background:var(--tag-ai);color:var(--tag-ai-text);}
+.post-card h3{font-family:var(--serif);font-size:1.15rem;font-weight:600;line-height:1.5;color:var(--text);letter-spacing:-0.005em;}
+.post-card-excerpt{font-size:0.88rem;color:var(--text-secondary);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.post-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
+.post-card-meta{display:flex;align-items:center;gap:12px;font-size:0.8rem;color:var(--text-muted);}
+.post-card-actions{display:flex;gap:8px;}
+.btn-icon{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;padding:6px;border-radius:8px;transition:all var(--transition);display:flex;align-items:center;gap:4px;}
+.btn-icon:hover{color:var(--accent);background:var(--accent-soft);}
+.btn-icon.liked{color:#e74c3c;}
+.sidebar{display:flex;flex-direction:column;gap:32px;padding-top:36px;}
+.sidebar-card{background:var(--bg-card);border-radius:var(--radius-lg);padding:24px;border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+.sidebar-card h4{font-family:var(--serif);font-size:1.1rem;font-weight:600;margin-bottom:16px;color:var(--text);}
+.profile-card{text-align:center;}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#d4745b,#e8a87c,#f0c8a0);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;}
+.profile-name{font-family:var(--serif);font-size:1.2rem;font-weight:700;}
+.profile-bio{font-size:0.88rem;color:var(--text-secondary);margin:8px 0 16px;line-height:1.6;}
+.profile-stats{display:flex;justify-content:center;gap:28px;}
+.profile-stat{text-align:center;}
+.profile-stat-num{font-size:1.3rem;font-weight:700;color:var(--accent);}
+.profile-stat-label{font-size:0.75rem;color:var(--text-muted);}
+.popular-list{display:flex;flex-direction:column;gap:14px;}
+.popular-item{display:flex;gap:12px;text-decoration:none;align-items:flex-start;padding:8px;border-radius:var(--radius-sm);transition:background var(--transition);}
+.popular-item:hover{background:var(--accent-soft);}
+.popular-num{font-family:var(--serif);font-size:1.5rem;font-weight:900;color:var(--accent);opacity:0.5;line-height:1;min-width:32px;}
+.popular-info h5{font-size:0.9rem;font-weight:600;color:var(--text);line-height:1.4;}
+.popular-info span{font-size:0.78rem;color:var(--text-muted);}
+.tags-cloud{display:flex;flex-wrap:wrap;gap:8px;}
+.tag-pill{font-size:0.8rem;padding:6px 14px;border-radius:100px;border:1px solid var(--border);color:var(--text-secondary);text-decoration:none;cursor:pointer;transition:all var(--transition);}
+.tag-pill:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+.newsletter-card{background:linear-gradient(135deg,var(--accent-soft),var(--bg-card));}
+.newsletter-card p{font-size:0.88rem;color:var(--text-secondary);margin-bottom:16px;line-height:1.6;}
+.newsletter-input{display:flex;gap:8px;}
+.newsletter-input input{flex:1;padding:10px 16px;border:1px solid var(--border);border-radius:100px;font-size:0.88rem;outline:none;background:var(--bg-card);color:var(--text);font-family:var(--sans);transition:border var(--transition);}
+.newsletter-input input:focus{border-color:var(--accent);}
+.newsletter-input button{background:var(--accent);color:#fff;border:none;padding:10px 20px;border-radius:100px;font-weight:600;cursor:pointer;font-size:0.88rem;font-family:var(--sans);transition:all var(--transition);}
+.newsletter-input button:hover{box-shadow:0 4px 16px rgba(212,116,91,0.35);}
+footer{border-top:1px solid var(--border);margin-top:64px;padding:40px 0;text-align:center;}
+.footer-inner{max-width:1280px;margin:0 auto;padding:0 32px;}
+.footer-links{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-bottom:16px;}
+.footer-links a{color:var(--text-secondary);text-decoration:none;font-size:0.9rem;transition:color var(--transition);}
+.footer-links a:hover{color:var(--accent);}
+.footer-copy{font-size:0.82rem;color:var(--text-muted);}
+@media(max-width:1024px){
+  .main-container{grid-template-columns:1fr;gap:32px;}
+  .sidebar{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding-top:0;}
+  .hero-card{grid-template-columns:1fr;}
+  .hero-image{min-height:240px;}
+  .hero-content{padding:28px;}
+  .hero-content h1{font-size:1.6rem;}
+  .posts-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:768px){
+  .nav-inner{padding:0 20px;}
+  .nav-links{display:none;}
+  .hero-section{padding:24px 0 12px;}
+  .hero-content h1{font-size:1.35rem;}
+  .posts-grid{grid-template-columns:1fr;}
+  .sidebar{grid-template-columns:1fr;}
+  .main-container{padding:0 20px;}
+  .footer-inner{padding:0 20px;}
+}
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.animate-in{animation:fadeInUp 0.5s ease forwards;}
+.animate-in:nth-child(1){animation-delay:0.05s;}
+.animate-in:nth-child(2){animation-delay:0.1s;}
+.animate-in:nth-child(3){animation-delay:0.15s;}
+.animate-in:nth-child(4){animation-delay:0.2s;}
+.animate-in:nth-child(5){animation-delay:0.25s;}
+.animate-in:nth-child(6){animation-delay:0.3s;}
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--bg-card);color:var(--text);padding:12px 24px;border-radius:100px;font-size:0.9rem;font-weight:500;box-shadow:var(--shadow-lg);border:1px solid var(--border);z-index:1001;opacity:0;transition:opacity 0.3s ease;pointer-events:none;}
+.toast.show{opacity:1;}
+.search-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1002;display:none;align-items:flex-start;justify-content:center;padding-top:120px;backdrop-filter:blur(4px);}
+.search-overlay.open{display:flex;}
+.search-box{background:var(--bg-card);border-radius:var(--radius-lg);padding:32px;width:560px;max-width:90vw;box-shadow:var(--shadow-lg);animation:fadeInUp 0.3s ease;}
+.search-box input{width:100%;padding:14px 20px;border:2px solid var(--border);border-radius:var(--radius);font-size:1.1rem;outline:none;font-family:var(--sans);background:var(--bg);color:var(--text);transition:border var(--transition);}
+.search-box input:focus{border-color:var(--accent);}
+.search-hint{font-size:0.85rem;color:var(--text-muted);margin-top:10px;text-align:center;}
+</style>
+</head>
+<body>
+<div id="progress-bar" style="width:0%"></div>
+<div class="search-overlay" id="search-overlay" onclick="this.classList.remove('open')">
+  <div class="search-box" onclick="event.stopPropagation()">
+    <input type="text" placeholder="搜索文章..." autofocus>
+    <div class="search-hint">输入关键词，按 Enter 搜索</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo"><span class="logo-dot"></span>拾光集</a>
+    <ul class="nav-links">
+      <li><a href="#" class="active">首页</a></li>
+      <li><a href="#">技术</a></li>
+      <li><a href="#">生活</a></li>
+      <li><a href="#">思考</a></li>
+      <li><a href="#">关于</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button id="search-btn" title="搜索" style="background:none;border:1px solid var(--border);color:var(--text-secondary);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all var(--transition);" onclick="document.getElementById('search-overlay').classList.add('open')">&#128269;</button>
+      <button id="theme-toggle" title="切换主题">&#127769;</button>
+      <button class="btn-subscribe" onclick="showToast('&#127881; 感谢订阅！新文章会发送到你的邮箱')">订阅</button>
+    </div>
+  </div>
+</nav>
+<div class="main-container">
+  <section class="hero-section">
+    <article class="hero-card animate-in" onclick="showToast('&#128214; 正在打开文章...')">
+      <div class="hero-image">
+        <div class="hero-image-overlay"><span class="featured-badge">&#10024; 精选</span></div>
+      </div>
+      <div class="hero-content">
+        <div class="hero-meta"><span class="hero-category">技术 · 深度</span><span class="hero-date">2026年10月22日</span></div>
+        <h1>从零构建一个现代博客：技术选型、设计哲学与性能优化的全流程复盘</h1>
+        <p class="hero-excerpt">耗时三个月，从设计稿到上线，我记录下了搭建这个博客的每一个决策节点。这篇文章将带你走过技术选型的纠结、暗黑模式的无缝切换、以及那些让人头秃的性能优化细节。更重要的是，我想聊聊一个程序员博主如何在技术深度与可读性之间找到那个微妙的平衡点。</p>
+        <div class="hero-footer"><div class="author-avatar">L</div><span class="author-name">林一</span><span class="read-time">· 阅读 12 分钟</span></div>
+      </div>
+    </article>
+  </section>
+  <div class="content-area">
+    <div>
+      <div class="section-header"><h2 class="section-title">最新文章</h2><a href="#" class="section-link">查看全部 &#8594;</a></div>
+      <div class="posts-grid">
+        <article class="post-card animate-in" onclick="showToast('&#128214; 正在打开文章...')">
+          <div class="post-card-image"><div class="post-card-image-inner gradient-a"></div></div>
+          <div class="post-card-body">
+            <div class="post-card-tags"><span class="tag tag-dev">前端</span><span class="tag tag-ai">AI</span></div>
+            <h3>2026年了，为什么我还是选择手写CSS而不是用Tailwind</h3>
+            <p class="post-card-excerpt">原子化CSS的浪潮席卷前端社区，但在个人项目中，手写CSS依然有其不可替代的优势。本文从可维护性、创造性表达和学习曲线三个维度展开讨论。</p>
+            <div class="post-card-footer">
+              <div class="post-card-meta"><span>10月20日</span><span>· 8 分钟</span></div>
+              <div class="post-card-actions">
+                <button class="btn-icon" onclick="event.stopPropagation();toggleLike(this)" title="喜欢">&#10084;</button>
+                <button class="btn-icon" onclick="event.stopPropagation();showToast('&#128278; 已收藏')" title="收藏">&#128278;</button>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="post-card animate-in" onclick="showToast('&#128214; 正在打开文章...')">
+          <div class="post-card-image"><div class="post-card-image-inner gradient-b"></div></div>
+          <div class="post-card-body">
+            <div class="post-card-tags"><span class="tag tag-life">生活</span><span class="tag tag-think">思考</span></div>
+            <h3>离开大厂的第365天：自由职业的真实收入与心理状态</h3>
+            <p class="post-card-excerpt">一年前我裸辞离开字节跳动，开始了独立开发+写作的生活。没有想象中的财务自由，也没有传闻中的焦虑崩溃——真实情况比两种极端都要复杂。</p>
+            <div class="post-card-footer">
+              <div class="post-card-meta"><span>10月18日</span><span>· 15 分钟</span></div>
+              <div class="post-card-actions">
+                <button class="btn-icon" onclick="event.stopPropagation();toggleLike(this)" title="喜欢">&#10084;</button>
+                <button class="btn-icon" onclick="event.stopPropagation();showToast('&#128278; 已收藏')" title="收藏">&#128278;</button>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="post-card animate-in" onclick="showToast('&#128214; 正在打开文章...')">
+          <div class="post-card-image"><div class="post-card-image-inner gradient-c"></div></div>
+          <div class="post-card-body">
+            <div class="post-card-tags"><span class="tag tag-dev">后端</span><span class="tag tag-dev">Go</span></div>
+            <h3>Go 泛型实战：从 interface{} 到类型安全的优雅重构之路</h3>
+            <p class="post-card-excerpt">Go 1.18 引入泛型已经两年多，但社区中仍有大量代码停留在 any 时代。我在重构一个2万行的微服务时，总结了一套实用的泛型迁移策略。</p>
+            <div class="post-card-footer">
+              <div class="post-card-meta"><span>10月15日</span><span>· 10 分钟</span></div>
+              <div class="post-card-actions">
+                <button class="btn-icon" onclick="event.stopPropagation();toggleLike(this)" title="喜欢">&#10084;</button>
+                <button class="btn-icon" onclick="event.stopPropagation();showToast('&#128278; 已收藏')" title="收藏">&#128278;</button>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="post-card animate-in" onclick="showToast('&#128214; 正在打开文章...')">
+          <div class="post-card-image"><div class="post-card-image-inner gradient-d"></div></div>
+          <div class="post-card-body">
+            <div class="post-card-tags"><span class="tag tag-design">设计</span><span class="tag tag-think">UX</span></div>
+            <h3>程序员需要懂设计吗？一位全栈开发者的视觉审美培养之路</h3>
+            <p class="post-card-excerpt">从只会用 Bootstrap 到能独立完成 UI/UX 设计，我花了两年时间。这篇文章不是教程，而是一份「非设计师的视觉素养成长路线图」。</p>
+            <div class="post-card-footer">
+              <div class="post-card-meta"><span>10月12日</span><span>· 7 分钟</span></div>
+              <div class="post-card-actions">
+                <button class="btn-icon" onclick="event.stopPropagation();toggleLike(this)" title="喜欢">&#10084;</button>
+                <button class="btn-icon" onclick="event.stopPropagation();showToast('&#128278; 已收藏')" title="收藏">&#128278;</button>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="post-card animate-in" onclick="showToast('&#128214; 正在打开文章...')">
+          <div class="post-card-image"><div class="post-card-image-inner gradient-e"></div></div>
+          <div class="post-card-body">
+            <div class="post-card-tags"><span class="tag tag-ai">LLM</span><span class="tag tag-dev">工具</span></div>
+            <h3>我的 AI 辅助编程工作流：从 Copilot 到 Cursor 到 Codex 的演进</h3>
+            <p class="post-card-excerpt">AI 编程工具日新月异，如何在眼花缭乱的选择中找到最适合自己的那一款？我记录了半年来的真实使用体验和效率对比数据。</p>
+            <div class="post-card-footer">
+              <div class="post-card-meta"><span>10月10日</span><span>· 11 分钟</span></div>
+              <div class="post-card-actions">
+                <button class="btn-icon" onclick="event.stopPropagation();toggleLike(this)" title="喜欢">&#10084;</button>
+                <button class="btn-icon" onclick="event.stopPropagation();showToast('&#128278; 已收藏')" title="收藏">&#128278;</button>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="post-card animate-in" onclick="showToast('&#128214; 正在打开文章...')">
+          <div class="post-card-image"><div class="post-card-image-inner gradient-f"></div></div>
+          <div class="post-card-body">
+            <div class="post-card-tags"><span class="tag tag-think">随笔</span><span class="tag tag-life">旅行</span></div>
+            <h3>在川西的星空下写代码：一名数字游民的远程办公实验</h3>
+            <p class="post-card-excerpt">我带着 MacBook 和 Starlink，在海拔3800米的稻城亚丁待了两周。网络延迟、高原反应、以及绝美风景对生产力的奇妙影响——这是一份非典型的远程办公报告。</p>
+            <div class="post-card-footer">
+              <div class="post-card-meta"><span>10月5日</span><span>· 9 分钟</span></div>
+              <div class="post-card-actions">
+                <button class="btn-icon" onclick="event.stopPropagation();toggleLike(this)" title="喜欢">&#10084;</button>
+                <button class="btn-icon" onclick="event.stopPropagation();showToast('&#128278; 已收藏')" title="收藏">&#128278;</button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div>
+      <div class="section-header"><h2 class="section-title">&#128293; 本周热读</h2><a href="#" class="section-link">更多 &#8594;</a></div>
+      <div class="posts-grid">
+        <article class="post-card animate-in" onclick="showToast('&#128214; 正在打开文章...')">
+          <div class="post-card-image"><div class="post-card-image-inner gradient-c"></div></div>
+          <div class="post-card-body">
+            <div class="post-card-tags"><span class="tag tag-dev">架构</span><span class="tag tag-dev">微服务</span></div>
+            <h3>当我们谈论"可观测性"时，我们到底在谈论什么？</h3>
+            <p class="post-card-excerpt">Metrics、Logs、Traces 三驾马车之外，2026年的可观测性生态已经发生了翻天覆地的变化。一文梳理最新的工具链和最佳实践。</p>
+            <div class="post-card-footer">
+              <div class="post-card-meta"><span>10月8日</span><span>· 13 分钟</span></div>
+              <div class="post-card-actions">
+                <button class="btn-icon" onclick="event.stopPropagation();toggleLike(this)" title="喜欢">&#10084;</button>
+                <button class="btn-icon" onclick="event.stopPropagation();showToast('&#128278; 已收藏')" title="收藏">&#128278;</button>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="post-card animate-in" onclick="showToast('&#128214; 正在打开文章...')">
+          <div class="post-card-image"><div class="post-card-image-inner gradient-e"></div></div>
+          <div class="post-card-body">
+            <div class="post-card-tags"><span class="tag tag-life">效率</span><span class="tag tag-think">方法论</span></div>
+            <h3>深度工作时代：我在2026年重新学会了「专注」</h3>
+            <p class="post-card-excerpt">在AI工具极大提升效率的今天，人类的注意力反而成了最稀缺的资源。分享一套经过半年验证的深度工作系统。</p>
+            <div class="post-card-footer">
+              <div class="post-card-meta"><span>10月3日</span><span>· 6 分钟</span></div>
+              <div class="post-card-actions">
+                <button class="btn-icon" onclick="event.stopPropagation();toggleLike(this)" title="喜欢">&#10084;</button>
+                <button class="btn-icon" onclick="event.stopPropagation();showToast('&#128278; 已收藏')" title="收藏">&#128278;</button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+  <aside class="sidebar">
+    <div class="sidebar-card profile-card">
+      <div class="profile-avatar">&#127794;</div>
+      <div class="profile-name">林一的拾光集</div>
+      <p class="profile-bio">全栈开发者 · 自由撰稿人 · 数字游民。<br>写代码，也写生活。相信技术应该服务于人。</p>
+      <div class="profile-stats">
+        <div class="profile-stat"><div class="profile-stat-num">87</div><div class="profile-stat-label">文章</div></div>
+        <div class="profile-stat"><div class="profile-stat-num">12.6k</div><div class="profile-stat-label">订阅者</div></div>
+        <div class="profile-stat"><div class="profile-stat-num">3年</div><div class="profile-stat-label">博客年龄</div></div>
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <h4>&#128200; 热门文章</h4>
+      <div class="popular-list">
+        <a href="#" class="popular-item" onclick="event.preventDefault();showToast('&#128214; 正在打开文章...')">
+          <span class="popular-num">01</span><div class="popular-info"><h5>从零构建一个现代博客：技术选型与...</h5><span>12 min · 2.3k 阅读</span></div>
+        </a>
+        <a href="#" class="popular-item" onclick="event.preventDefault();showToast('&#128214; 正在打开文章...')">
+          <span class="popular-num">02</span><div class="popular-info"><h5>离开大厂的第365天：自由职业的...</h5><span>15 min · 1.8k 阅读</span></div>
+        </a>
+        <a href="#" class="popular-item" onclick="event.preventDefault();showToast('&#128214; 正在打开文章...')">
+          <span class="popular-num">03</span><div class="popular-info"><h5>我的 AI 辅助编程工作流</h5><span>11 min · 1.5k 阅读</span></div>
+        </a>
+        <a href="#" class="popular-item" onclick="event.preventDefault();showToast('&#128214; 正在打开文章...')">
+          <span class="popular-num">04</span><div class="popular-info"><h5>Go 泛型实战：类型安全的优雅重构</h5><span>10 min · 1.2k 阅读</span></div>
+        </a>
+        <a href="#" class="popular-item" onclick="event.preventDefault();showToast('&#128214; 正在打开文章...')">
+          <span class="popular-num">05</span><div class="popular-info"><h5>深度工作时代：重新学会「专注」</h5><span>6 min · 980 阅读</span></div>
+        </a>
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <h4>&#127991; 标签云</h4>
+      <div class="tags-cloud">
+        <a href="#" class="tag-pill">前端开发</a><a href="#" class="tag-pill">Go语言</a>
+        <a href="#" class="tag-pill">系统设计</a><a href="#" class="tag-pill">AI & LLM</a>
+        <a href="#" class="tag-pill">生活随笔</a><a href="#" class="tag-pill">效率工具</a>
+        <a href="#" class="tag-pill">自由职业</a><a href="#" class="tag-pill">设计思考</a>
+        <a href="#" class="tag-pill">开源</a><a href="#" class="tag-pill">旅行</a>
+        <a href="#" class="tag-pill">读书笔记</a><a href="#" class="tag-pill">微服务</a>
+        <a href="#" class="tag-pill">TypeScript</a><a href="#" class="tag-pill">数据库</a>
+      </div>
+    </div>
+    <div class="sidebar-card newsletter-card">
+      <h4>&#128231; 订阅更新</h4>
+      <p>每周一篇深度技术文章，偶尔聊聊生活和远方。不打扰，不灌水。</p>
+      <div class="newsletter-input">
+        <input type="email" placeholder="your@email.com">
+        <button onclick="showToast('&#127881; 订阅成功！请查收确认邮件')">订阅</button>
+      </div>
+    </div>
+  </aside>
+</div>
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="#">关于博客</a><a href="#">文章归档</a><a href="#">友情链接</a>
+      <a href="#">RSS 订阅</a><a href="#">联系我</a><a href="#">隐私政策</a>
+    </div>
+    <p class="footer-copy">© 2026 拾光集 · 用代码记录时光 · Powered by 热爱</p>
+  </div>
+</footer>
+<script>
+const themeToggle = document.getElementById('theme-toggle');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+let currentTheme = localStorage.getItem('blog-theme');
+if (!currentTheme) { currentTheme = prefersDark.matches ? 'dark' : 'light'; }
+applyTheme(currentTheme);
+themeToggle.addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem('blog-theme', next);
+});
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeToggle.textContent = theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+}
+prefersDark.addEventListener('change', (e) => {
+  if (!localStorage.getItem('blog-theme')) { applyTheme(e.matches ? 'dark' : 'light'); }
+});
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+function toggleLike(btn) {
+  btn.classList.toggle('liked');
+  if (btn.classList.contains('liked')) { btn.textContent = '\u2764\uFE0F'; showToast('\uD83D\uDC95 已点赞'); }
+  else { btn.textContent = '\u2764'; }
+}
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => toast.classList.remove('show'), 2000);
+}
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('search-overlay').classList.add('open'); }
+  if (e.key === 'Escape') { document.getElementById('search-overlay').classList.remove('open'); }
+});
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) { entry.target.style.opacity = '1'; entry.target.style.transform = 'translateY(0)'; }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.animate-in').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>

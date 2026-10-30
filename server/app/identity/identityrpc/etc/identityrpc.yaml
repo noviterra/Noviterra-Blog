@@ -1,0 +1,29 @@
+Name: identityrpc.rpc
+ListenOn: 0.0.0.0:9001
+
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: identityrpc.rpc
+
+Cache:
+  Addr: 127.0.0.1:6379
+  Password:
+  DB: 0
+
+Repo:
+  UserName: "root"
+  Password: "aaa2021s"
+  Host: 127.0.0.1
+  Port: 3306
+  DBName: noviterra
+
+JWT:
+  AccessSecret: hrlHsEomQ9x4vMkLoPTyU3wZ5ahk6oseF2gH4jK6mN9pQ1rS3t
+  AccessExpire: 7200
+  RefreshSecret: PewqShEK5jH9gF4dS2aOkh7SlU0yT4rLkOwasX5cV9bN3mK0
+  RefreshExpire:  604800
+
+Interceptor:
+  ServiceToken: NdsowVhIlsaTea241EgsRadsawAds4dS2aOkahk6ose
+  SkipToken: GswdkYwebvDAdfeLKwe31Yqfds4KaqOecMd123cSq

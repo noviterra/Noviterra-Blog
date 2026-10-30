@@ -1,0 +1,13 @@
+Name: identityService
+Host: 0.0.0.0
+Port: 8001
+
+IdentityRPC:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: identityrpc.rpc
+
+Interceptor:
+  ServiceToken: NdsowVhIlsaTea241EgsRadsawAds4dS2aOkahk6ose
+  SkipToken: GswdkYwebvDAdfeLKwe31Yqfds4KaqOecMd123cSq

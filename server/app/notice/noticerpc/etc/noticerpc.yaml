@@ -1,0 +1,29 @@
+Name: noticerpc.rpc
+ListenOn: 0.0.0.0:9002
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: noticerpc.rpc
+
+Repo:
+  UserName: "root"
+  Password: "aaa2021s"
+  Host: 127.0.0.1
+  Port: 3306
+  DBName: noviterra
+
+Cache:
+  Addr: 127.0.0.1:6379
+  Password:
+  DB: 0
+
+Smtp:
+  Host: smtp.163.com
+  Port: 465
+  User: noviterra@163.com
+  Password: JPPYLEdiL6TAQyHs
+  From: noviterra@163.com
+
+Interceptor:
+  ServiceToken: NdsowVhIlsaTea241EgsRadsawAds4dS2aOkahk6ose
+  SkipToken: GswdkYwebvDAdfeLKwe31Yqfds4KaqOecMd123cSq

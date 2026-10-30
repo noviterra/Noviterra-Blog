@@ -1,0 +1,22 @@
+Name: commentrpc.rpc
+ListenOn: 0.0.0.0:8080
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: commentrpc.rpc
+
+Interceptor:
+  ServiceToken: NdsowVhIlsaTea241EgsRadsawAds4dS2aOkahk6ose
+  SkipToken: GswdkYwebvDAdfeLKwe31Yqfds4KaqOecMd123cSq
+
+Repo:
+  UserName: root
+  Password: aaa2021s
+  Host: 127.0.0.1
+  Port: 3306
+  DBName: noviterra
+
+Cache:
+  Addr: 127.0.0.1:6379
+  Password:
+  DB: 0

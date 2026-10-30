@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interline | An independent journal of design, technology, and the built world</title>
+  <meta name="description" content="Interline is an independent journal of design, technology, and the built world. Reporting on the systems and rooms that shape daily life.">
+  <meta name="theme-color" content="#f3f6f7">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230f4f5c'/%3E%3Cpath d='M8 10h16M8 16h11M8 22h7' stroke='%23f7fbfc' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Libre+Bodoni:ital,wght@0,400;0,500;0,600;1,400&family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <script>document.documentElement.classList.add('js');</script>
+  <style>
+    /* =========================================================
+       Interline: editorial homepage
+       Type: Libre Bodoni / Public Sans / IBM Plex Mono
+       Shape: all-sharp, with circular author avatars
+       Theme: cool paper light / cool ink dark
+       ========================================================= */
+    :root {
+      color-scheme: light;
+      --bg: #f3f6f7;
+      --surface: #fbfcfc;
+      --surface-alt: #e8eff1;
+      --ink: #0d1619;
+      --ink-soft: #2f3f45;
+      --muted: #5e7178;
+      --line: #d7e0e3;
+      --line-strong: #b5c5ca;
+      --accent: #0f4f5c;
+      --accent-hover: #093c46;
+      --accent-soft: #e0ecee;
+      --on-accent: #f8fbfb;
+      --danger: #9b3434;
+      --shadow: 0 24px 60px -34px rgba(10, 40, 48, 0.38);
+      --font-display: "Libre Bodoni", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+      --font-sans: "Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+      --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      --max: 1280px;
+      --gutter: clamp(18px, 3vw, 36px);
+      --z-header: 50;
+      --z-menu: 60;
+      --z-skip: 100;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #091113;
+      --surface: #0e181b;
+      --surface-alt: #142226;
+      --ink: #e7eef0;
+      --ink-soft: #bdcbd0;
+      --muted: #8da2a9;
+      --line: #223338;
+      --line-strong: #385057;
+      --accent: #7dc8d6;
+      --accent-hover: #a4dde8;
+      --accent-soft: #12323a;
+      --on-accent: #06171b;
+      --danger: #ff9c9c;
+      --shadow: 0 26px 60px -30px rgba(0, 0, 0, 0.75);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    body.menu-open { overflow: hidden; }
+    h1, h2, h3, h4, p, figure, blockquote { margin: 0; }
+    ul, ol { margin: 0; padding: 0; list-style: none; }
+    img { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    button { background: none; border: 0; color: inherit; }
+    [hidden] { display: none !important; }
+    ::selection { background: var(--accent); color: var(--on-accent); }
+    :where(a, button, input, [tabindex]):focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .container {
+      width: min(calc(100% - (var(--gutter) * 2)), var(--max));
+      margin-inline: auto;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .skip-link {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: var(--z-skip);
+      transform: translateY(-160%);
+      padding: 9px 13px;
+      background: var(--accent);
+      color: var(--on-accent);
+      font-size: 12px;
+      font-weight: 600;
+      transition: transform 160ms ease;
+    }
+    .skip-link:focus { transform: translateY(0); }
+
+    /* ---------- Utility bar ---------- */
+    .topbar {
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar-inner {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .dateline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      line-height: 1.2;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .dateline .rule {
+      width: 1px;
+      height: 10px;
+      background: var(--line-strong);
+    }
+    .utility-nav {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .utility-nav a {
+      padding: 8px 9px;
+      color: var(--ink-soft);
+      font-size: 10.5px;
+      font-weight: 500;
+      transition: color 160ms ease;
+    }
+    .utility-nav a:hover { color: var(--accent); }
+    .utility-nav a:first-child { padding-left: 0; }
+    .utility-nav .signin {
+      margin-left: 6px;
+      padding-right: 0;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* ---------- Masthead ---------- */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: var(--z-header);
+      background: rgba(243, 246, 247, 0.93);
+      border-bottom: 1px solid var(--line);
+      -webkit-backdrop-filter: blur(12px) saturate(125%);
+      backdrop-filter: blur(12px) saturate(125%);
+      transition: box-shadow 220ms ease;
+    }
+    [data-theme="dark"] .site-header { background: rgba(9, 17, 19, 0.93); }
+    .site-header.is-stuck { box-shadow: 0 14px 32px -28px rgba(8, 34, 41, 0.5); }
+    .header-inner {
+      height: 66px;
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      flex: 0 0 auto;
+      color: var(--ink);
+    }
+    .brand-mark {
+      width: 24px;
+      height: 24px;
+      flex: 0 0 auto;
+      color: var(--accent);
+    }
+    .brand-word {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: -0.035em;
+    }
+    .brand-note {
+      align-self: flex-end;
+      margin-bottom: 2px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .primary-nav {
+      display: flex;
+      align-items: center;
+      gap: 21px;
+      margin-left: 6px;
+    }
+    .primary-nav a {
+      position: relative;
+      display: inline-block;
+      padding: 22px 0;
+      color: var(--ink-soft);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      transition: color 160ms ease;
+    }
+    .primary-nav a:hover { color: var(--ink); }
+    .primary-nav a[aria-current="page"] { color: var(--ink); font-weight: 600; }
+    .primary-nav a[aria-current="page"]::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: 19px;
+      left: 0;
+      height: 2px;
+      background: var(--accent);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-left: auto;
+    }
+    .icon-btn {
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border: 1px solid transparent;
+      color: var(--ink-soft);
+      cursor: pointer;
+      transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+    }
+    .icon-btn i { font-size: 17px; }
+    .icon-btn:hover {
+      background: var(--surface-alt);
+      border-color: var(--line);
+      color: var(--ink);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      height: 34px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      background: var(--accent);
+      color: var(--on-accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.025em;
+      line-height: 1;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background 160ms ease, transform 120ms ease, color 160ms ease;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:active { transform: translateY(1px); }
+    .btn i { font-size: 13px; }
+    .btn[disabled] { opacity: 0.66; cursor: default; transform: none; }
+    .header-actions .btn { margin-left: 7px; }
+    .menu-toggle { display: none; }
+
+    .mobile-menu {
+      border-top: 1px solid var(--line);
+      background: var(--bg);
+    }
+    .mobile-menu nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 24px;
+      padding: 10px 0 18px;
+    }
+    .mobile-menu a {
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 13px;
+    }
+    .mobile-menu a:hover { color: var(--accent); }
+    .mobile-menu .menu-subscribe {
+      grid-column: 1 / -1;
+      display: none;
+      margin-top: 12px;
+      border-bottom: 0;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ---------- Shared media treatment ---------- */
+    .media {
+      position: relative;
+      display: block;
+      overflow: hidden;
+      background: var(--surface-alt);
+    }
+    .media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(0.32) saturate(0.7) contrast(1.04);
+      transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1), filter 520ms ease;
+    }
+    .media::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: rgba(19, 72, 84, 0.17);
+      mix-blend-mode: color;
+    }
+    a:hover .media img { transform: scale(1.025); filter: grayscale(0.2) saturate(0.82) contrast(1.04); }
+    [data-theme="dark"] .media img { filter: grayscale(0.34) saturate(0.64) contrast(1.02) brightness(0.9); }
+    [data-theme="dark"] a:hover .media img { filter: grayscale(0.24) saturate(0.76) contrast(1.02) brightness(0.96); }
+
+    .category {
+      display: inline-block;
+      color: var(--accent);
+      font-family: var(--font-sans);
+      font-size: 9.5px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    a.category:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      line-height: 1.45;
+      letter-spacing: 0.015em;
+    }
+    .meta .sep {
+      width: 1px;
+      height: 9px;
+      background: var(--line-strong);
+    }
+    .meta strong { color: var(--ink-soft); font-weight: 500; }
+    .link-arrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .link-arrow i { font-size: 12px; transition: transform 180ms ease; }
+    .link-arrow:hover i { transform: translateX(3px); }
+    .link-arrow:hover { color: var(--accent-hover); }
+
+    /* ---------- Lead ---------- */
+    .lead-section {
+      padding: 30px 0 34px;
+      border-bottom: 1px solid var(--line);
+    }
+    .lead-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 322px;
+      gap: 32px;
+      align-items: start;
+    }
+    .lead-story {
+      display: grid;
+      grid-template-columns: minmax(0, 1.17fr) minmax(0, 0.83fr);
+      gap: 25px;
+      align-items: stretch;
+    }
+    .lead-figure { height: 100%; margin: 0; }
+    .lead-figure .media { width: 100%; height: 100%; min-height: 360px; }
+    .lead-copy { display: flex; flex-direction: column; min-width: 0; padding-top: 2px; }
+    .lead-copy h1 {
+      margin: 9px 0 13px;
+      font-family: var(--font-display);
+      font-size: clamp(34px, 3.15vw, 44px);
+      font-weight: 500;
+      line-height: 1.035;
+      letter-spacing: -0.028em;
+      text-wrap: balance;
+    }
+    .lead-copy h1 a { transition: color 160ms ease; }
+    .lead-copy h1 a:hover { color: var(--accent); }
+    .dek {
+      max-width: 48ch;
+      color: var(--ink-soft);
+      font-size: 13.5px;
+      line-height: 1.56;
+    }
+    .byline {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 18px;
+      padding-top: 13px;
+      border-top: 1px solid var(--line);
+    }
+    .avatar {
+      width: 25px;
+      height: 25px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      object-fit: cover;
+      filter: grayscale(0.2) saturate(0.8);
+    }
+    .byline-name {
+      display: block;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+    .byline-role {
+      display: block;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      line-height: 1.35;
+      letter-spacing: 0.02em;
+    }
+    .lead-cta { margin-top: 17px; }
+    .also-today {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+    .also-today .module-label { margin-bottom: 3px; }
+    .also-today li {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 4px 0;
+    }
+    .also-today a {
+      font-size: 11.5px;
+      font-weight: 500;
+      line-height: 1.35;
+      transition: color 160ms ease;
+    }
+    .also-today a:hover { color: var(--accent); }
+    .also-today span {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      white-space: nowrap;
+    }
+
+    /* ---------- Briefing ---------- */
+    .briefing {
+      padding-left: 28px;
+      border-left: 1px solid var(--line);
+    }
+    .briefing-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      padding-top: 10px;
+      border-top: 2px solid var(--ink);
+    }
+    .briefing-head h2 {
+      font-family: var(--font-display);
+      font-size: 23px;
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .briefing-head span {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .briefing-list { counter-reset: brief; }
+    .briefing-item {
+      position: relative;
+      padding: 10px 0 10px 31px;
+      border-bottom: 1px solid var(--line);
+    }
+    .briefing-item::before {
+      counter-increment: brief;
+      content: counter(brief, decimal-leading-zero);
+      position: absolute;
+      top: 12px;
+      left: 0;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      line-height: 1.5;
+    }
+    .briefing-item h3 {
+      margin-bottom: 3px;
+      font-family: var(--font-display);
+      font-size: 16.5px;
+      font-weight: 500;
+      line-height: 1.22;
+      letter-spacing: -0.012em;
+    }
+    .briefing-item h3 a { transition: color 160ms ease; }
+    .briefing-item h3 a:hover { color: var(--accent); }
+    .briefing-item .meta { font-size: 9px; }
+    .briefing-quote {
+      margin-top: 19px;
+      padding-top: 15px;
+      border-top: 1px solid var(--line-strong);
+    }
+    .briefing-quote p {
+      max-width: 30ch;
+      font-family: var(--font-display);
+      font-size: 17.5px;
+      font-style: italic;
+      line-height: 1.28;
+      letter-spacing: -0.012em;
+    }
+    .briefing-quote cite {
+      display: block;
+      margin-top: 9px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      font-style: normal;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ---------- Section chrome ---------- */
+    .section { padding: 32px 0 34px; border-bottom: 1px solid var(--line); }
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 22px;
+      margin-bottom: 18px;
+      padding-top: 11px;
+      border-top: 1px solid var(--line-strong);
+    }
+    .section-head h2 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+    }
+    .section-head .more {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transition: color 160ms ease;
+    }
+    .section-head .more i { font-size: 11px; }
+    .section-head .more:hover { color: var(--accent); }
+
+    /* ---------- Latest ---------- */
+    .latest-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 322px;
+      gap: 32px;
+      align-items: start;
+    }
+    .story {
+      display: grid;
+      grid-template-columns: 128px minmax(0, 1fr);
+      gap: 17px;
+      padding: 15px 0;
+      border-top: 1px solid var(--line);
+    }
+    .story:first-child { padding-top: 0; border-top: 0; }
+    .story:last-child { padding-bottom: 0; }
+    .story .media { aspect-ratio: 4 / 3; }
+    .story-body { min-width: 0; }
+    .story-body h3 {
+      margin: 2px 0 4px;
+      font-family: var(--font-display);
+      font-size: 20.5px;
+      font-weight: 500;
+      line-height: 1.17;
+      letter-spacing: -0.016em;
+    }
+    .story-body h3 a { transition: color 160ms ease; }
+    .story-body h3 a:hover { color: var(--accent); }
+    .story-body .summary {
+      max-width: 64ch;
+      color: var(--ink-soft);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .story-body .meta { margin-top: 7px; }
+
+    /* ---------- Sidebar ---------- */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 21px;
+      padding-left: 28px;
+      border-left: 1px solid var(--line);
+    }
+    .module-label {
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      line-height: 1.3;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .newsletter {
+      padding: 17px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+    }
+    .newsletter h3 {
+      font-family: var(--font-display);
+      font-size: 23px;
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .newsletter p {
+      margin-top: 6px;
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      line-height: 1.5;
+    }
+    .subscribe-form {
+      display: grid;
+      gap: 7px;
+      margin-top: 13px;
+    }
+    .input {
+      width: 100%;
+      height: 35px;
+      padding: 0 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 12px;
+      transition: border-color 160ms ease;
+    }
+    .input::placeholder { color: var(--muted); opacity: 1; }
+    .input:hover { border-color: var(--muted); }
+    .input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+    .input[aria-invalid="true"] { border-color: var(--danger); }
+    .subscribe-form .btn { width: 100%; height: 35px; }
+    .form-note {
+      color: var(--muted) !important;
+      font-family: var(--font-mono);
+      font-size: 8.5px !important;
+      line-height: 1.45 !important;
+      letter-spacing: 0.01em;
+    }
+    .form-status {
+      min-height: 0;
+      margin: 0 !important;
+      font-size: 10.5px !important;
+      font-weight: 500;
+    }
+    .form-status[data-state="error"] { color: var(--danger); }
+    .form-status[data-state="success"] { color: var(--accent); }
+    .topic-index { padding-top: 12px; border-top: 1px solid var(--line-strong); }
+    .topic-index h3 {
+      margin-bottom: 8px;
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: -0.018em;
+    }
+    .topic-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 16px;
+    }
+    .topic-list a {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      transition: color 160ms ease;
+    }
+    .topic-list a:hover { color: var(--accent); }
+    .topic-list span {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+    }
+    .podcast {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line-strong);
+    }
+    .podcast-play {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+      color: var(--accent);
+      transition: border-color 160ms ease, background 160ms ease;
+    }
+    .podcast-play:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .podcast-play i { font-size: 13px; }
+    .podcast h3 {
+      font-family: var(--font-display);
+      font-size: 17.5px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: -0.014em;
+    }
+    .podcast p {
+      margin-top: 3px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.015em;
+    }
+
+    /* ---------- Dispatches ---------- */
+    .dispatch-grid {
+      display: grid;
+      grid-template-columns: 2.15fr 1fr 1fr;
+      gap: 26px;
+      align-items: start;
+    }
+    .dispatch-card { min-width: 0; }
+    .dispatch-card .media { aspect-ratio: 4 / 3; }
+    .dispatch-lead .media { aspect-ratio: 16 / 9; }
+    .dispatch-card h3 {
+      margin: 8px 0 6px;
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 500;
+      line-height: 1.16;
+      letter-spacing: -0.018em;
+    }
+    .dispatch-lead h3 { font-size: 28px; }
+    .dispatch-card h3 a { transition: color 160ms ease; }
+    .dispatch-card h3 a:hover { color: var(--accent); }
+    .dispatch-card p {
+      color: var(--ink-soft);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .dispatch-card .meta { margin-top: 9px; }
+    .dispatch-more {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 30px;
+      margin-top: 24px;
+      border-top: 1px solid var(--line-strong);
+    }
+    .dispatch-more a {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: baseline;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      transition: color 160ms ease;
+    }
+    .dispatch-more a:hover { color: var(--accent); }
+    .dispatch-more .more-title { font-size: 12px; font-weight: 500; line-height: 1.35; }
+    .dispatch-more .more-meta {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      white-space: nowrap;
+    }
+
+    /* ---------- Long read ---------- */
+    .longread-section { padding: 32px 0 34px; border-bottom: 1px solid var(--line); }
+    .longread {
+      display: grid;
+      grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
+      background: var(--surface-alt);
+      border: 1px solid var(--line);
+    }
+    .longread-copy {
+      align-self: center;
+      padding: 34px 36px;
+    }
+    .longread-copy h2 {
+      max-width: 13ch;
+      margin: 9px 0 12px;
+      font-family: var(--font-display);
+      font-size: clamp(30px, 3.2vw, 40px);
+      font-weight: 500;
+      line-height: 1.07;
+      letter-spacing: -0.026em;
+      text-wrap: balance;
+    }
+    .longread-copy h2 a:hover { color: var(--accent); }
+    .longread-copy .dek { max-width: 46ch; font-size: 13px; }
+    .longread-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .longread-meta .read-more { margin-left: auto; }
+    .longread-media { min-height: 330px; }
+    .longread-media .media { height: 100%; }
+    .longread-media .media img { min-height: 330px; }
+
+    /* ---------- Writers ---------- */
+    .writers-section { padding: 32px 0 34px; border-bottom: 1px solid var(--line); }
+    .writer-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-top: 1px solid var(--line);
+    }
+    .writer {
+      min-width: 0;
+      padding: 17px 20px 0 0;
+      border-right: 1px solid var(--line);
+    }
+    .writer:not(:first-child) { padding-left: 20px; }
+    .writer:last-child { padding-right: 0; border-right: 0; }
+    .writer-head { display: flex; align-items: center; gap: 10px; }
+    .writer-head .avatar { width: 35px; height: 35px; }
+    .writer h3 {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+    .writer .beat {
+      display: block;
+      margin-top: 1px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .writer p {
+      min-height: 40px;
+      margin-top: 12px;
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      line-height: 1.5;
+    }
+    .writer-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 11px;
+      padding-top: 9px;
+      border-top: 1px solid var(--line);
+    }
+    .writer-stats {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.02em;
+    }
+    .writer-follow {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .writer-follow:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .writer-follow i { font-size: 10px; }
+
+    /* ---------- Footer ---------- */
+    .site-footer {
+      margin-top: 0;
+      background: var(--surface-alt);
+      border-top: 1px solid var(--line);
+    }
+    .footer-main {
+      display: grid;
+      grid-template-columns: 1.9fr 1fr 1fr 1fr;
+      gap: 36px;
+      padding: 34px 0 30px;
+    }
+    .footer-brand .brand { margin-bottom: 12px; }
+    .footer-brand p {
+      max-width: 38ch;
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      line-height: 1.55;
+    }
+    .footer-social {
+      display: flex;
+      gap: 9px;
+      margin-top: 14px;
+    }
+    .footer-social a {
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      border: 1px solid var(--line-strong);
+      color: var(--ink-soft);
+      transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+    }
+    .footer-social a:hover { border-color: var(--accent); background: var(--surface); color: var(--accent); }
+    .footer-social i { font-size: 14px; }
+    .footer-col h4 {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .footer-col a {
+      display: block;
+      width: fit-content;
+      padding: 4px 0;
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      transition: color 160ms ease;
+    }
+    .footer-col a:hover { color: var(--accent); }
+    .footer-bottom {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.02em;
+    }
+    .footer-bottom nav { display: flex; align-items: center; gap: 14px; }
+    .footer-bottom a:hover { color: var(--accent); }
+
+    /* ---------- Search dialog ---------- */
+    .search-dialog {
+      width: min(620px, calc(100vw - 32px));
+      max-height: min(620px, calc(100vh - 48px));
+      margin: auto;
+      padding: 0;
+      border: 1px solid var(--line-strong);
+      border-radius: 0;
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+    }
+    .search-dialog::backdrop {
+      background: rgba(7, 20, 24, 0.58);
+      -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
+    }
+    .search-inner { padding: 22px; }
+    .search-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .search-head h2 {
+      font-family: var(--font-display);
+      font-size: 25px;
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.022em;
+    }
+    .search-head p {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 10.5px;
+    }
+    .search-close {
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 160ms ease, border-color 160ms ease;
+    }
+    .search-close:hover { color: var(--ink); border-color: var(--line-strong); }
+    .search-close i { font-size: 15px; }
+    .search-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 17px;
+      border-bottom: 1px solid var(--line-strong);
+    }
+    .search-field i { color: var(--muted); font-size: 18px; }
+    .search-field input {
+      flex: 1;
+      min-width: 0;
+      height: 43px;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 15px;
+      outline: none;
+    }
+    .search-field input::placeholder { color: var(--muted); opacity: 1; }
+    .search-field:focus-within { border-color: var(--accent); box-shadow: 0 1px 0 var(--accent); }
+    .search-hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.02em;
+    }
+    .search-hint kbd {
+      padding: 1px 4px;
+      border: 1px solid var(--line-strong);
+      background: var(--bg);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+    }
+    .search-results { display: grid; margin-top: 16px; }
+    .search-result {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+      transition: color 160ms ease;
+    }
+    .search-result:hover { color: var(--accent); }
+    .search-result span {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      white-space: nowrap;
+    }
+    .search-empty {
+      padding: 14px 0 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* ---------- Motion ---------- */
+    @media (prefers-reduced-motion: no-preference) {
+      .js .reveal {
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 520ms cubic-bezier(0.16, 1, 0.3, 1), transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .js .reveal.is-visible { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1120px) {
+      .lead-grid { grid-template-columns: 1fr; gap: 24px; }
+      .briefing {
+        display: grid;
+        grid-template-columns: 190px minmax(0, 1fr);
+        gap: 0 26px;
+        padding: 18px 0 0;
+        border-top: 1px solid var(--line-strong);
+        border-left: 0;
+      }
+      .briefing-head {
+        align-self: start;
+        padding-top: 0;
+        border-top: 0;
+      }
+      .briefing-head span { display: none; }
+      .briefing-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 24px;
+      }
+      .briefing-item:nth-child(-n + 2) { border-top: 1px solid var(--line); }
+      .briefing-quote { grid-column: 1 / -1; margin-top: 16px; }
+      .briefing-quote p { max-width: 42ch; }
+      .latest-grid { grid-template-columns: minmax(0, 1fr) 300px; gap: 26px; }
+      .sidebar { padding-left: 24px; }
+    }
+
+    @media (max-width: 940px) {
+      .primary-nav { display: none; }
+      .menu-toggle { display: grid; }
+      .header-inner { gap: 18px; }
+      .header-actions .btn { display: none; }
+      .mobile-menu .menu-subscribe { display: block; }
+      .dispatch-grid { grid-template-columns: 1.5fr 1fr; }
+      .dispatch-lead { grid-column: 1 / -1; }
+      .dispatch-grid .dispatch-card:nth-child(2) { grid-column: 1; }
+      .dispatch-grid .dispatch-card:nth-child(3) { grid-column: 2; }
+      .footer-main { grid-template-columns: 1.8fr 1fr 1fr; }
+      .footer-brand { grid-column: 1 / -1; }
+      .writer-grid { grid-template-columns: 1fr 1fr; }
+      .writer:nth-child(2) { border-right: 0; padding-right: 0; }
+      .writer:nth-child(3) { padding-left: 0; border-top: 1px solid var(--line); margin-top: 17px; padding-top: 17px; }
+      .writer:nth-child(4) { border-top: 1px solid var(--line); margin-top: 17px; padding-top: 17px; }
+      .writer:nth-child(3) { border-right: 1px solid var(--line); }
+    }
+
+    @media (max-width: 820px) {
+      .lead-story { grid-template-columns: 1fr; gap: 17px; }
+      .lead-copy h1 { font-size: clamp(34px, 7vw, 44px); }
+      .lead-figure { height: auto; }
+      .lead-figure .media { height: auto; min-height: 0; aspect-ratio: 16 / 10; }
+      .also-today { margin-top: 20px; }
+      .latest-grid { grid-template-columns: 1fr; gap: 24px; }
+      .sidebar {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 22px;
+        padding: 22px 0 0;
+        border-top: 1px solid var(--line-strong);
+        border-left: 0;
+      }
+      .sidebar .topic-index { padding-top: 0; border-top: 0; }
+      .sidebar .podcast { border-top: 1px solid var(--line-strong); }
+      .longread { grid-template-columns: 1fr; }
+      .longread-copy { padding: 28px; }
+      .longread-media { min-height: 280px; }
+      .longread-media .media img { min-height: 280px; }
+    }
+
+    @media (max-width: 700px) {
+      .topbar-inner { min-height: 30px; }
+      .dateline .rule, .dateline .since { display: none; }
+      .utility-nav a { display: none; }
+      .utility-nav .signin { display: block; padding-right: 0; }
+      .header-inner { height: 60px; }
+      .brand-word { font-size: 25px; }
+      .brand-note { display: none; }
+      .header-actions { gap: 1px; }
+      .header-actions [data-theme-toggle] { display: none; }
+      .section { padding: 27px 0 29px; }
+      .section-head { margin-bottom: 15px; }
+      .section-head h2 { font-size: 25px; }
+      .lead-section { padding: 23px 0 28px; }
+      .story { grid-template-columns: 105px minmax(0, 1fr); gap: 14px; }
+      .story-body h3 { font-size: 18.5px; }
+      .story-body .summary { font-size: 11.5px; }
+      .dispatch-grid { grid-template-columns: 1fr; gap: 24px; }
+      .dispatch-lead { grid-column: auto; }
+      .dispatch-grid .dispatch-card:nth-child(2),
+      .dispatch-grid .dispatch-card:nth-child(3) { grid-column: auto; }
+      .dispatch-grid .dispatch-card { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 14px; align-items: start; }
+      .dispatch-grid .dispatch-card .media { aspect-ratio: 1 / 1; }
+      .dispatch-grid .dispatch-card h3 { margin-top: 0; font-size: 19px; }
+      .dispatch-lead { display: block !important; }
+      .dispatch-lead .media { aspect-ratio: 16 / 10; }
+      .dispatch-lead h3 { margin-top: 8px; font-size: 25px; }
+      .dispatch-card p { display: none; }
+      .dispatch-lead p { display: block; }
+      .dispatch-more { grid-template-columns: 1fr; }
+      .dispatch-more a:nth-child(n + 3) { display: none; }
+      .writer-grid { grid-template-columns: 1fr; }
+      .writer, .writer:not(:first-child) {
+        padding: 15px 0;
+        border-right: 0;
+        border-top: 1px solid var(--line);
+      }
+      .writer:first-child { border-top: 0; padding-top: 0; }
+      .writer p { min-height: 0; }
+      .footer-main { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .footer-brand { grid-column: 1 / -1; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; justify-content: center; gap: 7px; padding: 11px 0; }
+      .dialog-search { width: calc(100vw - 24px); }
+    }
+
+    @media (max-width: 560px) {
+      .utility-nav { display: none; }
+      .topbar-inner { justify-content: flex-start; }
+      .header-actions .icon-btn { width: 30px; height: 30px; }
+      .header-actions .menu-toggle { display: grid; }
+      .sidebar { grid-template-columns: 1fr; }
+      .sidebar .topic-index { padding-top: 12px; border-top: 1px solid var(--line-strong); }
+      .sidebar .podcast { padding-top: 13px; }
+      .lead-copy h1 { font-size: 35px; }
+      .dek { font-size: 12.5px; }
+      .briefing { display: block; }
+      .briefing-head { padding-top: 2px; border-top: 0; margin-bottom: 5px; }
+      .briefing-list { display: block; }
+      .briefing-item:nth-child(-n + 2) { border-top: 0; }
+      .briefing-quote { margin-top: 17px; }
+      .story { grid-template-columns: 92px minmax(0, 1fr); gap: 12px; }
+      .story-body h3 { font-size: 17.5px; }
+      .story-body .summary { display: none; }
+      .longread-copy { padding: 23px 20px 25px; }
+      .longread-copy h2 { font-size: 30px; }
+      .longread-meta .read-more { width: 100%; margin-left: 0; }
+      .footer-main { grid-template-columns: 1fr; }
+      .footer-brand { grid-column: auto; }
+      .footer-col { display: none; }
+      .footer-col:first-of-type { display: block; }
+      .footer-bottom nav { flex-wrap: wrap; gap: 8px 14px; }
+      .mobile-menu nav { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <p class="dateline">
+        <span>Saturday, 17 October 2026</span>
+        <span class="rule" aria-hidden="true"></span>
+        <span class="since">Independent since 2018</span>
+      </p>
+      <nav class="utility-nav" aria-label="Utility">
+        <a href="#subscribe">Newsletters</a>
+        <a href="#podcast">Podcast</a>
+        <a href="#about">About</a>
+        <a class="signin" href="#signin">Sign in</a>
+      </nav>
+    </div>
+  </div>
+
+  <div id="header-sentinel" aria-hidden="true"></div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#" aria-label="Interline home">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="1" y="1" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"></rect>
+          <path d="M6 8h12M6 12h8M6 16h4" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+        </svg>
+        <span class="brand-word">Interline</span>
+        <span class="brand-note">Journal</span>
+      </a>
+
+      <nav class="primary-nav" aria-label="Primary">
+        <a href="#" aria-current="page">Latest</a>
+        <a href="#design">Design</a>
+        <a href="#technology">Technology</a>
+        <a href="#cities">Cities</a>
+        <a href="#books">Books</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn" type="button" data-search-open aria-label="Search Interline">
+          <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+        </button>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch to dark theme">
+          <i class="ph ph-moon" aria-hidden="true"></i>
+        </button>
+        <a class="btn" href="#subscribe">Subscribe <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+        <button class="icon-btn menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+          <i class="ph ph-list" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobile-menu" hidden>
+      <div class="container">
+        <nav aria-label="Mobile">
+          <a href="#" aria-current="page">Latest</a>
+          <a href="#design">Design</a>
+          <a href="#technology">Technology</a>
+          <a href="#cities">Cities</a>
+          <a href="#books">Books</a>
+          <a href="#about">About</a>
+          <a href="#subscribe">Newsletters</a>
+          <a href="#podcast">Podcast</a>
+          <a class="menu-subscribe" href="#subscribe">Subscribe to the edition <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Lead story + briefing -->
+    <section class="lead-section" aria-labelledby="lead-title">
+      <div class="container lead-grid">
+        <article class="lead-story">
+          <figure class="lead-figure">
+            <a href="#library-story" class="media" aria-hidden="true" tabindex="-1">
+              <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=82" alt="A curved reading room lined with tall bookshelves." width="1200" height="900" fetchpriority="high">
+            </a>
+          </figure>
+          <div class="lead-copy">
+            <span class="category">Reportage</span>
+            <h1 id="lead-title"><a href="#library-story">The library is becoming the last public room</a></h1>
+            <p class="dek">Across the north, branch libraries have become warming centers, job boards, and the only free place to sit. The people running them are rethinking what the building is for.</p>
+            <div class="byline">
+              <img class="avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80" alt="Mara Ellison" width="50" height="50">
+              <span>
+                <span class="byline-name">Mara Ellison</span>
+                <span class="byline-role">Cities desk</span>
+              </span>
+              <span class="meta" style="margin-left:auto">
+                <span>15 Oct 2026</span>
+                <span class="sep" aria-hidden="true"></span>
+                <span>12 min read</span>
+              </span>
+            </div>
+            <div class="lead-cta">
+              <a class="link-arrow" href="#library-story">Read the story <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+            </div>
+            <div class="also-today">
+              <p class="module-label">Also in this edition</p>
+              <ul>
+                <li><a href="#night-market">The night shift at the central market</a><span>Cities / 4 min</span></li>
+                <li><a href="#public-bench">A short history of the public bench</a><span>Design / 6 min</span></li>
+                <li><a href="#shadows">Why the city is measuring shadows</a><span>Climate / 5 min</span></li>
+                <li><a href="#library-of-things">The library of things, one year in</a><span>Cities / 5 min</span></li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <aside class="briefing" aria-labelledby="briefing-title">
+          <div class="briefing-head">
+            <h2 id="briefing-title">The Briefing</h2>
+            <span>Five picks</span>
+          </div>
+          <ol class="briefing-list">
+            <li class="briefing-item">
+              <h3><a href="#night-buses">Why night buses are back on the agenda</a></h3>
+              <div class="meta"><span>Cities</span><span class="sep" aria-hidden="true"></span><span>6 min</span></div>
+            </li>
+            <li class="briefing-item">
+              <h3><a href="#repair-shop">The repair shop at the end of the supply chain</a></h3>
+              <div class="meta"><span>Economy</span><span class="sep" aria-hidden="true"></span><span>8 min</span></div>
+            </li>
+            <li class="briefing-item">
+              <h3><a href="#boring-software">Software that is built to be boring</a></h3>
+              <div class="meta"><span>Technology</span><span class="sep" aria-hidden="true"></span><span>10 min</span></div>
+            </li>
+            <li class="briefing-item">
+              <h3><a href="#courthouse-type">The typeface that had to work in a courthouse</a></h3>
+              <div class="meta"><span>Design</span><span class="sep" aria-hidden="true"></span><span>7 min</span></div>
+            </li>
+            <li class="briefing-item">
+              <h3><a href="#paper-archive">The archive that only exists on paper</a></h3>
+              <div class="meta"><span>Books</span><span class="sep" aria-hidden="true"></span><span>9 min</span></div>
+            </li>
+          </ol>
+          <blockquote class="briefing-quote">
+            <p>&ldquo;A public room should ask nothing of you except that you show up.&rdquo;</p>
+            <cite>Lila Okafor / urban historian</cite>
+          </blockquote>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Latest stories + sidebar -->
+    <section class="section reveal" aria-labelledby="latest-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="latest-title">Latest stories</h2>
+          <a class="more" href="#all-stories">All stories <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+        </div>
+
+        <div class="latest-grid">
+          <div class="story-list">
+            <article class="story">
+              <a href="#public-square" class="media" aria-hidden="true" tabindex="-1">
+                <img src="https://images.unsplash.com/photo-1496568816309-51d7c20e3b21?auto=format&fit=crop&w=520&q=80" alt="A city at dusk, seen from above." width="520" height="390" loading="lazy">
+              </a>
+              <div class="story-body">
+                <span class="category">Cities</span>
+                <h3><a href="#public-square">Who gets to sit down in a public square</a></h3>
+                <p class="summary">Benches are back. The rules around them are stricter than ever.</p>
+                <div class="meta"><strong>Rowan Beck</strong><span class="sep" aria-hidden="true"></span><span>7 min read</span></div>
+              </div>
+            </article>
+
+            <article class="story">
+              <a href="#quiet-interfaces" class="media" aria-hidden="true" tabindex="-1">
+                <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=520&q=80" alt="A laptop on a clean desk beside a notebook." width="520" height="390" loading="lazy">
+              </a>
+              <div class="story-body">
+                <span class="category">Design</span>
+                <h3><a href="#quiet-interfaces">The case for interfaces that do less</a></h3>
+                <p class="summary">A generation of product teams is rediscovering the value of a screen that stays out of the way.</p>
+                <div class="meta"><strong>Priya Nair</strong><span class="sep" aria-hidden="true"></span><span>5 min read</span></div>
+              </div>
+            </article>
+
+            <article class="story">
+              <a href="#bus-map" class="media" aria-hidden="true" tabindex="-1">
+                <img src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=520&q=80" alt="A dense city street with buses and evening traffic." width="520" height="390" loading="lazy">
+              </a>
+              <div class="story-body">
+                <span class="category">Data</span>
+                <h3><a href="#bus-map">What a bus map hides</a></h3>
+                <p class="summary">Route diagrams are clean by design. They leave out the part riders care about most.</p>
+                <div class="meta"><strong>Jonah Park</strong><span class="sep" aria-hidden="true"></span><span>9 min read</span></div>
+              </div>
+            </article>
+
+            <article class="story">
+              <a href="#repair-manual" class="media" aria-hidden="true" tabindex="-1">
+                <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=520&q=80" alt="A fountain pen writing on a lined notebook." width="520" height="390" loading="lazy">
+              </a>
+              <div class="story-body">
+                <span class="category">Technology</span>
+                <h3><a href="#repair-manual">The manual that outlived its machine</a></h3>
+                <p class="summary">A repair handbook from 1978 is still the best documentation anyone has written for this press.</p>
+                <div class="meta"><strong>Elias Brandt</strong><span class="sep" aria-hidden="true"></span><span>6 min read</span></div>
+              </div>
+            </article>
+          </div>
+
+          <aside class="sidebar" aria-label="Reader tools">
+            <div class="newsletter" id="subscribe">
+              <p class="module-label">Newsletter</p>
+              <h3>The Morning Interline</h3>
+              <p>One story and five links, before 8 a.m. Weekdays.</p>
+              <form class="subscribe-form" novalidate>
+                <label class="sr-only" for="newsletter-email">Email address</label>
+                <input class="input" id="newsletter-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required aria-describedby="newsletter-note newsletter-status">
+                <button class="btn" type="submit">Subscribe</button>
+                <p class="form-status" id="newsletter-status" role="status" aria-live="polite"></p>
+                <p class="form-note" id="newsletter-note">Read by 18,000 people. No tracking pixels.</p>
+              </form>
+            </div>
+
+            <div class="topic-index">
+              <h3>Browse by topic</h3>
+              <ul class="topic-list">
+                <li><a href="#design">Design <span>128</span></a></li>
+                <li><a href="#technology">Technology <span>96</span></a></li>
+                <li><a href="#cities">Cities <span>74</span></a></li>
+                <li><a href="#books">Books <span>41</span></a></li>
+                <li><a href="#economy">Economy <span>33</span></a></li>
+                <li><a href="#climate">Climate <span>28</span></a></li>
+              </ul>
+            </div>
+
+            <div class="podcast" id="podcast">
+              <a class="podcast-play" href="#podcast-episode" aria-label="Play episode 42 of The Interline Podcast">
+                <i class="ph ph-play" aria-hidden="true"></i>
+              </a>
+              <div>
+                <p class="module-label">This week&rsquo;s pick</p>
+                <h3><a href="#podcast-episode">The sound of a city that never quite sleeps</a></h3>
+                <p>Episode 42 / 34 min</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dispatches -->
+    <section class="section reveal" aria-labelledby="dispatches-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="dispatches-title">Dispatches</h2>
+          <a class="more" href="#all-dispatches">All dispatches <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+        </div>
+
+        <div class="dispatch-grid">
+          <article class="dispatch-card dispatch-lead">
+            <a href="#port-city" class="media" aria-hidden="true" tabindex="-1">
+              <img src="https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1100&q=82" alt="Container cranes and stacked shipping containers at a port." width="1100" height="619" loading="lazy">
+            </a>
+            <span class="category">Climate</span>
+            <h3><a href="#port-city">A port city builds for the water</a></h3>
+            <p>The harbor has always shaped the town. Now the town is reshaping the harbor.</p>
+            <div class="meta"><strong>Nadia Rahimi</strong><span class="sep" aria-hidden="true"></span><span>14 min read</span></div>
+          </article>
+
+          <article class="dispatch-card">
+            <a href="#paper-ledger" class="media" aria-hidden="true" tabindex="-1">
+              <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=520&q=80" alt="Hands sorting invoices and paper records on a desk." width="520" height="390" loading="lazy">
+            </a>
+            <span class="category">Economy</span>
+            <h3><a href="#paper-ledger">The last paper ledger in town</a></h3>
+            <p>A small accounting firm still keeps every client&rsquo;s books by hand. Its clients are not complaining.</p>
+            <div class="meta"><strong>Rowan Beck</strong><span class="sep" aria-hidden="true"></span><span>6 min read</span></div>
+          </article>
+
+          <article class="dispatch-card">
+            <a href="#census-street" class="media" aria-hidden="true" tabindex="-1">
+              <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=520&q=80" alt="A wide city street lined with office towers." width="520" height="390" loading="lazy">
+            </a>
+            <span class="category">Cities</span>
+            <h3><a href="#census-street">The census counts everything but the street</a></h3>
+            <p>Official data can describe a block without ever seeing it. A team of volunteers is trying to close the gap.</p>
+            <div class="meta"><strong>Mara Ellison</strong><span class="sep" aria-hidden="true"></span><span>8 min read</span></div>
+          </article>
+        </div>
+
+        <div class="dispatch-more">
+          <a href="#in-between-spaces">
+            <span class="more-title">A field guide to the city&rsquo;s in-between spaces</span>
+            <span class="more-meta">Design / 5 min</span>
+          </a>
+          <a href="#lights-on">
+            <span class="more-title">The people who keep the lights on</span>
+            <span class="more-meta">Technology / 11 min</span>
+          </a>
+          <a href="#repair-manuals">
+            <span class="more-title">The long life of a good repair manual</span>
+            <span class="more-meta">Books / 7 min</span>
+          </a>
+          <a href="#waiting-room">
+            <span class="more-title">What a waiting room can tell you about a hospital</span>
+            <span class="more-meta">Health / 9 min</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Long read -->
+    <section class="longread-section reveal" aria-labelledby="longread-title">
+      <div class="container">
+        <article class="longread">
+          <div class="longread-copy">
+            <span class="category">Profile</span>
+            <h2 id="longread-title"><a href="#mapmaker">The mapmaker who starts with the gaps</a></h2>
+            <p class="dek">For twenty years, Aris Thorne has charted the stairs, shortcuts, and service roads that official maps leave out. His notebooks now guide planners, paramedics, and neighbors.</p>
+            <div class="longread-meta">
+              <div class="meta"><strong>Jonah Park</strong><span class="sep" aria-hidden="true"></span><span>28 min read</span></div>
+              <a class="link-arrow read-more" href="#mapmaker">Read the long read <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+            </div>
+          </div>
+          <div class="longread-media">
+            <a href="#mapmaker" class="media" aria-hidden="true" tabindex="-1">
+              <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1000&q=82" alt="A dense city grid seen from above, ending at the water." width="1000" height="750" loading="lazy">
+            </a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Writers -->
+    <section class="writers-section reveal" aria-labelledby="writers-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="writers-title">Writers this week</h2>
+          <a class="more" href="#contributors">All contributors <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+        </div>
+
+        <div class="writer-grid">
+          <article class="writer">
+            <div class="writer-head">
+              <img class="avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80" alt="Mara Ellison" width="70" height="70" loading="lazy">
+              <div>
+                <h3>Mara Ellison</h3>
+                <span class="beat">Cities</span>
+              </div>
+            </div>
+            <p>Housing, transit, and the small decisions that shape a street.</p>
+            <div class="writer-foot">
+              <span class="writer-stats">18 stories</span>
+              <a class="writer-follow" href="#follow-mara">Follow <i class="ph ph-plus" aria-hidden="true"></i></a>
+            </div>
+          </article>
+
+          <article class="writer">
+            <div class="writer-head">
+              <img class="avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" alt="Jonah Park" width="70" height="70" loading="lazy">
+              <div>
+                <h3>Jonah Park</h3>
+                <span class="beat">Technology</span>
+              </div>
+            </div>
+            <p>Maintenance, infrastructure, and software that lasts.</p>
+            <div class="writer-foot">
+              <span class="writer-stats">24 stories</span>
+              <a class="writer-follow" href="#follow-jonah">Follow <i class="ph ph-plus" aria-hidden="true"></i></a>
+            </div>
+          </article>
+
+          <article class="writer">
+            <div class="writer-head">
+              <img class="avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Priya Nair" width="70" height="70" loading="lazy">
+              <div>
+                <h3>Priya Nair</h3>
+                <span class="beat">Design</span>
+              </div>
+            </div>
+            <p>Type, interfaces, and the politics of everyday objects.</p>
+            <div class="writer-foot">
+              <span class="writer-stats">11 stories</span>
+              <a class="writer-follow" href="#follow-priya">Follow <i class="ph ph-plus" aria-hidden="true"></i></a>
+            </div>
+          </article>
+
+          <article class="writer">
+            <div class="writer-head">
+              <img class="avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80" alt="Nadia Rahimi" width="70" height="70" loading="lazy">
+              <div>
+                <h3>Nadia Rahimi</h3>
+                <span class="beat">Climate</span>
+              </div>
+            </div>
+            <p>Coasts, ports, and the long argument with water.</p>
+            <div class="writer-foot">
+              <span class="writer-stats">7 stories</span>
+              <a class="writer-follow" href="#follow-nadia">Follow <i class="ph ph-plus" aria-hidden="true"></i></a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="about">
+    <div class="container">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <a class="brand" href="#" aria-label="Interline home">
+            <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="1" y="1" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"></rect>
+              <path d="M6 8h12M6 12h8M6 16h4" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+            </svg>
+            <span class="brand-word">Interline</span>
+          </a>
+          <p>An independent journal of design, technology, and the places they meet.</p>
+          <div class="footer-social">
+            <a href="#rss" aria-label="Interline RSS feed"><i class="ph ph-rss" aria-hidden="true"></i></a>
+            <a href="#newsletters" aria-label="Interline newsletters"><i class="ph ph-envelope-simple" aria-hidden="true"></i></a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Sections</h4>
+          <a href="#design">Design</a>
+          <a href="#technology">Technology</a>
+          <a href="#cities">Cities</a>
+          <a href="#books">Books</a>
+          <a href="#climate">Climate</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Editorial</h4>
+          <a href="#about">About</a>
+          <a href="#masthead">Masthead</a>
+          <a href="#ethics">Ethics</a>
+          <a href="#contact">Contact</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>More</h4>
+          <a href="#newsletters">Newsletters</a>
+          <a href="#podcast">Podcast</a>
+          <a href="#archive">Archive</a>
+          <a href="#rss">RSS</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; 2026 Interline Media</span>
+        <nav aria-label="Legal">
+          <a href="#privacy">Privacy</a>
+          <a href="#terms">Terms</a>
+          <a href="#support">Reader support</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-inner">
+      <div class="search-head">
+        <div>
+          <h2 id="search-title">Search Interline</h2>
+          <p>Find stories, writers, and topics.</p>
+        </div>
+        <button class="search-close" type="button" data-search-close aria-label="Close search">
+          <i class="ph ph-x" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="search-field">
+        <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+        <label class="sr-only" for="search-input">Search Interline</label>
+        <input id="search-input" type="search" placeholder="Try &ldquo;libraries&rdquo; or &ldquo;transit&rdquo;" autocomplete="off">
+      </div>
+      <p class="search-hint">Press <kbd>Esc</kbd> to close. Results are a static demo.</p>
+
+      <div class="search-results" id="search-results">
+        <a class="search-result" href="#library-story" data-search="library public room libraries cities mara ellison">The library is becoming the last public room <span>Cities</span></a>
+        <a class="search-result" href="#public-square" data-search="public square benches cities rowan beck">Who gets to sit down in a public square <span>Cities</span></a>
+        <a class="search-result" href="#quiet-interfaces" data-search="interfaces design product teams priya nair">The case for interfaces that do less <span>Design</span></a>
+        <a class="search-result" href="#bus-map" data-search="bus map transit data jonah park">What a bus map hides <span>Data</span></a>
+        <a class="search-result" href="#port-city" data-search="port city water climate nadia rahimi">A port city builds for the water <span>Climate</span></a>
+        <a class="search-result" href="#mapmaker" data-search="mapmaker maps cities profile aris thorne">The mapmaker who starts with the gaps <span>Profile</span></a>
+      </div>
+      <p class="search-empty" id="search-empty" hidden>No stories match that search.</p>
+    </div>
+  </dialog>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var root = document.documentElement;
+      var header = document.querySelector('.site-header');
+      var sentinel = document.getElementById('header-sentinel');
+      var themeButton = document.querySelector('[data-theme-toggle]');
+      var menuButton = document.querySelector('[data-menu-toggle]');
+      var mobileMenu = document.getElementById('mobile-menu');
+      var searchDialog = document.getElementById('search-dialog');
+      var searchInput = document.getElementById('search-input');
+      var searchResults = Array.prototype.slice.call(document.querySelectorAll('.search-result'));
+      var searchEmpty = document.getElementById('search-empty');
+      var newsletterForm = document.querySelector('.subscribe-form');
+
+      /* Keep the masthead visually quiet until it sticks. */
+      if ('IntersectionObserver' in window && sentinel) {
+        new IntersectionObserver(function (entries) {
+          header.classList.toggle('is-stuck', !entries[0].isIntersecting);
+        }, { threshold: 0 }).observe(sentinel);
+      }
+
+      /* Theme */
+      function safeGet(key) {
+        try { return localStorage.getItem(key); } catch (error) { return null; }
+      }
+      function safeSet(key, value) {
+        try { localStorage.setItem(key, value); } catch (error) { /* no-op */ }
+      }
+      function syncThemeButton() {
+        var dark = root.getAttribute('data-theme') === 'dark';
+        themeButton.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+        themeButton.innerHTML = '<i class="ph ' + (dark ? 'ph-sun' : 'ph-moon') + '" aria-hidden="true"></i>';
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', dark ? '#091113' : '#f3f6f7');
+      }
+      if (safeGet('interline-theme') === 'dark') root.setAttribute('data-theme', 'dark');
+      syncThemeButton();
+      themeButton.addEventListener('click', function () {
+        var dark = root.getAttribute('data-theme') === 'dark';
+        root.setAttribute('data-theme', dark ? 'light' : 'dark');
+        safeSet('interline-theme', dark ? 'light' : 'dark');
+        syncThemeButton();
+      });
+
+      /* Mobile menu */
+      function setMenu(open) {
+        mobileMenu.hidden = !open;
+        menuButton.setAttribute('aria-expanded', String(open));
+        menuButton.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        menuButton.innerHTML = '<i class="ph ' + (open ? 'ph-x' : 'ph-list') + '" aria-hidden="true"></i>';
+        document.body.classList.toggle('menu-open', open);
+      }
+      menuButton.addEventListener('click', function () {
+        setMenu(mobileMenu.hidden);
+      });
+      mobileMenu.addEventListener('click', function (event) {
+        if (event.target.closest('a')) setMenu(false);
+      });
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && !mobileMenu.hidden) {
+          setMenu(false);
+          menuButton.focus();
+        }
+      });
+
+      /* Search dialog */
+      function openSearch() {
+        if (!searchDialog.open) {
+          searchDialog.showModal();
+          window.setTimeout(function () { searchInput.focus(); }, 30);
+        }
+      }
+      function closeSearch() {
+        if (searchDialog.open) searchDialog.close();
+      }
+      Array.prototype.forEach.call(document.querySelectorAll('[data-search-open]'), function (button) {
+        button.addEventListener('click', openSearch);
+      });
+      document.querySelector('[data-search-close]').addEventListener('click', closeSearch);
+      searchDialog.addEventListener('click', function (event) {
+        if (event.target === searchDialog) closeSearch();
+      });
+      searchDialog.addEventListener('close', function () {
+        searchInput.value = '';
+        filterSearch('');
+      });
+      document.addEventListener('keydown', function (event) {
+        var tag = (event.target.tagName || '').toLowerCase();
+        var typing = tag === 'input' || tag === 'textarea' || event.target.isContentEditable;
+        if (event.key === '/' && !typing && !event.metaKey && !event.ctrlKey && !event.altKey) {
+          event.preventDefault();
+          openSearch();
+        }
+      });
+
+      function filterSearch(query) {
+        var term = query.trim().toLowerCase();
+        var shown = 0;
+        searchResults.forEach(function (item) {
+          var match = !term || item.textContent.toLowerCase().indexOf(term) !== -1;
+          item.hidden = !match;
+          if (match) shown += 1;
+        });
+        searchEmpty.hidden = shown !== 0;
+      }
+      searchInput.addEventListener('input', function () {
+        filterSearch(searchInput.value);
+      });
+
+      /* Newsletter states */
+      var email = document.getElementById('newsletter-email');
+      var status = document.getElementById('newsletter-status');
+      var submit = newsletterForm.querySelector('button[type="submit"]');
+      newsletterForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (!email.value.trim() || !email.validity.valid) {
+          email.setAttribute('aria-invalid', 'true');
+          status.setAttribute('data-state', 'error');
+          status.textContent = 'Enter a valid email address.';
+          email.focus();
+          return;
+        }
+        email.removeAttribute('aria-invalid');
+        status.setAttribute('data-state', 'success');
+        status.textContent = 'You are on the list. The next edition arrives Monday.';
+        submit.disabled = true;
+        submit.textContent = 'Subscribed';
+      });
+      email.addEventListener('input', function () {
+        if (email.getAttribute('aria-invalid') === 'true') {
+          email.removeAttribute('aria-invalid');
+          status.removeAttribute('data-state');
+          status.textContent = '';
+        }
+      });
+
+      /* Quiet scroll reveals: no scroll event listeners. */
+      var revealItems = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+      if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var revealObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+        revealItems.forEach(function (item) { revealObserver.observe(item); });
+      } else {
+        revealItems.forEach(function (item) { item.classList.add('is-visible'); });
+      }
+    }());
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+Name: siterpc.rpc
+ListenOn: 0.0.0.0:8080
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: siterpc.rpc
+
+Repo:
+  UserName: root
+  Password: aaa2021s
+  Host: 127.0.0.1
+  Port: 3306
+  DBName: noviterra
+
+Interceptor:
+  ServiceToken: NdsowVhIlsaTea241EgsRadsawAds4dS2aOkahk6ose
+  SkipToken: GswdkYwebvDAdfeLKwe31Yqfds4KaqOecMd123cSq
