@@ -43,7 +43,7 @@ type rpcCollection struct {
 
 func initRPC(c config.Config) rpcCollection {
 	// article rpc服务
-	articleService := articleservice.NewArticleService(zrpc.MustNewClient(c.ArticleRpc))
+	articleService := articleservice.NewArticleService(zrpc.MustNewClient(c.ArticleRPC))
 
 	return rpcCollection{
 		ArticleModel: articleService,
