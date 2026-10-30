@@ -1,0 +1,29 @@
+syntax = "proto3";
+package siterpc;
+option go_package = "/siterpc";
+
+// 9006
+
+message Response {
+  int32 Status = 1;
+  int64 Code = 2;
+  string Message = 3;
+}
+
+message FriendLink {
+  string Link = 1;
+  string LinkName = 2;
+  string SelfInformation = 3;
+}
+
+message FriendLinkRequest {
+  FriendLink RequestInfo = 1;
+  string Email = 2;
+}
+
+service SiteService {
+  // 申请友链rpc方法
+  rpc ApplyFriendLink(FriendLinkRequest) returns (Response);
+}
+
+// goctl rpc protoc ./doc/proto/site.proto --go_out=./server/app/site/siterpc/types --go-grpc_out=./server/app/site/siterpc/types --zrpc_out=./server/app/site/siterpc

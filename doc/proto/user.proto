@@ -2,6 +2,8 @@ syntax = "proto3";
 package userrpc;
 option go_package = "/userrpc";
 
+// 9003
+
 // 基本响应体
 message Response {
     string Message = 1;

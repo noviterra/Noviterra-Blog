@@ -1,38 +1,50 @@
 syntax = "v1"
 
-info(
-    title: "Noviterra站点支撑服务"
-    desc: "管理Noviterra的非核心服务，如友链、归档、订阅等"
-    author: "Noviterra"
+info (
+	title:  "Noviterra站点支撑服务"
+	desc:   "管理Noviterra的非核心服务，如友链、归档、订阅等"
+	author: "Noviterra"
 )
+
+// 8006
 
 type (
-    Response {
-        Status  int    `json:"status"`
-        Code    int    `json:"errcode"`
-        Message string `json:"message"`
-    }
-    // 友链信息体
-    FriendLink {
-        Link string `json:"link" validate:"required,url"`
-        LinkName string `json:"link_name" validate:"required,min=1,max=10"`
-        SelfInformation string `json:"self_information" validate:"required,min=1,max=30"`
-    }
-
-    // 订阅Noviterra
-    SubscribeNoviterraRequest {
-        Email string `json:"email" validate:"required,email"`
-    }
-
-    // 申请本站友链
-    FriendLinkRequest {
-        RequestInfo FriendLink `json:"request_info" validate:"required"`
-        Email string `json:"email" validate:"required,email"`
-    }
-
-    // 得到本站的全部友链
-    GetFriendLinkResponse {
-        FriendLinks []FriendLink `json:"friend_links"`
-        Resp Response `json:"response"`
-    }
+	Response {
+		Status  int    `json:"status"`
+		Code    int    `json:"errcode"`
+		Message string `json:"message"`
+	}
+	// 友链信息体
+	FriendLink {
+		Link            string `form:"link" json:"link" validate:"required,url"`
+		LinkName        string `form:"link_name" json:"link_name" validate:"required,min=1,max=10"`
+		LinkLogo        string `form:"link_logo" json:"link_logo" validate:"required,min=1,max=20"`
+		SelfInformation string `form:"self_information" json:"self_information" validate:"required,min=1,max=30"`
+	}
+	// 订阅Noviterra
+	SubscribeNoviterraRequest {
+		Email string `json:"email" validate:"required,email"`
+	}
+	// 申请本站友链
+	FriendLinkRequest {
+		RequestInfo FriendLink `json:"request_info" validate:"required"`
+		Email       string     `json:"email" validate:"omitempty,email"`
+	}
+	// 得到本站的全部友链
+	GetFriendLinkResponse {
+		FriendLinks []FriendLink `json:"friend_links"`
+		Resp        Response     `json:"response"`
+	}
 )
+
+// 需登录：校验登录状态
+@server (
+	prefix: /novblog/site
+)
+service SiteService {
+	@doc "友链申请"
+	@handler ApplyFriendLink
+	post /friendlink/apply (FriendLinkRequest) returns (Response)
+}
+
+// goctl api go -api ./doc/api/site.api -dir ./server/app/site/siteapi

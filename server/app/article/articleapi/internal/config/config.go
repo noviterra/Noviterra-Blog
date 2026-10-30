@@ -16,12 +16,10 @@ type Config struct {
 		RefreshSecret string
 		RefreshExpire int64
 	}
-
 	Interceptor struct {
 		ServiceToken string
 		SkipToken    string
 	}
-
 	Repo struct {
 		UserName string
 		Password string
@@ -29,5 +27,5 @@ type Config struct {
 		Port     int
 		DBName   string
 	}
-	ArticleRpc zrpc.RpcClientConf
+	ArticleRPC zrpc.RpcClientConf
 }

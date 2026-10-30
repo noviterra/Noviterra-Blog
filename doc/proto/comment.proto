@@ -1,0 +1,44 @@
+syntax = "proto3";
+package commentrpc;
+option go_package = "/commentrpc";
+
+// 9005
+
+message Response {
+  string Message = 1;
+  int32 Status = 2;
+  int64 Code = 3;
+}
+
+message ArticleComment {
+  string Root = 1;
+  string InitiatorID = 2;
+  string Original = 3;
+  string RecipientID = 4;
+  string SpeakerID = 5;
+  string Content = 6;
+}
+
+message LikeArticleRequest {
+  string ArticleID = 1;
+  string Action = 2;
+  string OperatorID = 3;
+}
+
+message CollectArticleRequest {
+  string ArticleID = 1;
+  string Action = 2;
+  string OperatorID = 3;
+}
+
+service CommentService {
+  // 对文章的点赞操作
+  rpc LikeArticle(LikeArticleRequest) returns (Response);
+
+  // 对文章的收藏操作
+  rpc CollectArticle(CollectArticleRequest) returns (Response);
+}
+
+/*
+goctl rpc protoc ./doc/proto/comment.proto --go_out=./server/app/comment/commentrpc/types --go-grpc_out=./server/app/comment/commentrpc/types --zrpc_out=./server/app/comment/commentrpc
+*/

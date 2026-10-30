@@ -4,28 +4,42 @@
 package logic
 
 import (
-	"context"
-	"net/http"
-
 	"Noviterra/server/app/user/userapi/internal/svc"
 	"Noviterra/server/app/user/userapi/internal/types"
 	"Noviterra/server/app/user/userrpc/types/userrpc"
+	"Noviterra/server/utils/errcode"
+	"context"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
+type updateUserInfoUserModel interface {
+	UpdateSelfInfo(ctx context.Context, in *userrpc.UpdateUserInfoRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
+}
+
+type updateUserInfoAuthMiddleware interface {
+	GetUserIDFromContext(ctx context.Context) string
+}
+
+type updateUserServiceTokenInterceptor interface {
+	GetServiceTokenInConf() string
+}
+
 type UpdateUserInfoLogic struct {
-	logx.Logger
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx                     context.Context
+	userModel               updateUserInfoUserModel
+	authMiddleware          updateUserInfoAuthMiddleware
+	serviceTokenInterceptor updateUserServiceTokenInterceptor
 }
 
 func NewUpdateUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UpdateUserInfoLogic {
 	return &UpdateUserInfoLogic{
-		Logger: logx.WithContext(ctx),
-		ctx:    ctx,
-		svcCtx: svcCtx,
+		ctx:                     ctx,
+		userModel:               svcCtx.UserModel,
+		authMiddleware:          svcCtx.AuthMiddleware,
+		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
 
@@ -35,23 +49,24 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoRequest) (
 
 	if err := Validate.Struct(*req); err != nil {
 		if errs, ok := err.(validator.ValidationErrors); ok && len(errs) > 0 {
-			resp.Status = http.StatusBadRequest
-			resp.Code = 1
-			resp.Message = TypeName[errs[0].Field()] + "格式错误！"
-			return resp, nil
+			return failResponse(resp, TypeName[errs[0].Field()]+"格式错误！", errcode.InvalidParam, errcode.Failed)
 		}
+		return failResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 
 	// 从上下文中获取用户ID 经过了鉴权中间件获取
-	ID := l.svcCtx.Middleware.GetUserIDFromContext(l.ctx)
-	if ID == "" {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = "错误的请求，用户ID为空！"
+	id := l.authMiddleware.GetUserIDFromContext(l.ctx)
+	if id == "" {
+		return failResponse(resp, "未登录，身份验证失败！", errcode.Unauthorized, errcode.Failed)
 	}
 
-	rep, err := l.svcCtx.UserModel.UpdateSelfInfo(l.ctx, &userrpc.UpdateUserInfoRequest{
-		ID:               ID,
+	ctx := metadata.AppendToOutgoingContext(l.ctx,
+		"service-token", l.serviceTokenInterceptor.GetServiceTokenInConf(),
+		"user-id", id,
+	)
+
+	rep, err := l.userModel.UpdateSelfInfo(ctx, &userrpc.UpdateUserInfoRequest{
+		ID:               id,
 		UserName:         req.Username,
 		Avatar:           req.Avatar,
 		Age:              int64(req.Age),
@@ -59,21 +74,11 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoRequest) (
 		SelfIntroduction: req.SelfIntroduction,
 	})
 	if err != nil {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = "ERROR:" + err.Error()
-		return resp, nil
+		return failResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 	if rep.Code != 0 {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = rep.Message
-		return resp, nil
+		return failResponse(resp, rep.Message, errcode.InvalidParam, int(rep.Code))
 	}
 
-	resp.Status = http.StatusOK
-	resp.Code = 0
-	resp.Message = rep.Message
-
-	return resp, nil
+	return successResponse(resp, "文章信息更新成功！")
 }

@@ -15,18 +15,6 @@ func (UserAccount) TableName() string {
 	return "account"
 }
 
-type UserRefreshToken struct {
-	ID           string    `gorm:"primaryKey;size:36"`
-	RefreshToken string    `gorm:"size:256;not null"`
-	ExpireAt     time.Time `gorm:"not null"`
-	CreateAt     time.Time
-	UpdatedAt    time.Time
-}
-
-func (UserRefreshToken) TableName() string {
-	return "auth"
-}
-
 type UserInfo struct {
 	ID               string     `gorm:"primaryKey;size:36;comment:用户ID"`
 	Name             string     `gorm:"size:64;not null;default:'';index;comment:昵称"`

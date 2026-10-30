@@ -6,6 +6,7 @@ info (
 	author: "noviterra"
 )
 
+// 8004
 type (
 	// api层统一响应体 请求状态承载体 需要特殊响应（需要包含数据）的将其嵌入到结构体中
 	Response {
@@ -106,6 +107,30 @@ type (
 		ArticleList []ArchiveArticle `json:"article_list" validate:"required"`
 		Resp        Response         `json:"response"`
 	}
+	// 获得用户的点赞文章列表 查看个人或者他人
+	GetUserLikesListRequest {
+		UserID string `json:"user_id" validate:"required,min=1,max=100"`
+	}
+	GetUserLikesListResponse {
+		ArticleList []ArticleList `json:"articles_list"`
+		Resp        Response      `json:"response"`
+	}
+	// 获得用户的收藏点赞列表
+	GetUserCollectListRequest {
+		UserID string `json:"user_id" validate:"required,min=1,max=100"`
+	}
+	GetUserCollectListResponse {
+		ArticleList []ArticleList `json:"articles_list"`
+		Resp        Response      `json:"response"`
+	}
+	// 获得一个用户发布的文章列表
+	GetUsersArticleListRequest {
+		UserID string `json:"user_id" validate:"required,min=1,max=100"`
+	}
+	GetUsersArticleListResponse {
+		ArticleList []ArticleList `json:"articles_list"`
+		Resp        Response      `json:"response"`
+	}
 )
 
 // 需要鉴权中间件的
@@ -113,19 +138,19 @@ type (
 	prefix: novblog/article
 )
 service articleService {
-	// @doc "发布文章"
+	@doc "发布文章"
 	@handler PublishArticle
 	post /publish (PublishArticleRequest) returns (Response)
 
-	// @doc "删除文章"
+	@doc "删除文章"
 	@handler DeleteArticle
 	post /delete (DeleteArticleRequest) returns (Response)
 
-	// @doc "修改文章"
+	@doc "修改文章"
 	@handler UpdateArticle
 	post /update/article (UpdateArticleRequest) returns (Response)
 
-	// @doc "修改文章封面"
+	@doc "修改文章封面"
 	@handler UpdateArticleCover
 	post /update/cover (UpdateArticleCoverRequest) returns (UpdateArticleCoverResponse)
 }
@@ -150,6 +175,18 @@ service articleService {
 	@doc "归档 时间轴展示博客与"
 	@handler GetArchive
 	get /archive returns (GetArchiveResponse)
+
+	@doc "查看用户点赞文章列表"
+	@handler GetUserLikesArticleList
+	get /list/like (GetUserLikesListRequest) returns (GetUserLikesListResponse)
+
+	@doc "查看用户收藏文章列表"
+	@handler GetUserCollectArticleList
+	get /list/collect (GetUserCollectListRequest) returns (GetUserCollectListResponse)
+
+	@doc "查看用户发布文章列表"
+	@handler GetUsersArticleList
+	get /list/publish (GetUsersArticleListRequest) returns (GetUsersArticleListResponse)
 }
 
 // goctl api go -api ./doc/api/article.api -dir ./server/app/article/articleapi

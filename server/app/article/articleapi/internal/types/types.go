@@ -59,6 +59,33 @@ type GetArticleListResponse struct {
 	Resp         Response      `json:"response"`
 }
 
+type GetUserCollectListRequest struct {
+	UserID string `json:"user_id" validate:"required,min=1,max=100"`
+}
+
+type GetUserCollectListResponse struct {
+	ArticleList []ArticleList `json:"articles_list"`
+	Resp        Response      `json:"response"`
+}
+
+type GetUserLikesListRequest struct {
+	UserID string `json:"user_id" validate:"required,min=1,max=100"`
+}
+
+type GetUserLikesListResponse struct {
+	ArticleList []ArticleList `json:"articles_list"`
+	Resp        Response      `json:"response"`
+}
+
+type GetUsersArticleListRequest struct {
+	UserID string `json:"user_id" validate:"required,min=1,max=100"`
+}
+
+type GetUsersArticleListResponse struct {
+	ArticleList []ArticleList `json:"articles_list"`
+	Resp        Response      `json:"response"`
+}
+
 type PublishArticleRequest struct {
 	Title       string   `form:"title" json:"title" validate:"required,min=1,max=100"`
 	Content     string   `form:"content" json:"content" validate:"required,min=1"`

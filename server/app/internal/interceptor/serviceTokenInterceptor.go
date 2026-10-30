@@ -4,7 +4,6 @@ import (
 	"Noviterra/server/utils/ctxdata"
 	"context"
 	"errors"
-	"fmt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -15,13 +14,13 @@ type ServiceTokenConfig struct {
 	SkipToken   string
 }
 type ServiceTokenInterceptor struct {
-	CtxData *ctxdata.CtxData
+	ctxData *ctxdata.CtxData
 	conf    ServiceTokenConfig
 }
 
 func NewServiceTokenInterceptor(ctxdata *ctxdata.CtxData, serviceTokenConfig ServiceTokenConfig) *ServiceTokenInterceptor {
 	return &ServiceTokenInterceptor{
-		CtxData: ctxdata,
+		ctxData: ctxdata,
 		conf:    serviceTokenConfig,
 	}
 }
@@ -63,8 +62,7 @@ func (si *ServiceTokenInterceptor) ServiceTokenInterceptor(secretToken, skipToke
 			if len(id) <= 0 {
 				return nil, errors.New("无效的user-id！")
 			}
-			fmt.Println(id)
-			ctx = si.CtxData.StoreUserID(ctx, id)
+			ctx = si.ctxData.StoreUserIDInContext(ctx, id)
 			return handler(ctx, req)
 		}
 		// 存在正确的跳过令牌 直接返回ctx 不写入ID

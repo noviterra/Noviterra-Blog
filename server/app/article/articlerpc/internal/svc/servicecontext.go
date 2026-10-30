@@ -15,25 +15,55 @@ import (
 )
 
 type ServiceContext struct {
-	Config             config.Config
-	SnowFlake          *snowflake.SnowFlake
-	CtxData            *ctxdata.CtxData
-	Interceptor        *interceptor.Interceptor
-	UserRepository     *repo.UserRepository
-	IdentityRepository *repo.IdentityRepository
-	CommonUtils        *common.CommonUtils
-	ArticleRepository  *repo.ArticleRepository
-	ArticleCache       *cache.ArticleCache
-	ArticleResponse    *response.ArticleResponse
-	Logger             *zaplogger.Logger
-	ArticleBloomFilter *bloomfilter.ArticleBloomFilter
+	Config                  config.Config
+	CommonUtils             *common.CommonUtils
+	SnowFlake               *snowflake.SnowFlake
+	CtxData                 *ctxdata.CtxData
+	Logger                  *zaplogger.Logger
+	ArticleBloomFilter      *bloomfilter.ArticleBloomFilter
+	ArticleResponse         *response.ArticleResponse
+	ArticleRepository       *repo.ArticleRepository
+	ArticleCache            *cache.ArticleCache
+	UserRepository          *repo.UserRepository
+	IdentityRepository      *repo.IdentityRepository
+	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
+	tool := initTool()
+	store := initStore(c, tool)
+	aspect := initAspect(c, tool)
+
+	return &ServiceContext{
+		Config:                  c,
+		SnowFlake:               tool.snowFlake,
+		CtxData:                 tool.ctxData,
+		CommonUtils:             tool.commonUtils,
+		Logger:                  tool.logger,
+		ArticleResponse:         tool.articleResponse,
+		ArticleBloomFilter:      tool.articleBloomFilter,
+		UserRepository:          store.userRepository,
+		ArticleRepository:       store.articleRepository,
+		ArticleCache:            store.articleCache,
+		IdentityRepository:      store.identityRepository,
+		ServiceTokenInterceptor: aspect.serviceTokenInterceptor,
+	}
+}
+
+type toolCollection struct {
+	commonUtils        *common.CommonUtils
+	snowFlake          *snowflake.SnowFlake
+	ctxData            *ctxdata.CtxData
+	logger             *zaplogger.Logger
+	articleBloomFilter *bloomfilter.ArticleBloomFilter
+	articleResponse    *response.ArticleResponse
+}
+
+func initTool() toolCollection {
 	// 雪花ID生成器
 	sf, err := snowflake.NewSnowFlake(1)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("雪花ID生成器初始化失败！%w", err))
 	}
 
 	// 工具插件
@@ -42,55 +72,76 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	// 上下文存储器 用于rpc层的身份校验
 	cd := ctxdata.NewCtxData()
 
-	// 拦截器
-	itp := interceptor.NewInterceptor(cd)
+	// 日志写入器
+	logger := zaplogger.NewLogger()
 
-	// 响应器
+	// 文章布隆过滤器
+	articleBloomFilter, err := bloomfilter.NewArticleBloomFilter(1000, 0.001)
+	if err != nil {
+		panic(fmt.Errorf("布隆过滤器初始化失败！%w", err))
+	}
+
 	articleResponse := response.NewArticleResponse()
 
-	// article缓存
-	cacheConfig := cache.RedisConfig{
-		Addr:     c.Cache.Addr,
-		Password: c.Cache.Password,
-		DB:       c.Cache.DB,
+	return toolCollection{
+		commonUtils:        cu,
+		snowFlake:          sf,
+		ctxData:            cd,
+		logger:             logger,
+		articleBloomFilter: articleBloomFilter,
+		articleResponse:    articleResponse,
 	}
-	articleCache := cache.NewArticleCache(cacheConfig, cu)
+}
 
-	// 仓库操作实例
-	repoConfig := repo.RepoConfig{
+type storeCollection struct {
+	articleRepository  *repo.ArticleRepository
+	articleCache       *cache.ArticleCache
+	userRepository     *repo.UserRepository
+	identityRepository *repo.IdentityRepository
+}
+
+func initStore(c config.Config, tool toolCollection) storeCollection {
+	repositoryConfig := repo.RepoConfig{
 		UserName: c.Repo.UserName,
 		Password: c.Repo.Password,
 		Host:     c.Repo.Host,
 		Port:     c.Repo.Port,
 		DBName:   c.Repo.DBName,
 	}
-	userRepo := repo.NewUserRepository(repoConfig, "user")
-	identityRepo := repo.NewIdentityRespository(repoConfig, "identity")
 
-	// 日志写入器
-	logger := zaplogger.NewLogger()
-
-	// 文章仓库操作实例
-	articleRepo := repo.NewArticleRepository(repoConfig, "article")
-
-	// 文章布隆过滤器
-	articleBloomFilter, err := bloomfilter.NewArticleBloomFilter(1000, 0.001)
-	if err != nil {
-		panic(fmt.Errorf("布隆过滤器初始化失败！，ERROR：%s", err))
+	cacheConfig := cache.RedisConfig{
+		Addr:     c.Cache.Addr,
+		Password: c.Cache.Password,
+		DB:       c.Cache.DB,
 	}
 
-	return &ServiceContext{
-		Config:             c,
-		SnowFlake:          sf,
-		CtxData:            cd,
-		Interceptor:        itp,
-		UserRepository:     userRepo,
-		CommonUtils:        cu,
-		ArticleRepository:  articleRepo,
-		ArticleCache:       articleCache,
-		ArticleResponse:    articleResponse,
-		Logger:             logger,
-		ArticleBloomFilter: articleBloomFilter,
-		IdentityRepository: identityRepo,
+	userRepo := repo.NewUserRepository(repositoryConfig, "user")
+	identityRepo := repo.NewIdentityRespository(repositoryConfig, "identity")
+	articleRepo := repo.NewArticleRepository(repositoryConfig, "article")
+
+	articleCache := cache.NewArticleCache(cacheConfig, tool.commonUtils)
+
+	return storeCollection{
+		articleRepository:  articleRepo,
+		articleCache:       articleCache,
+		userRepository:     userRepo,
+		identityRepository: identityRepo,
+	}
+}
+
+type aspectCollection struct {
+	serviceTokenInterceptor *interceptor.ServiceTokenInterceptor
+}
+
+func initAspect(c config.Config, tool toolCollection) aspectCollection {
+	serviceTokenInterceptorConfig := interceptor.ServiceTokenConfig{
+		SecretToken: c.Interceptor.ServiceToken,
+		SkipToken:   c.Interceptor.SkipToken,
+	}
+
+	serviceTokenInterceptor := interceptor.NewServiceTokenInterceptor(tool.ctxData, serviceTokenInterceptorConfig)
+
+	return aspectCollection{
+		serviceTokenInterceptor: serviceTokenInterceptor,
 	}
 }

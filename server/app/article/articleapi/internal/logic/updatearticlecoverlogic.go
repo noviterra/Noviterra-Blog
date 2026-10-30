@@ -21,7 +21,7 @@ type updateArticleCoverArticleModel interface {
 	UpdateArticleCover(ctx context.Context, in *articlerpc.UpdateArticleCoverRequest, opts ...grpc.CallOption) (*articlerpc.UpdateArticleCoverResponse, error)
 }
 
-type updateArticleCoverAuthMiddleware interface {
+type updateArticleCoverctxdata interface {
 	GetUserIDFromContext(ctx context.Context) string
 	GetUserRoleFromContext(ctx context.Context) int
 }
@@ -38,7 +38,7 @@ type UpdateArticleCoverLogic struct {
 	ctx                     context.Context
 	articleModel            updateArticleCoverArticleModel
 	commonUtils             updatearticlecoverCommonutils
-	authMiddleware          updateArticleCoverAuthMiddleware
+	ctxdata                 updateArticleCoverctxdata
 	serviceTokenInterceptor updateArticleCoverServiceTokenInterceptor
 }
 
@@ -47,7 +47,7 @@ func NewUpdateArticleCoverLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 		ctx:                     ctx,
 		articleModel:            svcCtx.ArticleModel,
 		commonUtils:             svcCtx.CommonUtils,
-		authMiddleware:          svcCtx.AuthMiddleware,
+		ctxdata:                 svcCtx.CtxData,
 		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
@@ -66,13 +66,13 @@ func (l *UpdateArticleCoverLogic) UpdateArticleCover(req *types.UpdateArticleCov
 	}
 
 	// 从上下文中获取用户ID
-	publisherID := l.authMiddleware.GetUserIDFromContext(l.ctx)
+	publisherID := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if publisherID == "" {
 		return l.failUpdateArticleCoverResponse(resp, "用户ID为空！", errcode.InvalidParam, errcode.Failed)
 	}
 
 	// 获取用户身份权限
-	role := l.authMiddleware.GetUserRoleFromContext(l.ctx)
+	role := l.ctxdata.GetUserRoleFromContext(l.ctx)
 	if role < 1 {
 		return l.failUpdateArticleCoverResponse(resp, "用户ID为空！", errcode.InvalidParam, errcode.Failed)
 	}

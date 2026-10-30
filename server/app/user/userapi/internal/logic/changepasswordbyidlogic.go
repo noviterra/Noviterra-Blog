@@ -4,28 +4,42 @@
 package logic
 
 import (
-	"context"
-	"net/http"
-
 	"Noviterra/server/app/user/userapi/internal/svc"
 	"Noviterra/server/app/user/userapi/internal/types"
 	"Noviterra/server/app/user/userrpc/types/userrpc"
+	"Noviterra/server/utils/errcode"
+	"context"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
+type changePasswordByIDUserModel interface {
+	ChangeSelfPasswordByID(ctx context.Context, in *userrpc.ChangePasswordRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
+}
+
+type changePasswordByIDAuthMiddleware interface {
+	GetUserIDFromContext(ctx context.Context) string
+}
+
+type changePasswordByIDServiceTokenIntercptor interface {
+	GetServiceTokenInConf() string
+}
+
 type ChangePasswordByIDLogic struct {
-	logx.Logger
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx                     context.Context
+	userModel               changePasswordByIDUserModel
+	authMiddleware          changePasswordByIDAuthMiddleware
+	serviceTokenInterceptor changePasswordByIDServiceTokenIntercptor
 }
 
 func NewChangePasswordByIDLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ChangePasswordByIDLogic {
 	return &ChangePasswordByIDLogic{
-		Logger: logx.WithContext(ctx),
-		ctx:    ctx,
-		svcCtx: svcCtx,
+		ctx:                     ctx,
+		userModel:               svcCtx.UserModel,
+		authMiddleware:          svcCtx.AuthMiddleware,
+		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
 
@@ -35,43 +49,33 @@ func (l *ChangePasswordByIDLogic) ChangePasswordByID(req *types.ChangePasswordBy
 
 	if err := Validate.Struct(*req); err != nil {
 		if errs, ok := err.(validator.ValidationErrors); ok && len(errs) > 0 {
-			resp.Code = 1
-			resp.Status = http.StatusBadRequest
-			resp.Message = TypeName[errs[0].Field()] + "格式错误！"
-			return resp, nil
+			return failResponse(resp, TypeName[errs[0].Field()]+"格式错误！", errcode.InvalidParam, errcode.Failed)
 		}
+		return failResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 
-	id := l.svcCtx.Middleware.GetUserIDFromContext(l.ctx)
+	id := l.authMiddleware.GetUserIDFromContext(l.ctx)
 	if id == "" {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = "用户ID为空！"
-		return resp, nil
+		return failResponse(resp, "未登录，身份验证失败！", errcode.Unauthorized, errcode.Failed)
 	}
 
-	rep, err := l.svcCtx.UserModel.ChangeSelfPasswordByID(l.ctx, &userrpc.ChangePasswordRequest{
+	ctx := metadata.AppendToOutgoingContext(l.ctx,
+		"service-token", l.serviceTokenInterceptor.GetServiceTokenInConf(),
+		"user-id", id,
+	)
+
+	rep, err := l.userModel.ChangeSelfPasswordByID(ctx, &userrpc.ChangePasswordRequest{
 		ID:          id,
 		OldPassword: req.OldPassword,
 		NewPassword: req.NewPassword,
 	})
 	if err != nil {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = "ERROR:" + err.Error()
-		return resp, nil
+		return failResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 
 	if rep.Code != 0 {
-		resp.Message = rep.Message
-		resp.Code = 1
-		resp.Status = http.StatusBadRequest
-		return resp, nil
+		return failResponse(resp, resp.Message, errcode.InvalidParam, errcode.Failed)
 	}
 
-	resp.Message = rep.Message
-	resp.Code = 0
-	resp.Status = http.StatusOK
-
-	return resp, nil
+	return successResponse(resp, "密码修改成功！")
 }

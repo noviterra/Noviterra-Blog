@@ -4,9 +4,11 @@
 package svc
 
 import (
+	"Noviterra/server/app/internal/interceptor"
 	"Noviterra/server/app/internal/middleware"
 	"Noviterra/server/app/user/userapi/internal/config"
 	"Noviterra/server/app/user/userrpc/userservice"
+	"Noviterra/server/utils/ctxdata"
 	"Noviterra/server/utils/jwtauth"
 	"Noviterra/server/utils/repo"
 	"Noviterra/server/utils/zaplogger"
@@ -15,11 +17,12 @@ import (
 )
 
 type ServiceContext struct {
-	Config        config.Config
-	Logger        *zaplogger.Logger
-	UserModel     userservice.UserService
-	Authorization *jwtauth.Authentication
-	Middleware    *middleware.AuthMiddleware
+	Config                  config.Config
+	Logger                  *zaplogger.Logger
+	UserModel               userservice.UserService
+	Authorization           *jwtauth.Authentication
+	AuthMiddleware          *middleware.AuthMiddleware
+	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -46,13 +49,23 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	}, "identity")
 
 	// 中间件
-	m := middleware.NewAuthMiddleware(authentication, identityRepo)
+	am := middleware.NewAuthMiddleware(authentication, identityRepo)
+
+	// 上下文操作utils
+	cd := ctxdata.NewCtxData()
+
+	// 拦截器
+	serviceTokenInterceptor := interceptor.NewServiceTokenInterceptor(cd, interceptor.ServiceTokenConfig{
+		SecretToken: c.Interceptor.ServiceToken,
+		SkipToken:   c.Interceptor.SkipToken,
+	})
 
 	return &ServiceContext{
-		Config:        c,
-		Logger:        logger,
-		UserModel:     userService,
-		Authorization: authentication,
-		Middleware:    m,
+		Config:                  c,
+		Logger:                  logger,
+		UserModel:               userService,
+		Authorization:           authentication,
+		AuthMiddleware:          am,
+		ServiceTokenInterceptor: serviceTokenInterceptor,
 	}
 }

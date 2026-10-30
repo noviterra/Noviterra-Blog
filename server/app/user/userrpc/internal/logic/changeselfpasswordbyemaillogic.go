@@ -8,7 +8,7 @@ import (
 	"Noviterra/server/app/user/userrpc/types/userrpc"
 )
 
-type changePwdByEmailIdentityCache interface {
+type changePwdByEmailNoticeCache interface {
 	GetVerificationCode(ctx context.Context, email, t string) (string, error)
 }
 
@@ -27,7 +27,7 @@ type changePwdByEmailCrypt interface {
 
 type ChangeSelfPasswordByEmailLogic struct {
 	ctx            context.Context
-	identityCache  changePwdByEmailIdentityCache
+	noticeCache    changePwdByEmailNoticeCache
 	userRepository changePwdByEmailIdentityRepository
 	commonUtils    changePwdByEmailCommonUtils
 	crypt          changePwdByEmailCrypt
@@ -37,7 +37,7 @@ func NewChangeSelfPasswordByEmailLogic(ctx context.Context, svcCtx *svc.ServiceC
 	return &ChangeSelfPasswordByEmailLogic{
 		ctx:            ctx,
 		userRepository: svcCtx.IdentityRepository,
-		identityCache:  svcCtx.IdentityCache,
+		noticeCache:    svcCtx.NoticeCache,
 		crypt:          svcCtx.Crypt,
 		commonUtils:    svcCtx.CommonUtils,
 	}
@@ -46,7 +46,7 @@ func NewChangeSelfPasswordByEmailLogic(ctx context.Context, svcCtx *svc.ServiceC
 func (l *ChangeSelfPasswordByEmailLogic) ChangeSelfPasswordByEmail(in *userrpc.ChangePasswordByEmailRequest) (*userrpc.Response, error) {
 	// todo: add your logic here and delete this line
 	// 验证码的获取与校验
-	realVerificationCode, err := l.identityCache.GetVerificationCode(l.ctx, in.Email, "change_password")
+	realVerificationCode, err := l.noticeCache.GetVerificationCode(l.ctx, in.Email, "change_password")
 	if err != nil {
 		return &userrpc.Response{
 			Code:    1,

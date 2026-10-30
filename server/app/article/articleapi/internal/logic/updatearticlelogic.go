@@ -20,7 +20,7 @@ type updateArticleModel interface {
 	UpdateArticle(ctx context.Context, in *articlerpc.UpdateArticleRequest, opts ...grpc.CallOption) (*articlerpc.Response, error)
 }
 
-type updateArticleAuthMiddleware interface {
+type updateArticlectxdata interface {
 	GetUserIDFromContext(ctx context.Context) string
 	GetUserRoleFromContext(ctx context.Context) int
 }
@@ -31,7 +31,7 @@ type updateArticleServiceTokenInterceptor interface {
 type UpdateArticleLogic struct {
 	ctx                     context.Context
 	articleModel            updateArticleModel
-	authMiddleware          updateArticleAuthMiddleware
+	ctxdata                 updateArticlectxdata
 	serviceTokenInterceptor updateArticleServiceTokenInterceptor
 }
 
@@ -39,7 +39,7 @@ func NewUpdateArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Upd
 	return &UpdateArticleLogic{
 		ctx:                     ctx,
 		articleModel:            svcCtx.ArticleModel,
-		authMiddleware:          svcCtx.AuthMiddleware,
+		ctxdata:                 svcCtx.CtxData,
 		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
@@ -57,13 +57,13 @@ func (l *UpdateArticleLogic) UpdateArticle(req *types.UpdateArticleRequest) (res
 	}
 
 	// 从上下文中获取用户ID
-	publisherID := l.authMiddleware.GetUserIDFromContext(l.ctx)
+	publisherID := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if publisherID == "" {
 		return failResponse(resp, "用户ID为空！", errcode.InvalidParam, errcode.Failed)
 	}
 
 	// 获取用户身份权限
-	role := l.authMiddleware.GetUserRoleFromContext(l.ctx)
+	role := l.ctxdata.GetUserRoleFromContext(l.ctx)
 	if role < 1 { // 0为用户权限最低
 		return failResponse(resp, "用户身份权限不足！", errcode.InvalidParam, errcode.Failed)
 	}

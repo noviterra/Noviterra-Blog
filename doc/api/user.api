@@ -6,12 +6,25 @@ info (
 	author: "Noviterra"
 )
 
+// 8003
+
 type (
 	// 对于响应 除特殊情况外进行统一封装
 	Response {
 		Status  int    `json:"status"`
 		Code    int    `json:"errcode"`
 		Message string `json:"message"`
+	}
+	// 用户信息体
+	UserInfo {
+		ID               string `json:"id"`
+		Role             int    `json:"Role"` // 0:普通用户 1:超级管理员
+		Username         string `json:"username"`
+		Email            string `json:"email"`
+		Avatar           string `json:"avatar"`
+		Age              int    `json:"age"`
+		Gender           int    `json:"gender"` // 0:未知 1:男 2:女
+		SelfIntroduction string `json:"self_introduction"`
 	}
 	// 修改密码 ?type=ID
 	ChangePasswordByIDRequest {
@@ -35,15 +48,8 @@ type (
 	}
 	// 获取用户信息
 	UserInfoResponse {
-		ID               string   `json:"id"`
-		Role             int      `json:"Role"` // 0:普通用户 1:超级管理员
-		Username         string   `json:"username"`
-		Email            string   `json:"email"`
-		Avatar           string   `json:"avatar"`
-		Age              int      `json:"age"`
-		Gender           int      `json:"gender"` // 0:未知 1:男 2:女
-		SelfIntroduction string   `json:"self_introduction"`
-		Resp             Response `json:"response"`
+		Info UserInfo `json:"info"`
+		Resp Response `json:"response"`
 	}
 	// 管理员批量获取用户信息  分页查询
 	BatchUserInfoRequest {
@@ -51,8 +57,8 @@ type (
 		page int `json:"page" validate:"required,min=1"`
 	}
 	BatchUserInfoResponse {
-		Users []*UserInfoResponse `json:"users"`
-		Resp  Response            `json:"response"`
+		Users []UserInfo `json:"users"`
+		Resp  Response   `json:"response"`
 	}
 	// 用户更新信息
 	UpdateUserInfoRequest {

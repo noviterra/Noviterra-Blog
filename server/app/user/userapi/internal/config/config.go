@@ -25,4 +25,9 @@ type Config struct {
 		DBName   string
 	}
 	UserRpc zrpc.RpcClientConf
+
+	Interceptor struct {
+		ServiceToken string
+		SkipToken    string
+	}
 }

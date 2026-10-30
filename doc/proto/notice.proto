@@ -1,0 +1,59 @@
+syntax = "proto3";
+package noticerpc;
+option go_package = "/noticerpc";
+
+// 9002
+
+message Response {
+  string Message = 1;
+  int64 Code = 2;
+  int32 Status = 3;
+}
+
+// 公告实例体
+message Notice {
+  string Publisher = 1;  // 保留 并且在拦截器上下文获取用户ID 保证操作者与被操纵人员（借用某个人员的身份） 保证操作者与操作身份一样
+  string Title = 2;
+  string Message = 3;
+  int64 CreatedAt = 4;
+}
+
+// 发布公告请求
+message PublishNoticeRequest {
+  string Title = 1;
+  string Message = 2;
+}
+
+// 得到全部公告 用于展示 实际方法根据发布时间选择性展示
+message GetNoticeResponse {
+  repeated Notice Notices = 1;
+  Response Resp = 2;
+}
+// 空请求体 得到全部公告无需有指定字段
+message GetNoticeRequest {}
+
+// 发送验证码请求体
+message SendVerificationCodeRequest {
+  string Email = 1;
+  string Type = 2;
+}
+
+// 发送友链申请进度邮件请求体  携带其申请的链接
+message SendApplyResultRequest {
+  string Email = 1;
+  string Process = 2;  // 即申请进度 类似发送邮箱验证码中的Type
+  string Link = 3;
+}
+
+service NoticeService {
+  // 发布公告
+  rpc PublishNotice(PublishNoticeRequest) returns (Response);
+  // 展示公告
+  rpc GetNotice(GetNoticeRequest) returns (GetNoticeResponse);
+  // 身份验证需要的邮箱验证码验证
+  rpc SendVerificationCode(SendVerificationCodeRequest) returns (Response);
+  // 发送友链申请进度邮件
+  rpc SendApplyResult(SendApplyResultRequest) returns (Response);
+}
+
+// goctl rpc protoc ./doc/proto/notice.proto --go_out=./server/app/notice/noticerpc/types --go-grpc_out=./server/app/notice/noticerpc/types --zrpc_out=./server/app/notice/noticerpc

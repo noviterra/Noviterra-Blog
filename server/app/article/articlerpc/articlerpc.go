@@ -35,7 +35,7 @@ func main() {
 	)
 
 	// 在此注册拦截器
-	s.AddUnaryInterceptors(ctx.Interceptor.ServiceTokenInterceptor(c.Interceptor.ServiceToken, c.Interceptor.SkipToken))
+	s.AddUnaryInterceptors(ctx.ServiceTokenInterceptor.ServiceTokenInterceptor(c.Interceptor.ServiceToken, c.Interceptor.SkipToken))
 
 	defer s.Stop()
 

@@ -23,58 +23,72 @@ type batchGetUserInfoAuthMiddleware interface {
 type batchGetUserInfoUserModel interface {
 	GetMoreUsersInfo(ctx context.Context, in *userrpc.GetMoreUsersInfoRequest, opts ...grpc.CallOption) (*userrpc.GetMoreUsersInfoResponse, error)
 }
+
+type batchGetUserInfoServiceTokenInterceptor interface {
+	GetServiceTokenInConf() string
+}
+
 type BatchGetUserInfoLogic struct {
-	ctx            context.Context
-	authMiddleware batchGetUserInfoAuthMiddleware
-	userModel      batchGetUserInfoUserModel
+	ctx                     context.Context
+	authMiddleware          batchGetUserInfoAuthMiddleware
+	userModel               batchGetUserInfoUserModel
+	serviceTokenInterceptor batchGetUserInfoServiceTokenInterceptor
 }
 
 func NewBatchGetUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *BatchGetUserInfoLogic {
 	return &BatchGetUserInfoLogic{
-		ctx:            ctx,
-		authMiddleware: svcCtx.Middleware,
-		userModel:      svcCtx.UserModel,
+		ctx:                     ctx,
+		authMiddleware:          svcCtx.AuthMiddleware,
+		userModel:               svcCtx.UserModel,
+		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
 
 func (l *BatchGetUserInfoLogic) BatchGetUserInfo(req *types.BatchUserInfoRequest) (resp *types.BatchUserInfoResponse, err error) {
 	// todo: add your logic here and delete this line
 	resp = new(types.BatchUserInfoResponse)
+	// 管理员操作
 
 	if err := Validate.Struct(*req); err != nil {
 		if errs, ok := err.(validator.ValidationErrors); ok && len(errs) > 0 {
-			return failBatchUserInfoResponse(resp, TypeName[errs[0].Field()]+"格式错误！", errcode.InvalidParam, errcode.Failed)
+			return l.failBatchUserInfoResponse(resp, TypeName[errs[0].Field()]+"格式错误！", errcode.InvalidParam, errcode.Failed)
 		}
 	}
 
 	id := l.authMiddleware.GetUserIDFromContext(l.ctx)
 	role := l.authMiddleware.GetUserRoleFromContext(l.ctx)
 	if role == -1 || id == "" {
-		return failBatchUserInfoResponse(resp, "未登录，身份验证失败！", errcode.InvalidParam, errcode.Failed)
+		return l.failBatchUserInfoResponse(resp, "未登录，身份验证失败！", errcode.InvalidParam, errcode.Failed)
 	}
 	if role < 1 {
-		return failBatchUserInfoResponse(resp, "权限不足，无法查看用户信息！", errcode.InvalidParam, errcode.Failed)
+		return l.failBatchUserInfoResponse(resp, "权限不足，无法查看用户信息！", errcode.InvalidParam, errcode.Failed)
 	}
 
 	// 将用户信息与服务凭证注入到metadata中
 	ctx := metadata.AppendToOutgoingContext(l.ctx,
-		"service-token")
+		"service-token", l.serviceTokenInterceptor.GetServiceTokenInConf(),
+		"user-id", id,
+	)
 
 	rep, err := l.userModel.GetMoreUsersInfo(ctx, &userrpc.GetMoreUsersInfoRequest{
 		Size: int64(req.Size),
 		Page: int64(req.Page),
 	})
 	if err != nil {
-		return failBatchUserInfoResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
+		return l.failBatchUserInfoResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 	if rep.Resp.Code != 0 {
-		return failBatchUserInfoResponse(resp, rep.Resp.Message, errcode.InvalidParam, int(rep.Resp.Code))
+		return l.failBatchUserInfoResponse(resp, rep.Resp.Message, errcode.InvalidParam, int(rep.Resp.Code))
 	}
 
-	return successBatchUserInfoResponse(resp, rep)
+	return l.successBatchUserInfoResponse(resp, rep)
 }
 
-func failBatchUserInfoResponse(resp *types.BatchUserInfoResponse, msg string, status, code int) (*types.BatchUserInfoResponse, error) {
+func (l *BatchGetUserInfoLogic) failBatchUserInfoResponse(resp *types.BatchUserInfoResponse, msg string, status, code int) (*types.BatchUserInfoResponse, error) {
+	if resp == nil {
+		resp = new(types.BatchUserInfoResponse)
+	}
+
 	resp.Resp = types.Response{
 		Status:  status,
 		Code:    code,
@@ -85,7 +99,11 @@ func failBatchUserInfoResponse(resp *types.BatchUserInfoResponse, msg string, st
 	return resp, nil
 }
 
-func failBatchUserInfoResponseWithErr(resp *types.BatchUserInfoResponse, err error, status, code int) (*types.BatchUserInfoResponse, error) {
+func (l *BatchGetUserInfoLogic) failBatchUserInfoResponseWithErr(resp *types.BatchUserInfoResponse, err error, status, code int) (*types.BatchUserInfoResponse, error) {
+	if resp == nil {
+		resp = new(types.BatchUserInfoResponse)
+	}
+
 	resp.Resp = types.Response{
 		Status:  status,
 		Code:    code,
@@ -96,11 +114,15 @@ func failBatchUserInfoResponseWithErr(resp *types.BatchUserInfoResponse, err err
 	return resp, nil
 }
 
-func successBatchUserInfoResponse(resp *types.BatchUserInfoResponse, rep *userrpc.GetMoreUsersInfoResponse) (*types.BatchUserInfoResponse, error) {
+func (l *BatchGetUserInfoLogic) successBatchUserInfoResponse(resp *types.BatchUserInfoResponse, rep *userrpc.GetMoreUsersInfoResponse) (*types.BatchUserInfoResponse, error) {
+	if resp == nil {
+		resp = new(types.BatchUserInfoResponse)
+	}
+
 	// 用户信息字段映射
-	resp.Users = make([]*types.UserInfoResponse, 0)
+	resp.Users = make([]types.UserInfo, 0)
 	for _, userInfo := range rep.UsersInfo {
-		user := &types.UserInfoResponse{
+		user := types.UserInfo{
 			ID:               userInfo.ID,
 			Role:             int(userInfo.Role),
 			Username:         userInfo.UserName,

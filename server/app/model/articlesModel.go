@@ -60,3 +60,9 @@ type UpdateArticle struct {
 	Content     string   `gorm:"column:content"`
 	Tags        []string `gorm:"column:tags;serializer:json"`
 }
+
+type ArticleArchive struct {
+	Title  string `gorm:"column:title"`
+	Action string
+	Time   int64
+}

@@ -21,7 +21,7 @@ type deleteArticleServiceTokenInterceptor interface {
 	GetServiceTokenInConf() string
 }
 
-type deleteArticleAuthMiddleware interface {
+type deleteArticleCtxData interface {
 	GetUserIDFromContext(ctx context.Context) string
 	GetUserRoleFromContext(ctx context.Context) int
 }
@@ -32,14 +32,14 @@ type deleteArticleModel interface {
 type DeleteArticleLogic struct {
 	ctx                     context.Context
 	articleModel            deleteArticleModel
-	authMiddleware          deleteArticleAuthMiddleware
+	ctxdata                 deleteArticleCtxData
 	serviceTokenInterceptor deleteArticleServiceTokenInterceptor
 }
 
 func NewDeleteArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *DeleteArticleLogic {
 	return &DeleteArticleLogic{
 		ctx:                     ctx,
-		authMiddleware:          svcCtx.AuthMiddleware,
+		ctxdata:                 svcCtx.CtxData,
 		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 		articleModel:            svcCtx.ArticleModel,
 	}
@@ -58,13 +58,13 @@ func (l *DeleteArticleLogic) DeleteArticle(req *types.DeleteArticleRequest) (res
 	}
 
 	// 从上下文中获取用户ID
-	publisherID := l.authMiddleware.GetUserIDFromContext(l.ctx)
+	publisherID := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if publisherID == "" {
-
+		return failResponse(resp, "用户ID为空！", errcode.InvalidParam, errcode.Failed)
 	}
 
 	// 获取用户身份权限
-	role := l.authMiddleware.GetUserRoleFromContext(l.ctx)
+	role := l.ctxdata.GetUserRoleFromContext(l.ctx)
 	if role != 1 { // 1为管理员
 		return failResponse(resp, "用户身份权限不足！", errcode.InvalidParam, errcode.Failed)
 	}

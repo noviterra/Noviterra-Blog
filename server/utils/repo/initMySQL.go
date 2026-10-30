@@ -34,11 +34,17 @@ func NewDB(repoconfig RepoConfig, field string) *gorm.DB {
 	// 数据库迁移
 	switch field {
 	case "user":
-		err = db.AutoMigrate(&model.UserAccount{}, &model.UserInfo{}, &model.UserRefreshToken{})
+		err = db.AutoMigrate(&model.UserAccount{}, &model.UserInfo{})
 	case "article":
 		err = db.AutoMigrate(&model.ArticleInfo{}, &model.ArticleStat{})
 	case "identity":
+		err = db.AutoMigrate(&model.UserRefreshToken{})
+	case "site":
+		err = db.AutoMigrate(&model.FriendLink{})
+	case "comment":
 		err = nil
+	case "notice":
+		err = db.AutoMigrate(&model.Notices{})
 	default:
 		err = errors.New("数据库模式创建失败！")
 	}

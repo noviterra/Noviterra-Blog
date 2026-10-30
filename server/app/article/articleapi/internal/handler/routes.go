@@ -15,21 +15,25 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(
 		[]rest.Route{
 			{
+				// 删除文章
 				Method:  http.MethodPost,
 				Path:    "/delete",
 				Handler: DeleteArticleHandler(serverCtx),
 			},
 			{
+				// 发布文章
 				Method:  http.MethodPost,
 				Path:    "/publish",
 				Handler: PublishArticleHandler(serverCtx),
 			},
 			{
+				// 修改文章
 				Method:  http.MethodPost,
 				Path:    "/update/article",
 				Handler: UpdateArticleHandler(serverCtx),
 			},
 			{
+				// 修改文章封面
 				Method:  http.MethodPost,
 				Path:    "/update/cover",
 				Handler: UpdateArticleCoverHandler(serverCtx),
@@ -57,6 +61,24 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodGet,
 				Path:    "/list",
 				Handler: GetArticleListHandler(serverCtx),
+			},
+			{
+				// 查看用户收藏文章列表
+				Method:  http.MethodGet,
+				Path:    "/list/collect",
+				Handler: GetUserCollectArticleListHandler(serverCtx),
+			},
+			{
+				// 查看用户点赞文章列表
+				Method:  http.MethodGet,
+				Path:    "/list/like",
+				Handler: GetUserLikesArticleListHandler(serverCtx),
+			},
+			{
+				// 查看用户发布文章列表
+				Method:  http.MethodGet,
+				Path:    "/list/publish",
+				Handler: GetUsersArticleListHandler(serverCtx),
 			},
 			{
 				// 搜索文章

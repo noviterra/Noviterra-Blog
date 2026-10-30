@@ -11,7 +11,7 @@ import (
 )
 
 type deleteArticleCtxData interface {
-	GetUserID(ctx context.Context) (string, bool)
+	GetUserIDFromContext(ctx context.Context) string
 }
 
 type deleteArticleLogger interface {
@@ -65,11 +65,7 @@ func NewDeleteArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Del
 func (l *DeleteArticleLogic) DeleteArticle(in *articlerpc.DeleteArticleRequest) (*articlerpc.Response, error) {
 	// todo: add your logic here and delete this line
 	// 删除文章 需要身份校验
-	deleterID, ok := l.ctxdata.GetUserID(l.ctx)
-	if !ok {
-		l.logger.Error("article/deletearticlelogic：用户上下文信息获取失败")
-		return l.articleResponse.RPCFailResponse("用户信息获取失败！", errcode.ServerError)
-	}
+	deleterID := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if deleterID == "" {
 		l.logger.Error("article/deletearticlelogic：用户ID为空，疑似绕过api层进行请求（暂未锁定IP）")
 		return l.articleResponse.RPCFailResponse("用户ID为空，请正常访问资源！", errcode.Unauthorized)

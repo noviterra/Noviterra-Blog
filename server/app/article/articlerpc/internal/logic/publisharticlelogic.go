@@ -24,7 +24,7 @@ type publishArticleCache interface {
 }
 
 type publishArticleCtxData interface {
-	GetUserID(ctx context.Context) (string, bool)
+	GetUserIDFromContext(ctx context.Context) string
 }
 
 type publishArticleCommonUtils interface {
@@ -84,11 +84,7 @@ func NewPublishArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Pu
 func (l *PublishArticleLogic) PublishArticle(in *articlerpc.PublishArticleRequest) (*articlerpc.PublishArticleResponse, error) {
 	// todo: add your logic here and delete this line
 	// 从上下文中获取用户信息
-	publisherID, ok := l.ctxData.GetUserID(l.ctx)
-	if !ok {
-		l.logger.Error("article/publisharticlelogic：用户信息获取失败")
-		return l.articleResponse.RPCFailPublishArticleResponse("用户信息获取失败！", errcode.ServerError)
-	}
+	publisherID := l.ctxData.GetUserIDFromContext(l.ctx)
 	if publisherID == "" {
 		l.logger.Error("article/publisharticlelogic：用户ID为空，疑似绕过api层进行请求（暂未锁定IP）")
 		return l.articleResponse.RPCFailPublishArticleResponse("用户ID为空，请正常访问资源！", errcode.Unauthorized)

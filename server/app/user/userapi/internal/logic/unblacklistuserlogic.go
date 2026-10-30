@@ -4,28 +4,43 @@
 package logic
 
 import (
-	"context"
-	"net/http"
-
 	"Noviterra/server/app/user/userapi/internal/svc"
 	"Noviterra/server/app/user/userapi/internal/types"
 	"Noviterra/server/app/user/userrpc/types/userrpc"
+	"Noviterra/server/utils/errcode"
+	"context"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
+type unBlackListUserModel interface {
+	UnBlackUser(ctx context.Context, in *userrpc.UnBlackUserRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
+}
+
+type unBlackListUserAuthMiddleware interface {
+	GetUserIDFromContext(ctx context.Context) string
+	GetUserRoleFromContext(ctx context.Context) int
+}
+
+type unBlackListUserServiceTokenInterceptor interface {
+	GetServiceTokenInConf() string
+}
+
 type UnblacklistUserLogic struct {
-	logx.Logger
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx                     context.Context
+	userModel               unBlackListUserModel
+	authMiddleware          unBlackListUserAuthMiddleware
+	serviceTokenInterceptor unBlackListUserServiceTokenInterceptor
 }
 
 func NewUnblacklistUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UnblacklistUserLogic {
 	return &UnblacklistUserLogic{
-		Logger: logx.WithContext(ctx),
-		ctx:    ctx,
-		svcCtx: svcCtx,
+		ctx:                     ctx,
+		userModel:               svcCtx.UserModel,
+		authMiddleware:          svcCtx.AuthMiddleware,
+		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
 
@@ -35,56 +50,36 @@ func (l *UnblacklistUserLogic) UnblacklistUser(req *types.UnblacklistUserRequest
 
 	if err := Validate.Struct(*req); err != nil {
 		if errs, ok := err.(validator.ValidationErrors); ok && len(errs) > 0 {
-			resp.Message = TypeName[errs[0].Field()] + "格式错误！"
-			resp.Status = http.StatusBadRequest
-			resp.Code = 1
-			return resp, nil
+			return failResponse(resp, TypeName[errs[0].Field()]+"格式错误！", errcode.InvalidParam, errcode.Failed)
 		}
+		return failResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 
 	// 通过鉴权中间件 从上下文中获取操作人员的ID与身份
-	id := l.svcCtx.Middleware.GetUserIDFromContext(l.ctx)
-	if id == "" {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = "账号为空！"
-		return resp, nil
-	}
-	role := l.svcCtx.Middleware.GetUserRoleFromContext(l.ctx)
-	if role == -1 {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = "未登录，身份验证失败！"
-		return resp, nil
+	id := l.authMiddleware.GetUserIDFromContext(l.ctx)
+	role := l.authMiddleware.GetUserRoleFromContext(l.ctx)
+	if role == -1 || id == "" {
+		return failResponse(resp, "未登录，身份验证失败！", errcode.Unauthorized, errcode.Failed)
 	}
 	if role < 1 {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = "权限不足，无法解封用户！"
-		return resp, nil
+		return failResponse(resp, "权限不足，无法解封用户！", errcode.Unauthorized, errcode.Failed)
 	}
 
-	//
-	rep, err := l.svcCtx.UserModel.UnBlackUser(l.ctx, &userrpc.UnBlackUserRequest{
+	ctx := metadata.AppendToOutgoingContext(l.ctx,
+		"service-token", l.serviceTokenInterceptor.GetServiceTokenInConf(),
+		"user-id", id,
+	)
+
+	rep, err := l.userModel.UnBlackUser(ctx, &userrpc.UnBlackUserRequest{
 		ID:       req.ID,
 		Operator: id,
 	})
 	if err != nil {
-		resp.Status = http.StatusBadRequest
-		resp.Code = 1
-		resp.Message = "ERROR:" + err.Error()
-		return resp, nil
+		return failResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 	if rep.Code != 0 {
-		resp.Code = 1
-		resp.Status = http.StatusBadRequest
-		resp.Message = rep.Message
-		return resp, nil
+		return failResponse(resp, rep.Message, errcode.InvalidParam, int(rep.Code))
 	}
 
-	resp.Code = 0
-	resp.Message = rep.Message
-	resp.Status = http.StatusOK
-
-	return resp, nil
+	return successResponse(resp, "用户解封成功！")
 }

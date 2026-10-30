@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"gorm.io/gorm"
@@ -176,4 +177,37 @@ func (ar *ArticleRepository) SearchArticle(ctx context.Context, like string, pag
 		return nil, 0, fmt.Errorf("分页查询文章列表失败！%w", err)
 	}
 	return list, total, nil
+}
+
+// GetArchiveList 文章归档总结 UNION ALL + 数据库层排序
+// todo: 获取未删除的文章 根据发布时间和更新时间进行排序 （同一篇文章的发布与更新如果不是同一时间 就判为两条归档数据）
+// 此处为GORM实现 + 内置排序
+func (ar *ArticleRepository) GetArchiveList(ctx context.Context) ([]model.ArticleArchive, error) {
+	var publishList []model.ArticleArchive
+	if err := ar.db.WithContext(ctx).
+		Model(&model.ArticleInfo{}).
+		Select("title, ? AS `option`, UNIX_TIMESTAMP(created_at) AS `created_at`", "publish").
+		Where("is_deleted = ?", 0).
+		Scan(&publishList).Error; err != nil {
+		return nil, fmt.Errorf("查询文章发布操作失败！%w", err)
+	}
+
+	var updateList []model.ArticleArchive
+	if err := ar.db.WithContext(ctx).
+		Model(&model.ArticleInfo{}).
+		Select("title, ? AS `option`, UNIX_TIMESTAMP(updated_at)", "update").
+		Where("is_deleted = ?", 0).
+		Where("updated_at <> created_at").
+		Scan(&updateList).Error; err != nil {
+		return nil, fmt.Errorf("查询文章更新操作失败！%w", err)
+	}
+
+	// 内置排序 不占用数据库内存
+	list := make([]model.ArticleArchive, 0, len(publishList)+len(updateList))
+	list = append(list, publishList...)
+	list = append(list, updateList...)
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].Time > list[j].Time
+	})
+	return list, nil
 }

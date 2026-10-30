@@ -1,29 +1,62 @@
 syntax = "v1"
 
-info(
-    title: "Noviterra通知服务"
-    desc: "管理Noviterra的全部通知模块，包括但不限于订阅通知、站内信息通知等等"
-    author: "Noviterra"
+info (
+	title:  "Noviterra通知服务"
+	desc:   "管理Noviterra的全部通知模块，包括但不限于邮件通知、站内信息通知等等"
+	author: "Noviterra"
 )
 
+// 8002
 type (
-    Response {
-        Status  int    `json:"status"`
-        Code    int    `json:"errcode"`
-        Message string `json:"message"`
-    }
-    // 对订阅者发送信息 仅rpc方法 发布文章时向订阅者发送信息
-
-    // 发布站内公告
-    PublishStationNoticeRequest {
-        Message string `json:"message" validate:"required,min=10,max=100"`
-    }
-
-    // 站内信息 非互聊 是站点对用户的通知
-    SendMessageToUserRequest {
-        UserID string `json:"user_id" validate:"required,min=1,max=20"`
-        Message string `json:"message" validate:"required,min=10,max=100"`
-    }
-
-    // 用户评论时 向文章发布者、站主发送信息 也仅rpc方法 评论时调用
+	Response {
+		Status  int    `json:"status"`
+		Code    int    `json:"errcode"`
+		Message string `json:"message"`
+	}
+	// 公告体
+	Notice {
+		Publisher   string `json:"publisher" validate:"required,min=1,max=20"`
+		Title       string `json:"title" validate:"required,min=1,max=20"`
+		Message     string `json:"message" validate:"required,min=10,max=100"`
+		CreatedTime int64  `json:"time"`
+	}
+	// 邮件发送验证码 注册 登录 密码修改与找回共用 type字段进行区分
+	SendVerificationCodeRequest {
+		Email string `json:"email" validate:"required,email"`
+		Type  string `json:"type" validate:"required,oneof=register login change_password forget_password"`
+	}
+	// 发布站内公告
+	PublishStationNoticeRequest {
+		Title   string `json:"title" validate:"required,min=1,max=20"`
+		Message string `json:"message" validate:"required,min=10,max=100"`
+	}
+	// 获取发布的公告
+	GetNoticeResponse {
+		Notices []Notice `json:"notices"`
+		Resp    Response `json:"response"`
+	}
 )
+
+@server (
+	prefix: novblog/notice
+)
+service NoticeService {
+	@doc "发布公告"
+	@handler PublishNotice
+	post /message/publish (PublishStationNoticeRequest) returns (Response)
+}
+
+@server (
+	prefix: novblog/notice
+)
+service NoticeService {
+	@doc "得到公告"
+	@handler GetNotice
+	get /message/list returns (GetNoticeResponse)
+
+	@doc "发送辅助身份验证的邮箱验证码"
+	@handler SendVerificationCode
+	post /email/verificationcode (SendVerificationCodeRequest) returns (Response)
+}
+
+// goctl api go -api ./doc/api/notice.api -dir ./server/app/notice/noticeapi

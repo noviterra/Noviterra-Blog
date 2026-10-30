@@ -4,7 +4,8 @@ import "time"
 
 // ArticleStat 文章互动统计（点赞 / 收藏 / 访问量）
 type ArticleStat struct {
-	ArticleID    string    `gorm:"column:article_id;primaryKey;autoIncrement:false;size:64;comment:文章ID"`
+	ID           int64     `gorm:"type:bigint;primaryKey;autoIncrement;comment:主键"`
+	ArticleID    string    `gorm:"column:article_id;autoIncrement:false;size:64;comment:文章ID"`
 	ViewCount    int64     `gorm:"column:view_count;not null;default:0;comment:访问量"`
 	LikeCount    int64     `gorm:"column:like_count;not null;default:0;comment:点赞量"`
 	CollectCount int64     `gorm:"column:collect_count;not null;default:0;comment:收藏量"`
@@ -28,3 +29,11 @@ type UserLike struct {
 }
 
 func (UserLike) TableName() string { return "user_like" }
+
+// SyncEvent 异步同步事件 DTO
+// Redis List消息队列操作 后续使用Kafka消息队列
+type SyncEvent struct {
+	ArticleID string
+	UserID    string
+	Action    string // "like"、"unlike" 或 "collect、"uncollect"
+}

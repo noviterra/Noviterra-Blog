@@ -24,7 +24,7 @@ type updateArticleRepository interface {
 }
 
 type updateArticleCtxData interface {
-	GetUserID(ctx context.Context) (string, bool)
+	GetUserIDFromContext(ctx context.Context) string
 }
 
 type updateArticleIdentityRepository interface {
@@ -67,11 +67,7 @@ func NewUpdateArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Upd
 func (l *UpdateArticleLogic) UpdateArticle(in *articlerpc.UpdateArticleRequest) (*articlerpc.Response, error) {
 	// todo: add your logic here and delete this line
 	// 用户信息校验
-	updaterID, ok := l.ctxdata.GetUserID(l.ctx)
-	if !ok {
-		l.logger.Error("article/updatearticle：上下文获取用户ID失败")
-		return l.articleResponse.RPCFailResponse("用户信息异常！", errcode.Unauthorized)
-	}
+	updaterID := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if updaterID == "" {
 		l.logger.Error("article/updatearticle：上下文获取用户ID为空")
 		return l.articleResponse.RPCFailResponse("用户信息异常！", errcode.Unauthorized)

@@ -67,3 +67,13 @@ func (c *CommonUtils) ToString(num int64) string {
 func (c *CommonUtils) ToInt64(data string) (int64, error) {
 	return strconv.ParseInt(data, 10, 64)
 }
+
+// ToSet 集合操作
+// 暂时放在这
+func (c *CommonUtils) ToSet(slice []string) map[string]bool {
+	set := make(map[string]bool, len(slice))
+	for _, s := range slice {
+		set[s] = true
+	}
+	return set
+}

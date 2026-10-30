@@ -1,13 +1,20 @@
 syntax = "proto3";
-
 package identityrpc;
-
 option go_package = "/identityrpc";
+
+// 9001
 
 // 统一响应封装 封装请求执行状态code和message 需要附带数据将其嵌入结构体中
 message Response {
   string Message = 1;
   int64 Code = 2;
+  int32 Status = 3;
+}
+
+// 用户账号身份凭证
+message TokenData {
+  string AccessToken = 1;
+  string RefreshToken = 2;
 }
 
 // 用户注册
@@ -41,10 +48,8 @@ message GenerateTokenRequest {
   string ID = 1;
 }
 message GenerateTokenResponse {
-  string AccessToken = 1;
-  string RefreshToken = 2;
-  string Message = 3;
-  int64 Code = 4;
+  TokenData Token = 1;
+  Response Resp = 2;
 }
 
 // Token刷新
@@ -52,10 +57,8 @@ message RefreshAccessTokenARequest {
   string RefreshToken = 1;
 }
 message RefreshAccessTokenResponse {
-  string AccessToken = 1;
-  string RefreshToken = 2;
-  string Message = 3;
-  int64 Code = 4;
+  TokenData Token = 1;
+  Response Resp = 2;
 }
 
 // 忘记密码
@@ -65,12 +68,6 @@ message ForgetPasswordRequest {
   string VerificationCode = 3;
   string NewPassword = 4;
   string VerifPassword = 5;
-}
-
-// 邮箱辅助
-message SendVerificationCodeRequest {
-  string Email = 1;
-  string Type = 2;
 }
 
 service IdentityService {
@@ -86,8 +83,6 @@ service IdentityService {
   rpc GenerateToken(GenerateTokenRequest) returns(GenerateTokenResponse);
   // 刷新用户AccessToken
   rpc RefreshAccessToken(RefreshAccessTokenARequest) returns(RefreshAccessTokenResponse);
-  // 邮箱辅助功能 发送验证码 调用频率频繁
-  rpc SendVerificationCode(SendVerificationCodeRequest) returns(Response);
 }
 
 // goctl rpc protoc ./doc/proto/identity.proto --go_out=./server/app/identity/identityrpc/types --go-grpc_out=./server/app/identity/identityrpc/types --zrpc_out=./server/app/identity/identityrpc

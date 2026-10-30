@@ -26,7 +26,7 @@ type publishArticleCommonUtils interface {
 	SaveImageFile(header *multipart.FileHeader, file multipart.File, fileDie string, fileName string) (string, error)
 }
 
-type publishArticleAuthMiddleware interface {
+type publishArticlectxdata interface {
 	GetUserIDFromContext(ctx context.Context) string
 	GetUserRoleFromContext(ctx context.Context) int
 }
@@ -38,7 +38,7 @@ type PublishArticleLogic struct {
 	ctx                     context.Context
 	articleModel            publishArticleModel
 	commonUtils             publishArticleCommonUtils
-	authMiddleware          publishArticleAuthMiddleware
+	ctxdata                 publishArticlectxdata
 	serciceTokenInterceptor publishArticleServiceTokenInterceptor
 }
 
@@ -47,7 +47,7 @@ func NewPublishArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Pu
 		ctx:                     ctx,
 		articleModel:            svcCtx.ArticleModel,
 		commonUtils:             svcCtx.CommonUtils,
-		authMiddleware:          svcCtx.AuthMiddleware,
+		ctxdata:                 svcCtx.CtxData,
 		serciceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
@@ -67,13 +67,13 @@ func (l *PublishArticleLogic) PublishArticle(req *types.PublishArticleRequest,
 	}
 
 	// 从上下文中获取用户ID
-	publisherID := l.authMiddleware.GetUserIDFromContext(l.ctx)
+	publisherID := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if publisherID == "" {
 		return failResponse(resp, "用户ID为空！", errcode.InvalidParam, errcode.Failed)
 	}
 
 	// 获取用户身份权限
-	role := l.authMiddleware.GetUserRoleFromContext(l.ctx)
+	role := l.ctxdata.GetUserRoleFromContext(l.ctx)
 	if role != 1 { // 1为管理员
 		return failResponse(resp, "用户身份权限不足！", errcode.InvalidParam, errcode.Failed)
 	}

@@ -2,7 +2,7 @@ Name: articleService
 Host: 0.0.0.0
 Port: 8001
 
-ArticleRpc:
+ArticleRPC:
   Etcd:
     Hosts:
     - 127.0.0.1:2379

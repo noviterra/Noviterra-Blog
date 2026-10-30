@@ -16,7 +16,7 @@ type updateArticleCoverCommonUtils interface {
 }
 
 type updateArticleCoverCtxData interface {
-	GetUserID(ctx context.Context) (string, bool)
+	GetUserIDFromContext(ctx context.Context) string
 }
 
 type updateArticleCoverLogger interface {
@@ -66,10 +66,7 @@ func NewUpdateArticleCoverLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 func (l *UpdateArticleCoverLogic) UpdateArticleCover(in *articlerpc.UpdateArticleCoverRequest) (*articlerpc.UpdateArticleCoverResponse, error) {
 	// todo: add your logic here and delete this line
 	// 用户信息校验
-	updaterID, ok := l.ctxdata.GetUserID(l.ctx)
-	if !ok {
-		l.logger.Error("article/updatearticlecover：上下文获取用户ID失败")
-	}
+	updaterID := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if updaterID == "" {
 		l.logger.Error("article/updatearticlecover：上下文获取用户ID为空")
 	}

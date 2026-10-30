@@ -9,8 +9,8 @@ type BatchUserInfoRequest struct {
 }
 
 type BatchUserInfoResponse struct {
-	Users []*UserInfoResponse `json:"users"`
-	Resp  Response            `json:"response"`
+	Users []UserInfo `json:"users"`
+	Resp  Response   `json:"response"`
 }
 
 type BlacklistUserRequest struct {
@@ -46,14 +46,18 @@ type UpdateUserInfoRequest struct {
 	SelfIntroduction string `json:"self_introduction" validate:"omitempty,max=200"`
 }
 
+type UserInfo struct {
+	ID               string `json:"id"`
+	Role             int    `json:"Role"` // 0:普通用户 1:超级管理员
+	Username         string `json:"username"`
+	Email            string `json:"email"`
+	Avatar           string `json:"avatar"`
+	Age              int    `json:"age"`
+	Gender           int    `json:"gender"` // 0:未知 1:男 2:女
+	SelfIntroduction string `json:"self_introduction"`
+}
+
 type UserInfoResponse struct {
-	ID               string   `json:"id"`
-	Role             int      `json:"Role"` // 0:普通用户 1:超级管理员
-	Username         string   `json:"username"`
-	Email            string   `json:"email"`
-	Avatar           string   `json:"avatar"`
-	Age              int      `json:"age"`
-	Gender           int      `json:"gender"` // 0:未知 1:男 2:女
-	SelfIntroduction string   `json:"self_introduction"`
-	Resp             Response `json:"response"`
+	Info UserInfo `json:"info"`
+	Resp Response `json:"response"`
 }
