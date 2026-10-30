@@ -19,7 +19,7 @@ type changePasswordByIDUserModel interface {
 	ChangeSelfPasswordByID(ctx context.Context, in *userrpc.ChangePasswordRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
 }
 
-type changePasswordByIDAuthMiddleware interface {
+type changePasswordByIDCtxData interface {
 	GetUserIDFromContext(ctx context.Context) string
 }
 
@@ -30,7 +30,7 @@ type changePasswordByIDServiceTokenIntercptor interface {
 type ChangePasswordByIDLogic struct {
 	ctx                     context.Context
 	userModel               changePasswordByIDUserModel
-	authMiddleware          changePasswordByIDAuthMiddleware
+	ctxdata                 changePasswordByIDCtxData
 	serviceTokenInterceptor changePasswordByIDServiceTokenIntercptor
 }
 
@@ -38,7 +38,7 @@ func NewChangePasswordByIDLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 	return &ChangePasswordByIDLogic{
 		ctx:                     ctx,
 		userModel:               svcCtx.UserModel,
-		authMiddleware:          svcCtx.AuthMiddleware,
+		ctxdata:                 svcCtx.CtxData,
 		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
@@ -54,7 +54,7 @@ func (l *ChangePasswordByIDLogic) ChangePasswordByID(req *types.ChangePasswordBy
 		return failResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 
-	id := l.authMiddleware.GetUserIDFromContext(l.ctx)
+	id := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if id == "" {
 		return failResponse(resp, "未登录，身份验证失败！", errcode.Unauthorized, errcode.Failed)
 	}

@@ -20,52 +20,97 @@ type ServiceContext struct {
 	Config                  config.Config
 	Logger                  *zaplogger.Logger
 	UserModel               userservice.UserService
-	Authorization           *jwtauth.Authentication
+	CtxData                 *ctxdata.CtxData
 	AuthMiddleware          *middleware.AuthMiddleware
 	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 依赖注入
-	logger := zaplogger.NewLogger()
-	userService := userservice.NewUserService(zrpc.MustNewClient(c.UserRpc)) // user-rpc服务连接
+	rpc := initRPC(c)
+	tool := initTool()
+	store := initStore(c)
+	aspect := initAspect(c, tool, store)
 
-	// JWT
-	authenticationConfig := jwtauth.AuthenticationConfig{
-		AccessSecret:  c.JWT.AccessSecret,
-		AccessExpire:  c.JWT.AccessExpire,
-		RefreshSecret: c.JWT.RefreshSecret,
-		RefreshExpire: c.JWT.RefreshExpire,
+	return &ServiceContext{
+		Config:                  c,
+		UserModel:               rpc.userModel,
+		Logger:                  tool.logger,
+		CtxData:                 tool.ctxdata,
+		AuthMiddleware:          aspect.authMiddleware,
+		ServiceTokenInterceptor: aspect.serviceTokenInterceptor,
 	}
-	authentication := jwtauth.NewAuthentication(authenticationConfig)
+}
 
-	// 获取仓库操作实例 用于注入中间件
-	identityRepo := repo.NewIdentityRespository(repo.RepoConfig{
+type rpcCollection struct {
+	userModel userservice.UserService
+}
+
+func initRPC(c config.Config) rpcCollection {
+	userService := userservice.NewUserService(zrpc.MustNewClient(c.UserRpc))
+
+	return rpcCollection{
+		userModel: userService,
+	}
+}
+
+type toolCollection struct {
+	ctxdata *ctxdata.CtxData
+	logger  *zaplogger.Logger
+}
+
+func initTool() toolCollection {
+	cd := ctxdata.NewCtxData()
+	logger := zaplogger.NewLogger()
+
+	return toolCollection{
+		ctxdata: cd,
+		logger:  logger,
+	}
+}
+
+type storeCollection struct {
+	identityRepository *repo.IdentityRepository
+}
+
+func initStore(c config.Config) storeCollection {
+	repositoryConfig := repo.RepoConfig{
 		UserName: c.Repo.UserName,
 		Password: c.Repo.Password,
 		Host:     c.Repo.Host,
 		Port:     c.Repo.Port,
 		DBName:   c.Repo.DBName,
-	}, "identity")
+	}
 
-	// 中间件
-	am := middleware.NewAuthMiddleware(authentication, identityRepo)
+	identityRepository := repo.NewIdentityRespository(repositoryConfig, "identity")
 
-	// 上下文操作utils
-	cd := ctxdata.NewCtxData()
+	return storeCollection{
+		identityRepository: identityRepository,
+	}
+}
 
-	// 拦截器
-	serviceTokenInterceptor := interceptor.NewServiceTokenInterceptor(cd, interceptor.ServiceTokenConfig{
+type aspectCollection struct {
+	authMiddleware          *middleware.AuthMiddleware
+	serviceTokenInterceptor *interceptor.ServiceTokenInterceptor
+}
+
+func initAspect(c config.Config, tool toolCollection, store storeCollection) aspectCollection {
+	jwtConfig := jwtauth.AuthenticationConfig{
+		AccessSecret:  c.JWT.AccessSecret,
+		AccessExpire:  c.JWT.AccessExpire,
+		RefreshSecret: c.JWT.RefreshSecret,
+		RefreshExpire: c.JWT.RefreshExpire,
+	}
+	jwtAuth := jwtauth.NewAuthentication(jwtConfig)
+	serviceTokenInterceptorConfig := interceptor.ServiceTokenConfig{
 		SecretToken: c.Interceptor.ServiceToken,
 		SkipToken:   c.Interceptor.SkipToken,
-	})
+	}
 
-	return &ServiceContext{
-		Config:                  c,
-		Logger:                  logger,
-		UserModel:               userService,
-		Authorization:           authentication,
-		AuthMiddleware:          am,
-		ServiceTokenInterceptor: serviceTokenInterceptor,
+	authMiddleware := middleware.NewAuthMiddleware(jwtAuth, store.identityRepository, tool.ctxdata)
+	serviceTokenInterceptor := interceptor.NewServiceTokenInterceptor(tool.ctxdata, serviceTokenInterceptorConfig)
+
+	return aspectCollection{
+		authMiddleware:          authMiddleware,
+		serviceTokenInterceptor: serviceTokenInterceptor,
 	}
 }

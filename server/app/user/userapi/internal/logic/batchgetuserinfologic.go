@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type batchGetUserInfoAuthMiddleware interface {
+type batchGetUserInfoCtxData interface {
 	GetUserRoleFromContext(ctx context.Context) int
 	GetUserIDFromContext(ctx context.Context) string
 }
@@ -30,7 +30,7 @@ type batchGetUserInfoServiceTokenInterceptor interface {
 
 type BatchGetUserInfoLogic struct {
 	ctx                     context.Context
-	authMiddleware          batchGetUserInfoAuthMiddleware
+	ctxdata                 batchGetUserInfoCtxData
 	userModel               batchGetUserInfoUserModel
 	serviceTokenInterceptor batchGetUserInfoServiceTokenInterceptor
 }
@@ -38,7 +38,7 @@ type BatchGetUserInfoLogic struct {
 func NewBatchGetUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *BatchGetUserInfoLogic {
 	return &BatchGetUserInfoLogic{
 		ctx:                     ctx,
-		authMiddleware:          svcCtx.AuthMiddleware,
+		ctxdata:                 svcCtx.CtxData,
 		userModel:               svcCtx.UserModel,
 		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
@@ -55,8 +55,8 @@ func (l *BatchGetUserInfoLogic) BatchGetUserInfo(req *types.BatchUserInfoRequest
 		}
 	}
 
-	id := l.authMiddleware.GetUserIDFromContext(l.ctx)
-	role := l.authMiddleware.GetUserRoleFromContext(l.ctx)
+	id := l.ctxdata.GetUserIDFromContext(l.ctx)
+	role := l.ctxdata.GetUserRoleFromContext(l.ctx)
 	if role == -1 || id == "" {
 		return l.failBatchUserInfoResponse(resp, "未登录，身份验证失败！", errcode.InvalidParam, errcode.Failed)
 	}

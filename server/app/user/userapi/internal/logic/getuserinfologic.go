@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type getUserInfoAuthMiddleware interface {
+type getUserInfoCtxData interface {
 	GetUserIDFromContext(ctx context.Context) string
 }
 
@@ -29,7 +29,7 @@ type getUserInfoServiceTokenInterceptor interface {
 type GetUserInfoLogic struct {
 	ctx                     context.Context
 	userModel               getUserInfoUserModel
-	authMiddleware          getUserInfoAuthMiddleware
+	ctxdata                 getUserInfoCtxData
 	serviceTokenInterceptro getUserInfoServiceTokenInterceptor
 }
 
@@ -37,7 +37,7 @@ func NewGetUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetUs
 	return &GetUserInfoLogic{
 		ctx:                     ctx,
 		userModel:               svcCtx.UserModel,
-		authMiddleware:          svcCtx.AuthMiddleware,
+		ctxdata:                 svcCtx.CtxData,
 		serviceTokenInterceptro: svcCtx.ServiceTokenInterceptor,
 	}
 }
@@ -46,7 +46,7 @@ func (l *GetUserInfoLogic) GetUserInfo() (resp *types.UserInfoResponse, err erro
 	// todo: add your logic here and delete this line
 	resp = new(types.UserInfoResponse)
 
-	userID := l.authMiddleware.GetUserIDFromContext(l.ctx)
+	userID := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if userID == "" {
 		return l.failUserInfoResponse(resp, "未登录，身份验证失败！", errcode.InvalidParam, errcode.Failed)
 	}

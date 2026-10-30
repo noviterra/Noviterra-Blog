@@ -19,7 +19,7 @@ type changPasswordByEmailUserModel interface {
 	ChangeSelfPasswordByEmail(ctx context.Context, resp *userrpc.ChangePasswordByEmailRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
 }
 
-type changePasswordByEmailAuthMiddleware interface {
+type changePasswordByEmailCtxData interface {
 	GetUserIDFromContext(ctx context.Context) string
 }
 
@@ -30,7 +30,7 @@ type changePasswordByEmailServiceTokenInterceptor interface {
 type ChangePasswordByEmailLogic struct {
 	ctx                     context.Context
 	userModel               changPasswordByEmailUserModel
-	authMiddleware          changePasswordByIDAuthMiddleware
+	ctxdata                 changePasswordByEmailCtxData
 	serviceTokenInterceptor changePasswordByEmailServiceTokenInterceptor
 }
 
@@ -38,7 +38,7 @@ func NewChangePasswordByEmailLogic(ctx context.Context, svcCtx *svc.ServiceConte
 	return &ChangePasswordByEmailLogic{
 		ctx:                     ctx,
 		userModel:               svcCtx.UserModel,
-		authMiddleware:          svcCtx.AuthMiddleware,
+		ctxdata:                 svcCtx.CtxData,
 		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
@@ -54,7 +54,7 @@ func (l *ChangePasswordByEmailLogic) ChangePasswordByEmail(req *types.ChangePass
 		return failResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}
 
-	id := l.authMiddleware.GetUserIDFromContext(l.ctx)
+	id := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if id == "" {
 		return failResponse(resp, "未登录，身份验证失败！", errcode.Unauthorized, errcode.Failed)
 	}

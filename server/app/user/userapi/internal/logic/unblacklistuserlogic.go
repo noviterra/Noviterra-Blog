@@ -19,7 +19,7 @@ type unBlackListUserModel interface {
 	UnBlackUser(ctx context.Context, in *userrpc.UnBlackUserRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
 }
 
-type unBlackListUserAuthMiddleware interface {
+type unBlackListUserCtxData interface {
 	GetUserIDFromContext(ctx context.Context) string
 	GetUserRoleFromContext(ctx context.Context) int
 }
@@ -31,7 +31,7 @@ type unBlackListUserServiceTokenInterceptor interface {
 type UnblacklistUserLogic struct {
 	ctx                     context.Context
 	userModel               unBlackListUserModel
-	authMiddleware          unBlackListUserAuthMiddleware
+	ctxdata                 unBlackListUserCtxData
 	serviceTokenInterceptor unBlackListUserServiceTokenInterceptor
 }
 
@@ -39,7 +39,7 @@ func NewUnblacklistUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *U
 	return &UnblacklistUserLogic{
 		ctx:                     ctx,
 		userModel:               svcCtx.UserModel,
-		authMiddleware:          svcCtx.AuthMiddleware,
+		ctxdata:                 svcCtx.CtxData,
 		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
@@ -56,8 +56,8 @@ func (l *UnblacklistUserLogic) UnblacklistUser(req *types.UnblacklistUserRequest
 	}
 
 	// 通过鉴权中间件 从上下文中获取操作人员的ID与身份
-	id := l.authMiddleware.GetUserIDFromContext(l.ctx)
-	role := l.authMiddleware.GetUserRoleFromContext(l.ctx)
+	id := l.ctxdata.GetUserIDFromContext(l.ctx)
+	role := l.ctxdata.GetUserRoleFromContext(l.ctx)
 	if role == -1 || id == "" {
 		return failResponse(resp, "未登录，身份验证失败！", errcode.Unauthorized, errcode.Failed)
 	}

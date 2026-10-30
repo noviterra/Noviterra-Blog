@@ -19,7 +19,7 @@ type updateUserInfoUserModel interface {
 	UpdateSelfInfo(ctx context.Context, in *userrpc.UpdateUserInfoRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
 }
 
-type updateUserInfoAuthMiddleware interface {
+type updateUserInfoCtxData interface {
 	GetUserIDFromContext(ctx context.Context) string
 }
 
@@ -30,7 +30,7 @@ type updateUserServiceTokenInterceptor interface {
 type UpdateUserInfoLogic struct {
 	ctx                     context.Context
 	userModel               updateUserInfoUserModel
-	authMiddleware          updateUserInfoAuthMiddleware
+	ctxdata                 updateUserInfoCtxData
 	serviceTokenInterceptor updateUserServiceTokenInterceptor
 }
 
@@ -38,7 +38,7 @@ func NewUpdateUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Up
 	return &UpdateUserInfoLogic{
 		ctx:                     ctx,
 		userModel:               svcCtx.UserModel,
-		authMiddleware:          svcCtx.AuthMiddleware,
+		ctxdata:                 svcCtx.CtxData,
 		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
 }
@@ -55,7 +55,7 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoRequest) (
 	}
 
 	// 从上下文中获取用户ID 经过了鉴权中间件获取
-	id := l.authMiddleware.GetUserIDFromContext(l.ctx)
+	id := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if id == "" {
 		return failResponse(resp, "未登录，身份验证失败！", errcode.Unauthorized, errcode.Failed)
 	}
