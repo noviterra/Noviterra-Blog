@@ -13,6 +13,9 @@ const (
 	prefixCollectCnt   = "article:collect:count" // 某文章收藏总数
 	prefixUserCollects = "user:collect:articles" // 某用户收藏的文章列表
 
+	// 浏览系列keys
+	prefixViewCnt = "article:view:count" //  某文章的浏览总数
+
 	// 异步同步keys
 	prefixSyncQueue = "sync:queue" // 异步同步队列
 )
@@ -39,6 +42,10 @@ func collectCntKey(articleID string) string {
 
 func userCollectKey(userID string) string {
 	return fmt.Sprintf("%s:%s", prefixUserCollects, userID)
+}
+
+func viewCntKey(articleID string) string {
+	return fmt.Sprintf("%s:%s", prefixViewCnt, articleID)
 }
 
 func syncQueueKey() string {

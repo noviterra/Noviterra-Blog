@@ -105,6 +105,11 @@ func (cc *CommentCache) GetCollectCount(ctx context.Context, articleID string) (
 	return cc.mustGetCount(ctx, collectCntKey(articleID))
 }
 
+// GetViewCount 查询文章的浏览量
+func (cc *CommentCache) GetViewCount(ctx context.Context, articleID string) (int64, error) {
+	return cc.mustGetCount(ctx, viewCntKey(articleID))
+}
+
 // GetUserLikedArticles 获取用户点赞过的所有文章ID
 func (cc *CommentCache) GetUserLikedArticles(ctx context.Context, userID string) ([]string, error) {
 	return cc.rdb.SMembers(ctx, userLikeKey(userID)).Result()
@@ -115,9 +120,10 @@ func (cc *CommentCache) GetUserCollectArticles(ctx context.Context, userID strin
 	return cc.rdb.SMembers(ctx, userCollectKey(userID)).Result()
 }
 
-// BatchGetLikeStatus 批量查询用户对多篇文章的点赞、收藏状态（文章列表使用） 返回map[string][]bool 0、1分别表示点赞与收藏
-func (cc *CommentCache) BatchGetLikeStatus(ctx context.Context,
+// BatchGetArticleStatus 批量查询用户对多篇文章的点赞、收藏状态（文章列表使用） 返回map[string][]bool 0、1分别表示点赞与收藏
+func (cc *CommentCache) BatchGetArticleStatus(ctx context.Context,
 	articleIDs []string, userID string) (map[string][]bool, error) {
+
 	if len(articleIDs) == 0 {
 		return map[string][]bool{}, nil
 	}
@@ -139,6 +145,24 @@ func (cc *CommentCache) BatchGetLikeStatus(ctx context.Context,
 	for i, id := range articleIDs {
 		result[id] = []bool{likeCmds[i].Val(), collectCmds[i].Val()}
 	}
+	return result, nil
+}
+
+func (cc *CommentCache) BatchGetArticleView(ctx context.Context,
+	articleIDs []string) (map[string]int64, error) {
+	pipe := cc.rdb.Pipeline()
+	viewCmds := make([]*redis.StringCmd, len(articleIDs))
+	for i, id := range articleIDs {
+		viewCmds[i] = pipe.Get(ctx, viewCntKey(id))
+	}
+	if _, err := pipe.Exec(ctx); err != nil {
+		return nil, err
+	}
+	result := make(map[string]int64, len(articleIDs))
+	for i, id := range articleIDs {
+		result[id], _ = viewCmds[i].Int64()
+	}
+
 	return result, nil
 }
 
@@ -230,6 +254,11 @@ func (cc *CommentCache) Unlike(ctx context.Context, articleID, userID string) (b
 	}
 
 	return result == 1, count, nil
+}
+
+// View 记录文章浏览次数 每次调用原子+1
+func (cc *CommentCache) View(ctx context.Context, articleID string) error {
+	return cc.rdb.Incr(ctx, viewCntKey(articleID)).Err()
 }
 
 // PushSyncEvent 入队 统一使用JSON序列化
