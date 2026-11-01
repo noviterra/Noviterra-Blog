@@ -149,7 +149,32 @@ func (lsw *LikeSyncWoker) proccessEvents(ctx context.Context, events []model.Syn
 		userCollectArticles[userID] = articles
 	}
 
+	// 查询每篇文章的新增浏览量
+	viewArticleIDs, err := lsw.commentCache.ScanViewKeys(ctx)
+	if err != nil {
+		return fmt.Errorf("扫描浏览量key失败：%w", err)
+	}
+	var viewCount map[string]int64
+	if len(viewCount) > 0 {
+		viewCount, err = lsw.commentCache.BatchGetArticleView(ctx, viewArticleIDs)
+		if err != nil {
+			return fmt.Errorf("获取文章浏览量失败：%w", err)
+		}
+	}
+
 	// 在一个事务中批量写入DB
-	return lsw.commentRepository.BatchUpsertSyncStatus(ctx, userLikedArticles, articleLikeCounts,
-		userCollectArticles, articleCollectCount)
+	err = lsw.commentRepository.BatchUpsertSyncStatus(ctx, userLikedArticles, articleLikeCounts,
+		userCollectArticles, articleCollectCount, viewCount)
+	if err != nil {
+		return fmt.Errorf("同步DB数据失败：%w", err)
+	}
+
+	// 删除文章新增浏览量的记录
+	err = lsw.commentCache.BatchDeleteArticleViewSet(ctx, viewArticleIDs)
+	if err != nil {
+		// 实际是去记录日志而不是返回错误
+		return fmt.Errorf("删除文章新增浏览量缓存数据失败：%w", err)
+	}
+
+	return nil
 }

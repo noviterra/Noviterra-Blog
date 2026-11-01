@@ -31,6 +31,7 @@ func (cr *CommentRepository) BatchUpsertSyncStatus(ctx context.Context,
 	articleLikeCount map[string]int64,
 	userCollectArticles map[string][]string,
 	articleCollect map[string]int64,
+	articleViewCount map[string]int64,
 ) error {
 	// 依赖于redis中的数据 传参为redis清洗之后的数据
 	return cr.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -142,19 +143,48 @@ func (cr *CommentRepository) BatchUpsertSyncStatus(ctx context.Context,
 
 		// 同步文章点赞总数
 		for articleID, count := range articleLikeCount {
-			if err := tx.Model(&model.ArticleStat{}).
-				Where("article_id = ?", articleID).
-				Update("like_count", count).Error; err != nil {
+			if err := tx.Clauses(clause.OnConflict{
+				Columns: []clause.Column{
+					{Name: "article_id"},
+				},
+				DoUpdates: clause.AssignmentColumns([]string{"like_count"}),
+			}).Create(&model.ArticleStat{
+				ArticleID: articleID,
+				LikeCount: count,
+			}).Error; err != nil {
 				return fmt.Errorf("文章%s点赞总数更新失败：%w", articleID, err)
 			}
 		}
 
 		// 同步文章收藏总数
 		for articleID, count := range articleCollect {
-			if err := tx.Model(&model.ArticleStat{}).
-				Where("article_id = ?", articleID).
-				Update("collect_count", count).Error; err != nil {
+			if err := tx.Clauses(clause.OnConflict{
+				Columns: []clause.Column{
+					{Name: "article_id"},
+				},
+				DoUpdates: clause.AssignmentColumns([]string{"collect_count"}),
+			}).Create(&model.ArticleStat{
+				ArticleID:    articleID,
+				CollectCount: count,
+			}).Error; err != nil {
 				return fmt.Errorf("文章%s收藏总数更新失败：%w", articleID, err)
+			}
+		}
+
+		// 同步文章浏览总数
+		for articleID, count := range articleViewCount {
+			if err := tx.Clauses(clause.OnConflict{
+				Columns: []clause.Column{
+					{Name: "article_id"},
+				},
+				DoUpdates: clause.Assignments(map[string]interface{}{
+					"view_count": gorm.Expr("view_count + ?", count),
+				}),
+			}).Create(&model.ArticleStat{
+				ArticleID: articleID,
+				ViewCount: count, // 记录不存在时使用它作为初始值
+			}).Error; err != nil {
+				return fmt.Errorf("文章%s浏览总数更新失败：%w", articleID, err)
 			}
 		}
 

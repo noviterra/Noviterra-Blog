@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -105,7 +106,7 @@ func (cc *CommentCache) GetCollectCount(ctx context.Context, articleID string) (
 	return cc.mustGetCount(ctx, collectCntKey(articleID))
 }
 
-// GetViewCount 查询文章的浏览量
+// GetViewCount 查询文章新增的浏览量
 func (cc *CommentCache) GetViewCount(ctx context.Context, articleID string) (int64, error) {
 	return cc.mustGetCount(ctx, viewCntKey(articleID))
 }
@@ -148,6 +149,7 @@ func (cc *CommentCache) BatchGetArticleStatus(ctx context.Context,
 	return result, nil
 }
 
+// BatchGetArticleView 批量得到文章的新增浏览量
 func (cc *CommentCache) BatchGetArticleView(ctx context.Context,
 	articleIDs []string) (map[string]int64, error) {
 	pipe := cc.rdb.Pipeline()
@@ -164,6 +166,50 @@ func (cc *CommentCache) BatchGetArticleView(ctx context.Context,
 	}
 
 	return result, nil
+}
+
+// BatchDeleteArticleViewSet 删除已经同步过浏览量的计数统计
+func (cc *CommentCache) BatchDeleteArticleViewSet(ctx context.Context,
+	articleIDs []string) error {
+	if len(articleIDs) == 0 {
+		return nil
+	}
+	keys := make([]string, len(articleIDs))
+	for i, id := range articleIDs {
+		keys[i] = viewCntKey(id)
+	}
+
+	return cc.rdb.Del(ctx, keys...).Err()
+}
+
+// ScanViewKeys 扫描全部article:view:count:{article_id} 即文章浏览量的key 返回去重后的articleID列表
+// 因为浏览量统计 在redis中并没有设置article-user-set 因此不能像点赞、收藏那样直接得到有值、值变化的articleID 因此需要直接从redis中scan出全部的keys
+func (cc *CommentCache) ScanViewKeys(ctx context.Context) ([]string, error) {
+	articleIDSet := make(map[string]struct{})
+	// cursor下标 记录当前遍历到的位置 再次为0时表示遍历了一圈
+	var cursor uint64
+	for {
+		// count:100 是提示值（hint） 不是返回的key数量 而是往返的哈希桶
+		keys, nextCursor, err := cc.rdb.Scan(ctx, cursor, viewCntKey("*"), 100).Result()
+		if err != nil {
+			return nil, fmt.Errorf("扫描文章浏览量keys失败：%w", err)
+		}
+		for _, key := range keys {
+			// 从key中准确提取出article_id
+			articleID := strings.TrimPrefix(key, "article:view:count:")
+			articleIDSet[articleID] = struct{}{}
+		}
+		cursor = nextCursor
+		if cursor == 0 { // 0表示遍历已经结束
+			break
+		}
+	}
+	articleIDs := make([]string, 0, len(articleIDSet))
+	for id := range articleIDSet {
+		articleIDs = append(articleIDs, id)
+	}
+
+	return articleIDs, nil
 }
 
 // Collect 收藏操作
