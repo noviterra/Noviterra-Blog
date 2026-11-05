@@ -21,6 +21,8 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	CommentService_LikeArticle_FullMethodName    = "/commentrpc.CommentService/LikeArticle"
 	CommentService_CollectArticle_FullMethodName = "/commentrpc.CommentService/CollectArticle"
+	CommentService_CreateComment_FullMethodName  = "/commentrpc.CommentService/CreateComment"
+	CommentService_GetTopComment_FullMethodName  = "/commentrpc.CommentService/GetTopComment"
 )
 
 // CommentServiceClient is the client API for CommentService service.
@@ -31,6 +33,10 @@ type CommentServiceClient interface {
 	LikeArticle(ctx context.Context, in *LikeArticleRequest, opts ...grpc.CallOption) (*Response, error)
 	// 对文章的收藏操作
 	CollectArticle(ctx context.Context, in *CollectArticleRequest, opts ...grpc.CallOption) (*Response, error)
+	// 发表评论
+	CreateComment(ctx context.Context, in *CommentRequest, opts ...grpc.CallOption) (*CommentResponse, error)
+	// 得到某个位置的全部顶层评论
+	GetTopComment(ctx context.Context, in *GetTopCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error)
 }
 
 type commentServiceClient struct {
@@ -61,6 +67,26 @@ func (c *commentServiceClient) CollectArticle(ctx context.Context, in *CollectAr
 	return out, nil
 }
 
+func (c *commentServiceClient) CreateComment(ctx context.Context, in *CommentRequest, opts ...grpc.CallOption) (*CommentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommentResponse)
+	err := c.cc.Invoke(ctx, CommentService_CreateComment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *commentServiceClient) GetTopComment(ctx context.Context, in *GetTopCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTopCommentResponse)
+	err := c.cc.Invoke(ctx, CommentService_GetTopComment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CommentServiceServer is the server API for CommentService service.
 // All implementations must embed UnimplementedCommentServiceServer
 // for forward compatibility.
@@ -69,6 +95,10 @@ type CommentServiceServer interface {
 	LikeArticle(context.Context, *LikeArticleRequest) (*Response, error)
 	// 对文章的收藏操作
 	CollectArticle(context.Context, *CollectArticleRequest) (*Response, error)
+	// 发表评论
+	CreateComment(context.Context, *CommentRequest) (*CommentResponse, error)
+	// 得到某个位置的全部顶层评论
+	GetTopComment(context.Context, *GetTopCommentRequest) (*GetTopCommentResponse, error)
 	mustEmbedUnimplementedCommentServiceServer()
 }
 
@@ -84,6 +114,12 @@ func (UnimplementedCommentServiceServer) LikeArticle(context.Context, *LikeArtic
 }
 func (UnimplementedCommentServiceServer) CollectArticle(context.Context, *CollectArticleRequest) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method CollectArticle not implemented")
+}
+func (UnimplementedCommentServiceServer) CreateComment(context.Context, *CommentRequest) (*CommentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateComment not implemented")
+}
+func (UnimplementedCommentServiceServer) GetTopComment(context.Context, *GetTopCommentRequest) (*GetTopCommentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetTopComment not implemented")
 }
 func (UnimplementedCommentServiceServer) mustEmbedUnimplementedCommentServiceServer() {}
 func (UnimplementedCommentServiceServer) testEmbeddedByValue()                        {}
@@ -142,6 +178,42 @@ func _CommentService_CollectArticle_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CommentService_CreateComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommentServiceServer).CreateComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommentService_CreateComment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommentServiceServer).CreateComment(ctx, req.(*CommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CommentService_GetTopComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTopCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommentServiceServer).GetTopComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommentService_GetTopComment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommentServiceServer).GetTopComment(ctx, req.(*GetTopCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CommentService_ServiceDesc is the grpc.ServiceDesc for CommentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -156,6 +228,14 @@ var CommentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CollectArticle",
 			Handler:    _CommentService_CollectArticle_Handler,
+		},
+		{
+			MethodName: "CreateComment",
+			Handler:    _CommentService_CreateComment_Handler,
+		},
+		{
+			MethodName: "GetTopComment",
+			Handler:    _CommentService_GetTopComment_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

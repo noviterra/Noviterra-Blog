@@ -8,17 +8,21 @@ import (
 	"Noviterra/server/utils/ctxdata"
 	"Noviterra/server/utils/repo"
 	"Noviterra/server/utils/response"
+	"Noviterra/server/utils/snowflake"
 	"Noviterra/server/utils/validate"
 	"Noviterra/server/utils/woker"
 	"context"
+	"fmt"
 )
 
 type ServiceContext struct {
 	Config                  config.Config
 	CommentCache            *cache.CommentCache
+	CommentRepository       *repo.CommentRepository
 	CommentResponse         *response.CommentResponse
 	CtxData                 *ctxdata.CtxData
 	CommentValidate         *validate.CommentValidate
+	Snowfake                *snowflake.SnowFlake
 	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 	CommentWoker            *woker.LikeSyncWoker
 }
@@ -33,9 +37,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
 		Config:                  c,
 		CommentCache:            store.commentCache,
+		CommentRepository:       store.commentRepository,
 		CtxData:                 tool.ctxdata,
 		CommentResponse:         tool.commentResponse,
 		CommentValidate:         tool.commentValidate,
+		Snowfake:                tool.snowfake,
 		ServiceTokenInterceptor: aspect.serviceTokenInterceptor,
 		CommentWoker:            woke.commentWoker,
 	}
@@ -91,6 +97,7 @@ type toolCollection struct {
 	ctxdata         *ctxdata.CtxData
 	commentValidate *validate.CommentValidate
 	commonUtils     *common.CommonUtils
+	snowfake        *snowflake.SnowFlake
 }
 
 func initTool() toolCollection {
@@ -100,12 +107,17 @@ func initTool() toolCollection {
 	articleValidate := validate.NewArticleValidate(commonUtils)
 	identityValidate := validate.NewIdentityValidate()
 	commentValidate := validate.NewCommentValidate(articleValidate, identityValidate)
+	sf, err := snowflake.NewSnowFlake(1)
+	if err != nil {
+		panic(fmt.Errorf("雪花ID生成器初始化失败！%w", err))
+	}
 
 	return toolCollection{
 		commentResponse: commentResponse,
 		ctxdata:         cd,
 		commentValidate: commentValidate,
 		commonUtils:     commonUtils,
+		snowfake:        sf,
 	}
 }
 

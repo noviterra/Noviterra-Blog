@@ -36,13 +36,14 @@ func NewDB(repoconfig RepoConfig, field string) *gorm.DB {
 	case "user":
 		err = db.AutoMigrate(&model.UserAccount{}, &model.UserInfo{})
 	case "article":
-		err = db.AutoMigrate(&model.ArticleInfo{}, &model.ArticleStat{})
+		err = db.AutoMigrate(&model.ArticleInfo{})
 	case "identity":
 		err = db.AutoMigrate(&model.UserRefreshToken{})
 	case "site":
 		err = db.AutoMigrate(&model.FriendLink{})
 	case "comment":
-		err = nil
+		err = db.AutoMigrate(&model.ArticleComment{},
+			&model.UserLike{}, &model.ArticleStat{})
 	case "notice":
 		err = db.AutoMigrate(&model.Notices{})
 	default:

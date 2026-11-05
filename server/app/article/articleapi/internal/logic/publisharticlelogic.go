@@ -22,8 +22,8 @@ type publishArticleModel interface {
 	UpdateArticleCover(ctx context.Context, in *articlerpc.UpdateArticleCoverRequest, opts ...grpc.CallOption) (*articlerpc.UpdateArticleCoverResponse, error)
 }
 
-type publishArticleCommonUtils interface {
-	SaveImageFile(header *multipart.FileHeader, file multipart.File, fileDie string, fileName string) (string, error)
+type publishArticleValidate interface {
+	SaveImageFile(header *multipart.FileHeader, file multipart.File, fileDie string, articleID int64) (string, error)
 }
 
 type publishArticlectxdata interface {
@@ -37,7 +37,7 @@ type publishArticleServiceTokenInterceptor interface {
 type PublishArticleLogic struct {
 	ctx                     context.Context
 	articleModel            publishArticleModel
-	commonUtils             publishArticleCommonUtils
+	commentValidate         publishArticleValidate
 	ctxdata                 publishArticlectxdata
 	serciceTokenInterceptor publishArticleServiceTokenInterceptor
 }
@@ -46,7 +46,7 @@ func NewPublishArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Pu
 	return &PublishArticleLogic{
 		ctx:                     ctx,
 		articleModel:            svcCtx.ArticleModel,
-		commonUtils:             svcCtx.CommonUtils,
+		commentValidate:         svcCtx.ArticleValidate,
 		ctxdata:                 svcCtx.CtxData,
 		serciceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
@@ -99,7 +99,7 @@ func (l *PublishArticleLogic) PublishArticle(req *types.PublishArticleRequest,
 	}
 
 	// 文件校验 图片保存的名称格式为  cover*time*.* 保证进入数据库更新操作时rowAffected不为0
-	cover, err := l.commonUtils.SaveImageFile(header, file, "articlecover", rep.ArticleID)
+	cover, err := l.commentValidate.SaveImageFile(header, file, "articlecover", rep.ArticleID)
 	if err != nil {
 		return failResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}

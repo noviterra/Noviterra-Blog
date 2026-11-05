@@ -4,53 +4,54 @@ import (
 	"Noviterra/server/app/article/articlerpc/internal/svc"
 	"Noviterra/server/app/article/articlerpc/types/articlerpc"
 	"Noviterra/server/app/model"
-	"Noviterra/server/utils/common"
 	"Noviterra/server/utils/errcode"
+	"Noviterra/server/utils/validate"
 	"context"
 
 	"go.uber.org/zap"
 )
 
-type publishArticleIdentityRepository interface {
-	GetUserRole(id string) (int, error)
-}
+type (
+	publishArticleIdentityRepository interface {
+		GetUserRole(id string) (int, error)
+	}
 
-type publishArticleRepository interface {
-	PublishArticle(ctx context.Context, article *model.ArticleInfo, stat *model.ArticleStat) error
-}
+	publishArticleRepository interface {
+		PublishArticle(ctx context.Context, article *model.ArticleInfo, stat *model.ArticleStat) error
+	}
 
-type publishArticleCache interface {
-	AddArticleToRank(ctx context.Context, articleID string) error
-}
+	publishArticleCache interface {
+		AddArticleToRank(ctx context.Context, articleID int64) error
+	}
 
-type publishArticleCtxData interface {
-	GetUserIDFromContext(ctx context.Context) string
-}
+	publishArticleCtxData interface {
+		GetUserIDFromContext(ctx context.Context) string
+	}
 
-type publishArticleCommonUtils interface {
-	ValidateArticle(in *common.ValidateArticleInput) (*common.ValidateArticleOutput, error)
-	ToString(num int64) string
-}
+	publishArticleCommonUtils interface {
+		ValidateArticle(in validate.InputValidateArticle) (validate.OutputValidateArticle, error)
+	}
 
-type publishArticleSnowFlake interface {
-	GenerateSnowFlakeID() int64
-}
+	publishArticleSnowFlake interface {
+		GenerateSnowFlakeID() int64
+	}
 
-type publishArticleResponse interface {
-	RPCSuccessPublishArticleResponse(msg string, articleID string) (*articlerpc.PublishArticleResponse, error)
-	RPCFailPublishArticleResponse(msg string, code int64) (*articlerpc.PublishArticleResponse, error)
-	RPCFailPublishArticleResponseWithErr(err error) (*articlerpc.PublishArticleResponse, error)
-}
+	publishArticleResponse interface {
+		SuccessPublishArticleResponse(resp *articlerpc.PublishArticleResponse, msg string, articleID int64) (*articlerpc.PublishArticleResponse, error)
+		FailPublishArticleResponse(resp *articlerpc.PublishArticleResponse, msg string, status int32, code int64) (*articlerpc.PublishArticleResponse, error)
+		FailPublishArticleResponseWithErr(resp *articlerpc.PublishArticleResponse, err error) (*articlerpc.PublishArticleResponse, error)
+	}
 
-type publishArticleBloomFilter interface {
-	AddArticle(data string)
-}
+	publishArticleBloomFilter interface {
+		AddArticle(data int64)
+	}
 
-type publishArticleLogger interface {
-	Info(msg string, fields ...zap.Field)
-	Error(msg string, fields ...zap.Field)
-	Warn(msg string, fields ...zap.Field)
-}
+	publishArticleLogger interface {
+		Info(msg string, fields ...zap.Field)
+		Error(msg string, fields ...zap.Field)
+		Warn(msg string, fields ...zap.Field)
+	}
+)
 
 type PublishArticleLogic struct {
 	ctx                context.Context
@@ -71,7 +72,7 @@ func NewPublishArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Pu
 		identityRepository: svcCtx.IdentityRepository,
 		articleRepository:  svcCtx.ArticleRepository,
 		ctxData:            svcCtx.CtxData,
-		commonUtils:        svcCtx.CommonUtils,
+		commonUtils:        svcCtx.ArticleValidate,
 		snowFlake:          svcCtx.SnowFlake,
 		articleCache:       svcCtx.ArticleCache,
 		articleResponse:    svcCtx.ArticleResponse,
@@ -83,26 +84,27 @@ func NewPublishArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Pu
 // 发布文章
 func (l *PublishArticleLogic) PublishArticle(in *articlerpc.PublishArticleRequest) (*articlerpc.PublishArticleResponse, error) {
 	// todo: add your logic here and delete this line
+	resp := new(articlerpc.PublishArticleResponse)
 	// 从上下文中获取用户信息
 	publisherID := l.ctxData.GetUserIDFromContext(l.ctx)
 	if publisherID == "" {
 		l.logger.Error("article/publisharticlelogic：用户ID为空，疑似绕过api层进行请求（暂未锁定IP）")
-		return l.articleResponse.RPCFailPublishArticleResponse("用户ID为空，请正常访问资源！", errcode.Unauthorized)
+		return l.articleResponse.FailPublishArticleResponse(resp, "用户ID为空，请正常访问资源！", errcode.Unauthorized, errcode.Failed)
 	}
 
 	// 校验用户身份 查库
 	role, err := l.identityRepository.GetUserRole(publisherID)
 	if err != nil {
 		l.logger.Error("article/publisharticlelogic：数据库查询失败：查询用户权限失败", zap.String("ERROR", err.Error()), zap.String("UserID", publisherID))
-		return l.articleResponse.RPCFailPublishArticleResponse("数据库查询失败！", errcode.ServerError)
+		return l.articleResponse.FailPublishArticleResponse(resp, "数据库查询失败！", errcode.ServerError, errcode.Failed)
 	}
 	if role < 1 {
 		l.logger.Error("article/publisharticlelogic：用户权限越界，需要检查发布文件接口是否暴露or用户信息库是否泄露", zap.String("UserID", publisherID))
-		return l.articleResponse.RPCFailPublishArticleResponse("权限不足，请求失败！", errcode.Forbidden)
+		return l.articleResponse.FailPublishArticleResponse(resp, "权限不足，请求失败！", errcode.Forbidden, errcode.Failed)
 	}
 
 	// 校验与清洁文章内容 此处取消校验文章封面 封面校验在updatearticlecover.go位置
-	cleanArticle, err := l.commonUtils.ValidateArticle(&common.ValidateArticleInput{
+	cleanArticle, err := l.commonUtils.ValidateArticle(validate.InputValidateArticle{
 		Title:       in.Title,
 		Information: in.Information,
 		Content:     in.Content,
@@ -110,11 +112,11 @@ func (l *PublishArticleLogic) PublishArticle(in *articlerpc.PublishArticleReques
 	})
 	if err != nil { // 该方法返回的err全是自定义 是手动校验后硬编码的 因此可以直接返回error
 		l.logger.Error("article/publisharticlelogic：文章内容校验未通过", zap.String("ERROR", err.Error()), zap.String("PublisherID", publisherID))
-		return l.articleResponse.RPCFailPublishArticleResponseWithErr(err)
+		return l.articleResponse.FailPublishArticleResponseWithErr(resp, err)
 	}
 
-	// 生成文章对应的唯一ID 转为字符串类型
-	articleID := l.commonUtils.ToString(l.snowFlake.GenerateSnowFlakeID())
+	// 生成文章对应的唯一ID
+	articleID := l.snowFlake.GenerateSnowFlakeID()
 
 	// 插入到数据库中
 	err = l.articleRepository.PublishArticle(l.ctx, &model.ArticleInfo{
@@ -132,7 +134,7 @@ func (l *PublishArticleLogic) PublishArticle(in *articlerpc.PublishArticleReques
 	})
 	if err != nil {
 		l.logger.Error("article/publisharticlelogic：数据库插入文章失败", zap.String("ERROR", err.Error()))
-		return l.articleResponse.RPCFailPublishArticleResponse("数据库操作失败！", errcode.ServerError)
+		return l.articleResponse.FailPublishArticleResponse(resp, "数据库操作失败！", errcode.ServerError, errcode.Failed)
 	}
 
 	// todo: 数据库插入成功后缓存插入失败怎么操作
@@ -146,6 +148,6 @@ func (l *PublishArticleLogic) PublishArticle(in *articlerpc.PublishArticleReques
 	// 加入到布隆过滤器中
 	l.bloomFilter.AddArticle(articleID)
 
-	l.logger.Info("article/publisharticlelogic：文章发布成功", zap.String("ArticleID", articleID), zap.String("PublisherID", publisherID))
-	return l.articleResponse.RPCSuccessPublishArticleResponse("文章发布成功！", articleID)
+	l.logger.Info("article/publisharticlelogic：文章发布成功", zap.Int64("ArticleID", articleID), zap.String("PublisherID", publisherID))
+	return l.articleResponse.SuccessPublishArticleResponse(resp, "文章发布成功！", articleID)
 }

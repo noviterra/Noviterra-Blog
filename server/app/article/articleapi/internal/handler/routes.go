@@ -63,16 +63,10 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: GetArticleListHandler(serverCtx),
 			},
 			{
-				// 查看用户收藏文章列表
-				Method:  http.MethodGet,
-				Path:    "/list/collect",
-				Handler: GetUserCollectArticleListHandler(serverCtx),
-			},
-			{
-				// 查看用户点赞文章列表
+				// 查看用户点赞或收藏文章列表
 				Method:  http.MethodGet,
 				Path:    "/list/like",
-				Handler: GetUserLikesArticleListHandler(serverCtx),
+				Handler: GetUserLikeCollectArticleListHandler(serverCtx),
 			},
 			{
 				// 查看用户发布文章列表

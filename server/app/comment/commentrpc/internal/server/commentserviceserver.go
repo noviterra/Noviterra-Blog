@@ -34,3 +34,15 @@ func (s *CommentServiceServer) CollectArticle(ctx context.Context, in *commentrp
 	l := logic.NewCollectArticleLogic(ctx, s.svcCtx)
 	return l.CollectArticle(in)
 }
+
+// 发表评论
+func (s *CommentServiceServer) CreateComment(ctx context.Context, in *commentrpc.CommentRequest) (*commentrpc.CommentResponse, error) {
+	l := logic.NewCreateCommentLogic(ctx, s.svcCtx)
+	return l.CreateComment(in)
+}
+
+// 得到某个位置的全部顶层评论
+func (s *CommentServiceServer) GetTopComment(ctx context.Context, in *commentrpc.GetTopCommentRequest) (*commentrpc.GetTopCommentResponse, error) {
+	l := logic.NewGetTopCommentLogic(ctx, s.svcCtx)
+	return l.GetTopComment(in)
+}

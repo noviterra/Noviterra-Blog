@@ -15,33 +15,42 @@ func NewArticleResponse() *ArticleResponse {
 
 // v2-20261022
 
-// RPCSuccessResponse 封装response响应并返回
-func (arp *ArticleResponse) RPCSuccessResponse(msg string) (*articlerpc.Response, error) {
-	return &articlerpc.Response{
-		Message: msg,
-		Code:    errcode.Success,
-	}, nil
+// SuccessResponse 封装response响应并返回
+func (arp *ArticleResponse) SuccessResponse(resp *articlerpc.Response, msg string) (*articlerpc.Response, error) {
+	if resp == nil {
+		resp = new(articlerpc.Response)
+	}
+	resp.Message = msg
+	resp.Code = errcode.Success
+	resp.Status = errcode.RequestSuccess
+
+	return resp, nil
 }
 
-// RPCFailResponse 返回错误提示而非错误本身
-func (arp *ArticleResponse) RPCFailResponse(msg string, code int64) (*articlerpc.Response, error) {
-	return &articlerpc.Response{
-		Message: msg,
-		Code:    code,
-	}, nil
+// FailResponse 返回错误提示而非错误本身
+func (arp *ArticleResponse) FailResponse(resp *articlerpc.Response, msg string, status int32, code int64) (*articlerpc.Response, error) {
+	if resp == nil {
+		resp = new(articlerpc.Response)
+	}
+	resp.Message = msg
+	resp.Code = code
+	resp.Status = status
+
+	return resp, nil
 }
 
-// RPCFailResponseWithErr 返回错误本身 rpc层返回error api层不会收到结构体中的内容
-func (arp *ArticleResponse) RPCFailResponseWithErr(err error) (*articlerpc.Response, error) {
-	return &articlerpc.Response{
-		Message: "",
-		Code:    errcode.Failed,
-	}, err
+// FailResponseWithErr 返回错误本身 rpc层返回error api层不会收到结构体中的内容
+func (arp *ArticleResponse) FailResponseWithErr(resp *articlerpc.Response, err error) (*articlerpc.Response, error) {
+	if resp == nil {
+		resp = new(articlerpc.Response)
+	}
+
+	return resp, err
 }
 
-// RPCSuccessGetArticleListResponse 封装GetArticleListResponse
-func (arp *ArticleResponse) RPCSuccessGetArticleListResponse(resp *articlerpc.GetArticleListResponse,
-	articles []model.ArticleList, totalCount int32) (*articlerpc.GetArticleListResponse, error) {
+// SuccessGetArticleListResponse 封装GetArticleListResponse
+func (arp *ArticleResponse) SuccessGetArticleListResponse(resp *articlerpc.GetArticleListResponse,
+	msg string, articles []model.ArticleList, totalCount int64) (*articlerpc.GetArticleListResponse, error) {
 	if resp == nil {
 		resp = new(articlerpc.GetArticleListResponse)
 	}
@@ -60,170 +69,224 @@ func (arp *ArticleResponse) RPCSuccessGetArticleListResponse(resp *articlerpc.Ge
 
 			resp.Articles = append(resp.Articles, ls)
 		}
+	} else {
+		resp.Articles = []*articlerpc.ArticleList{}
 	}
 
 	resp.Resp = &articlerpc.Response{
-		Message: "文章列表加载完成！",
+		Message: msg,
 		Code:    errcode.Success,
 	}
 
 	return resp, nil
 }
 
-// RPCFailGetArticleListResponse 不携带err
-func (arp *ArticleResponse) RPCFailGetArticleListResponse(msg string, code int64) (*articlerpc.GetArticleListResponse, error) {
-	return &articlerpc.GetArticleListResponse{
-		Articles:   nil,
-		TotalCount: 0,
-		Resp: &articlerpc.Response{
-			Message: msg,
-			Code:    code,
-		},
-	}, nil
+// FailGetArticleListResponse 不携带err
+func (arp *ArticleResponse) FailGetArticleListResponse(resp *articlerpc.GetArticleListResponse,
+	msg string, status int32, code int64) (*articlerpc.GetArticleListResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.GetArticleListResponse)
+	}
+
+	resp.Articles = nil
+	resp.TotalCount = 0
+	resp.Resp = &articlerpc.Response{
+		Message: msg,
+		Code:    code,
+		Status:  status,
+	}
+
+	return resp, nil
 }
 
-// RPCFailGetArticleListResponseWithErr 携带err
-func (arp *ArticleResponse) RPCFailGetArticleListResponseWithErr(err error) (*articlerpc.GetArticleListResponse, error) {
-	return &articlerpc.GetArticleListResponse{
-		Articles:   nil,
-		TotalCount: 0,
-		Resp: &articlerpc.Response{
-			Message: "",
-			Code:    errcode.Failed,
-		},
-	}, err
+// FailGetArticleListResponseWithErr 携带err
+func (arp *ArticleResponse) FailGetArticleListResponseWithErr(resp *articlerpc.GetArticleListResponse,
+	err error) (*articlerpc.GetArticleListResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.GetArticleListResponse)
+	}
+
+	return resp, err
 }
 
-// RPCSuccessGetArticleDetailResponse 封装响应GetArticleDetailResponse
-func (arp *ArticleResponse) RPCSuccessGetArticleDetailResponse(msg string, article *articlerpc.Article) (*articlerpc.GetArticleDetailResponse, error) {
-	return &articlerpc.GetArticleDetailResponse{
-		A: article,
-		Resp: &articlerpc.Response{
-			Message: msg,
-			Code:    errcode.Success,
-		},
-	}, nil
+// SuccessGetArticleDetailResponse 封装响应GetArticleDetailResponse
+func (arp *ArticleResponse) SuccessGetArticleDetailResponse(resp *articlerpc.GetArticleDetailResponse,
+	msg string, article *model.Article) (*articlerpc.GetArticleDetailResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.GetArticleDetailResponse)
+	}
+
+	resp.A.ArticleID = article.ArticleID
+	resp.A.Title = article.Title
+	resp.A.Information = article.Information
+	resp.A.Cover = article.Cover
+	resp.A.Content = article.Content
+	resp.A.PublisherID = article.PublisherID
+	resp.A.Tags = article.Tags
+	resp.A.UpdatedAt = article.UpdatedAt
+	resp.A.CreatedAt = article.CreatedAt
+
+	resp.Resp = &articlerpc.Response{
+		Message: msg,
+		Code:    errcode.Success,
+	}
+
+	return resp, nil
 }
 
-func (arp *ArticleResponse) RPCFailGetArticleDetailResponse(msg string, code int64) (*articlerpc.GetArticleDetailResponse, error) {
-	return &articlerpc.GetArticleDetailResponse{
-		A: nil,
-		Resp: &articlerpc.Response{
-			Message: msg,
-			Code:    code,
-		},
-	}, nil
+func (arp *ArticleResponse) FailGetArticleDetailResponse(resp *articlerpc.GetArticleDetailResponse,
+	msg string, status int32, code int64) (*articlerpc.GetArticleDetailResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.GetArticleDetailResponse)
+	}
+
+	resp.A = nil
+	resp.Resp = &articlerpc.Response{
+		Message: msg,
+		Code:    code,
+		Status:  status,
+	}
+
+	return resp, nil
 }
 
-func (arp *ArticleResponse) RPCFailGetArticleDetailResponseWithErr(err error) (*articlerpc.GetArticleDetailResponse, error) {
-	return &articlerpc.GetArticleDetailResponse{
-		A: nil,
-		Resp: &articlerpc.Response{
-			Message: "",
-			Code:    errcode.Failed,
-		},
-	}, err
+func (arp *ArticleResponse) FailGetArticleDetailResponseWithErr(resp *articlerpc.GetArticleDetailResponse,
+	err error) (*articlerpc.GetArticleDetailResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.GetArticleDetailResponse)
+	}
+
+	return resp, err
 }
 
-// RPCSuccessUpdateArticleCoverResponse 封装UpdateArticleCoverResponse响应体
-func (arp *ArticleResponse) RPCSuccessUpdateArticleCoverResponse(msg, cover string) (*articlerpc.UpdateArticleCoverResponse, error) {
-	return &articlerpc.UpdateArticleCoverResponse{
-		Cover: cover,
-		Resp: &articlerpc.Response{
-			Message: msg,
-			Code:    errcode.Success,
-		},
-	}, nil
+// SuccessUpdateArticleCoverResponse 封装UpdateArticleCoverResponse响应体
+func (arp *ArticleResponse) SuccessUpdateArticleCoverResponse(resp *articlerpc.UpdateArticleCoverResponse,
+	msg, cover string) (*articlerpc.UpdateArticleCoverResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.UpdateArticleCoverResponse)
+	}
+
+	resp.Cover = cover
+	resp.Resp = &articlerpc.Response{
+		Message: msg,
+		Code:    errcode.Success,
+	}
+
+	return resp, nil
 }
 
-func (arp *ArticleResponse) RPCFailUpdateArticleCoverResponse(msg string, code int64) (*articlerpc.UpdateArticleCoverResponse, error) {
-	return &articlerpc.UpdateArticleCoverResponse{
-		Cover: "",
-		Resp: &articlerpc.Response{
-			Message: msg,
-			Code:    code,
-		},
-	}, nil
+func (arp *ArticleResponse) FailUpdateArticleCoverResponse(resp *articlerpc.UpdateArticleCoverResponse,
+	msg string, status int32, code int64) (*articlerpc.UpdateArticleCoverResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.UpdateArticleCoverResponse)
+	}
+
+	resp.Cover = ""
+	resp.Resp = &articlerpc.Response{
+		Message: msg,
+		Code:    code,
+		Status:  status,
+	}
+
+	return resp, nil
 }
 
-func (arp *ArticleResponse) RPCFailUpdateArticleCoverResponseWithErr(err error) (*articlerpc.UpdateArticleCoverResponse, error) {
-	return &articlerpc.UpdateArticleCoverResponse{
-		Cover: "",
-		Resp: &articlerpc.Response{
-			Message: "",
-			Code:    0,
-		},
-	}, err
+func (arp *ArticleResponse) FailUpdateArticleCoverResponseWithErr(resp *articlerpc.UpdateArticleCoverResponse,
+	err error) (*articlerpc.UpdateArticleCoverResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.UpdateArticleCoverResponse)
+	}
+
+	return resp, err
 }
 
-// RPCSuccessPublishArticleResponse 封装PublishArticleResponse
-func (arp *ArticleResponse) RPCSuccessPublishArticleResponse(msg string, articleID string) (*articlerpc.PublishArticleResponse, error) {
-	return &articlerpc.PublishArticleResponse{
-		ArticleID: articleID,
-		Resp: &articlerpc.Response{
-			Message: msg,
-			Code:    errcode.Success,
-		},
-	}, nil
+// SuccessPublishArticleResponse 封装PublishArticleResponse
+func (arp *ArticleResponse) SuccessPublishArticleResponse(resp *articlerpc.PublishArticleResponse,
+	msg string, articleID int64) (*articlerpc.PublishArticleResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.PublishArticleResponse)
+	}
+
+	resp.ArticleID = articleID
+	resp.Resp = &articlerpc.Response{
+		Message: msg,
+		Code:    errcode.Success,
+	}
+
+	return resp, nil
 }
 
-func (arp *ArticleResponse) RPCFailPublishArticleResponse(msg string, code int64) (*articlerpc.PublishArticleResponse, error) {
-	return &articlerpc.PublishArticleResponse{
-		ArticleID: "",
-		Resp: &articlerpc.Response{
-			Message: msg,
-			Code:    code,
-		},
-	}, nil
+func (arp *ArticleResponse) FailPublishArticleResponse(resp *articlerpc.PublishArticleResponse,
+	msg string, status int32, code int64) (*articlerpc.PublishArticleResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.PublishArticleResponse)
+	}
+
+	resp.ArticleID = -1
+	resp.Resp = &articlerpc.Response{
+		Message: msg,
+		Code:    code,
+		Status:  status,
+	}
+
+	return resp, nil
 }
 
-func (arp *ArticleResponse) RPCFailPublishArticleResponseWithErr(err error) (*articlerpc.PublishArticleResponse, error) {
-	return &articlerpc.PublishArticleResponse{
-		ArticleID: "",
-		Resp: &articlerpc.Response{
-			Message: "",
-			Code:    errcode.Failed,
-		},
-	}, err
+func (arp *ArticleResponse) FailPublishArticleResponseWithErr(resp *articlerpc.PublishArticleResponse,
+	err error) (*articlerpc.PublishArticleResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.PublishArticleResponse)
+	}
+
+	return resp, err
 }
 
-func (arp *ArticleResponse) RPCSuccessSearchArticleResponse(msg string, articles []*articlerpc.ArticleList, totalCount int64) (*articlerpc.SearchArticleResponse, error) {
-	return &articlerpc.SearchArticleResponse{
-		Articles:   articles,
-		TotalCount: int32(totalCount),
-		Resp: &articlerpc.Response{
-			Message: msg,
-			Code:    errcode.Success,
-		},
-	}, nil
+// SuccessSearchArticleResponse 封装SearchArticleResponse
+func (arp *ArticleResponse) SuccessSearchArticleResponse(resp *articlerpc.SearchArticleResponse,
+	msg string, articles []*articlerpc.ArticleList, totalCount int64) (*articlerpc.SearchArticleResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.SearchArticleResponse)
+	}
+
+	resp.Articles = articles
+	resp.TotalCount = totalCount
+	resp.Resp = &articlerpc.Response{
+		Message: msg,
+		Code:    errcode.Success,
+	}
+
+	return resp, nil
 }
 
-func (arp *ArticleResponse) RPCFailSearchArticleResponse(msg string, code int64) (*articlerpc.SearchArticleResponse, error) {
-	return &articlerpc.SearchArticleResponse{
-		Articles:   nil,
-		TotalCount: 0,
-		Resp: &articlerpc.Response{
-			Message: msg,
-			Code:    code,
-		},
-	}, nil
+func (arp *ArticleResponse) FailSearchArticleResponse(resp *articlerpc.SearchArticleResponse,
+	msg string, status int32, code int64) (*articlerpc.SearchArticleResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.SearchArticleResponse)
+	}
+
+	resp.Articles = nil
+	resp.TotalCount = 0
+	resp.Resp = &articlerpc.Response{
+		Message: msg,
+		Code:    code,
+		Status:  status,
+	}
+
+	return resp, nil
 }
 
-func (arp *ArticleResponse) RPCFailSearchArticleResponseWithErr(err error) (*articlerpc.SearchArticleResponse, error) {
-	return &articlerpc.SearchArticleResponse{
-		Articles:   nil,
-		TotalCount: 0,
-		Resp: &articlerpc.Response{
-			Message: "",
-			Code:    errcode.Failed,
-		},
-	}, err
+func (arp *ArticleResponse) FailSearchArticleResponseWithErr(resp *articlerpc.SearchArticleResponse,
+	err error) (*articlerpc.SearchArticleResponse, error) {
+	if resp == nil {
+		resp = new(articlerpc.SearchArticleResponse)
+	}
+
+	return resp, err
 }
 
-// 外部resp与数据体传入 响应方法数据映射+返回响应
-
-func (arp *ArticleResponse) RPCSuccessGetArchiveResponse(resp *articlerpc.GetArchiveResponse,
-	archives []model.ArticleArchive) (*articlerpc.GetArchiveResponse, error) {
+// SuccessGetArchiveResponse 封装GetArchiveResponse
+func (arp *ArticleResponse) SuccessGetArchiveResponse(resp *articlerpc.GetArchiveResponse,
+	msg string, archives []model.ArticleArchive) (*articlerpc.GetArchiveResponse, error) {
 	// 空指针保护
 	if resp == nil {
 		resp = new(articlerpc.GetArchiveResponse)
@@ -243,31 +306,31 @@ func (arp *ArticleResponse) RPCSuccessGetArchiveResponse(resp *articlerpc.GetArc
 	}
 
 	resp.Resp = &articlerpc.Response{
-		Message: "归档数据加载完成！",
+		Message: msg,
 		Code:    errcode.Success,
 	}
 
 	return resp, nil
 }
 
-func (arp *ArticleResponse) RPCFailGetArchiveResponse(resp *articlerpc.GetArchiveResponse,
-	msg string, code int64) (*articlerpc.GetArchiveResponse, error) {
+func (arp *ArticleResponse) FailGetArchiveResponse(resp *articlerpc.GetArchiveResponse,
+	msg string, status int32, code int64) (*articlerpc.GetArchiveResponse, error) {
 	if resp == nil {
 		resp = new(articlerpc.GetArchiveResponse)
 	}
 
 	resp.Archives = nil
-
 	resp.Resp = &articlerpc.Response{
 		Message: msg,
 		Code:    code,
+		Status:  status,
 	}
 
 	return resp, nil
 }
 
-func (arp *ArticleResponse) RPCFailGetArchiveResponseWithErr(resp *articlerpc.GetArchiveResponse, err error) (*articlerpc.GetArchiveResponse, error) {
-	// 保留
+func (arp *ArticleResponse) FailGetArchiveResponseWithErr(resp *articlerpc.GetArchiveResponse,
+	err error) (*articlerpc.GetArchiveResponse, error) {
 	if resp == nil {
 		resp = new(articlerpc.GetArchiveResponse)
 	}

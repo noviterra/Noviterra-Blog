@@ -67,7 +67,7 @@ func (ar *ArticleRepository) GetArticleList(ctx context.Context, page, pageSize 
 }
 
 // GetArticleDetail 获取文章的详细信息
-func (ar *ArticleRepository) GetArticleDetail(ctx context.Context, articleID string) (*model.ArticleInfo, error) {
+func (ar *ArticleRepository) GetArticleDetail(ctx context.Context, articleID int64) (*model.Article, error) {
 	articleInfo := new(model.ArticleInfo)
 	if err := ar.db.WithContext(ctx).
 		Model(&model.ArticleInfo{}).
@@ -78,11 +78,21 @@ func (ar *ArticleRepository) GetArticleDetail(ctx context.Context, articleID str
 		}
 		return nil, err
 	}
-	return articleInfo, nil
+	return &model.Article{
+		ArticleID:   articleInfo.ArticleID,
+		PublisherID: articleInfo.PublisherID,
+		Title:       articleInfo.Title,
+		Cover:       articleInfo.Cover,
+		Information: articleInfo.Information,
+		Content:     articleInfo.Content,
+		Tags:        articleInfo.Tags,
+		CreatedAt:   articleInfo.CreatedAt.Unix(),
+		UpdatedAt:   articleInfo.UpdatedAt.Unix(),
+	}, nil
 }
 
 // GetPublisherIDByArticleID 根据文章ID返回该文章的发布者ID
-func (ar *ArticleRepository) GetPublisherIDByArticleID(ctx context.Context, articleID string) (string, error) {
+func (ar *ArticleRepository) GetPublisherIDByArticleID(ctx context.Context, articleID int64) (string, error) {
 	var publisherID string
 	if err := ar.db.WithContext(ctx).
 		Model(&model.ArticleInfo{}).
@@ -97,7 +107,7 @@ func (ar *ArticleRepository) GetPublisherIDByArticleID(ctx context.Context, arti
 }
 
 // DeleteArticle 软删除 删除文章
-func (ar *ArticleRepository) DeleteArticle(ctx context.Context, articleID string, deleterID string) (bool, error) {
+func (ar *ArticleRepository) DeleteArticle(ctx context.Context, articleID int64, deleterID string) (bool, error) {
 	result := ar.db.WithContext(ctx).
 		Model(&model.ArticleInfo{}).
 		Where("article_id = ? AND is_deleted = ?", articleID, 0).
@@ -116,7 +126,7 @@ func (ar *ArticleRepository) DeleteArticle(ctx context.Context, articleID string
 }
 
 // UpdateArticleInfo 更新文章（不含封面）
-func (ar *ArticleRepository) UpdateArticleInfo(ctx context.Context, articleID string, article *model.UpdateArticle) (bool, error) {
+func (ar *ArticleRepository) UpdateArticleInfo(ctx context.Context, articleID int64, article *model.UpdateArticle) (bool, error) {
 	result := ar.db.WithContext(ctx).
 		Model(&model.ArticleInfo{}).
 		Where("article_id = ? AND is_deleted = ?", articleID, 0).
@@ -137,7 +147,7 @@ func (ar *ArticleRepository) UpdateArticleInfo(ctx context.Context, articleID st
 }
 
 // UpdateArticleCover 更新文章封面
-func (ar *ArticleRepository) UpdateArticleCover(ctx context.Context, articleID, cover string) (bool, error) {
+func (ar *ArticleRepository) UpdateArticleCover(ctx context.Context, articleID int64, cover string) (bool, error) {
 	result := ar.db.WithContext(ctx).
 		Model(&model.ArticleInfo{}).
 		Where("article_id = ? AND is_deleted = ?", articleID, 0).
@@ -210,4 +220,108 @@ func (ar *ArticleRepository) GetArchiveList(ctx context.Context) ([]model.Articl
 		return list[i].Time > list[j].Time
 	})
 	return list, nil
+}
+
+// CheckArticleExist 检查文章是否存在
+func (ar *ArticleRepository) CheckArticleExist(ctx context.Context, articleID int64) (bool, error) {
+	if articleID <= 0 {
+		return false, nil
+	}
+	var count int64
+	if err := ar.db.WithContext(ctx).
+		Model(&model.ArticleInfo{}).
+		Where("article_id = ?", articleID).
+		Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+// GetUserPublishArticleList 得到用户发布的文章
+func (ar *ArticleRepository) GetUserPublishArticleList(ctx context.Context, page, pageSize int,
+	userID string) ([]model.ArticleList, int64, error) {
+	var (
+		total  int64
+		result []model.ArticleList
+	)
+
+	// 事务保证原子一致性
+	err := ar.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// 定义scope 复用查询条件
+		scope := func(tx *gorm.DB) *gorm.DB {
+			return tx.Where("publisher_id = ? AND is_deleted = ?", userID, false)
+		}
+
+		if err := tx.Model(&model.ArticleInfo{}).
+			Scopes(scope).
+			Count(&total).Error; err != nil {
+			return fmt.Errorf("统计用户发布文章总数失败：%w", err)
+		}
+		if total == 0 {
+			result = []model.ArticleList{}
+			return nil
+		}
+
+		if err := tx.Model(&model.ArticleInfo{}).
+			Select([]string{"article_id", "title", "cover", "information", "tags", "created_at"}).
+			Scopes(scope).
+			Order("created_at DESC, article_id DESC").
+			Offset((page - 1) * pageSize).
+			Limit(pageSize).
+			Find(&result).Error; err != nil {
+			return fmt.Errorf("用户发布文章查询失败：%w", err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, total, nil
+}
+
+// GetArticleListByArticleID 根据文章ID列表批量得到多个文章列表数据
+func (ar *ArticleRepository) GetArticleListByArticleID(ctx context.Context,
+	articleIDs []int64, page, pageSize int) ([]model.ArticleList, int64, error) {
+	if len(articleIDs) == 0 {
+		return []model.ArticleList{}, 0, nil
+	}
+
+	var (
+		total  int64
+		result []model.ArticleList
+	)
+
+	err := ar.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		scope := func(tx *gorm.DB) *gorm.DB {
+			return tx.Model(&model.ArticleInfo{}).
+				Where("article_id IN ? AND is_deleted = ?", articleIDs, false)
+		}
+		if err := tx.Scopes(scope).
+			Count(&total).Error; err != nil {
+			return fmt.Errorf("查询文章列表数量失败：%w", err)
+		}
+		if total == 0 {
+			result = []model.ArticleList{}
+			return nil
+		}
+
+		if err := tx.Scopes(scope).
+			Select([]string{"article_id", "title", "cover", "information", "tags", "created_at"}).
+			Order("created_at DESC, article_id DESC").
+			Offset((page - 1) * pageSize).
+			Limit(pageSize).
+			Find(&result).Error; err != nil {
+			return fmt.Errorf("查询文章列表失败：%w", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, total, nil
 }

@@ -14,8 +14,12 @@ import (
 )
 
 type (
-	ArticleComment        = commentrpc.ArticleComment
 	CollectArticleRequest = commentrpc.CollectArticleRequest
+	CommentInfo           = commentrpc.CommentInfo
+	CommentRequest        = commentrpc.CommentRequest
+	CommentResponse       = commentrpc.CommentResponse
+	GetTopCommentRequest  = commentrpc.GetTopCommentRequest
+	GetTopCommentResponse = commentrpc.GetTopCommentResponse
 	LikeArticleRequest    = commentrpc.LikeArticleRequest
 	Response              = commentrpc.Response
 
@@ -24,6 +28,10 @@ type (
 		LikeArticle(ctx context.Context, in *LikeArticleRequest, opts ...grpc.CallOption) (*Response, error)
 		// 对文章的收藏操作
 		CollectArticle(ctx context.Context, in *CollectArticleRequest, opts ...grpc.CallOption) (*Response, error)
+		// 发表评论
+		CreateComment(ctx context.Context, in *CommentRequest, opts ...grpc.CallOption) (*CommentResponse, error)
+		// 得到某个位置的全部顶层评论
+		GetTopComment(ctx context.Context, in *GetTopCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error)
 	}
 
 	defaultCommentService struct {
@@ -47,4 +55,16 @@ func (m *defaultCommentService) LikeArticle(ctx context.Context, in *LikeArticle
 func (m *defaultCommentService) CollectArticle(ctx context.Context, in *CollectArticleRequest, opts ...grpc.CallOption) (*Response, error) {
 	client := commentrpc.NewCommentServiceClient(m.cli.Conn())
 	return client.CollectArticle(ctx, in, opts...)
+}
+
+// 发表评论
+func (m *defaultCommentService) CreateComment(ctx context.Context, in *CommentRequest, opts ...grpc.CallOption) (*CommentResponse, error) {
+	client := commentrpc.NewCommentServiceClient(m.cli.Conn())
+	return client.CreateComment(ctx, in, opts...)
+}
+
+// 得到某个位置的全部顶层评论
+func (m *defaultCommentService) GetTopComment(ctx context.Context, in *GetTopCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error) {
+	client := commentrpc.NewCommentServiceClient(m.cli.Conn())
+	return client.GetTopComment(ctx, in, opts...)
 }

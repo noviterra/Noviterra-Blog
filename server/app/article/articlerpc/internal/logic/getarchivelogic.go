@@ -23,9 +23,9 @@ type getArchiveLogger interface {
 }
 
 type getArchiveArticleResponse interface {
-	RPCSuccessGetArchiveResponse(resp *articlerpc.GetArchiveResponse, archives []model.ArticleArchive) (*articlerpc.GetArchiveResponse, error)
-	RPCFailGetArchiveResponse(resp *articlerpc.GetArchiveResponse, msg string, code int64) (*articlerpc.GetArchiveResponse, error)
-	RPCFailGetArchiveResponseWithErr(resp *articlerpc.GetArchiveResponse, err error) (*articlerpc.GetArchiveResponse, error)
+	SuccessGetArchiveResponse(resp *articlerpc.GetArchiveResponse, msg string, archives []model.ArticleArchive) (*articlerpc.GetArchiveResponse, error)
+	FailGetArchiveResponse(resp *articlerpc.GetArchiveResponse, msg string, status int32, code int64) (*articlerpc.GetArchiveResponse, error)
+	FailGetArchiveResponseWithErr(resp *articlerpc.GetArchiveResponse, err error) (*articlerpc.GetArchiveResponse, error)
 }
 
 type GetArchiveLogic struct {
@@ -49,21 +49,18 @@ func (l *GetArchiveLogic) GetArchive(in *articlerpc.GetArchiveRequest) (*article
 	// todo: add your logic here and delete this line
 	resp := new(articlerpc.GetArchiveResponse)
 	// 请求体为空 不需要校验参数
-	// 缓存
 
 	// 查库 进行列表映射
 	list, err := l.articleRepository.GetArchiveList(l.ctx)
 	if err != nil {
 		l.logger.Error("article/getArchive：数据库查询得到归档列表失败",
 			zap.String("ERROR", err.Error()))
-		return l.articleResponse.RPCFailGetArchiveResponse(resp, "数据库操作失败！", errcode.InternalError)
+		return l.articleResponse.FailGetArchiveResponse(resp, "数据库操作失败！", errcode.InternalError, errcode.Failed)
 	}
 	if len(list) == 0 {
 		l.logger.Info("article/getArchive：归档数据为空",
 			zap.Int64("Time", time.Now().Unix()))
 	}
 
-	// 回写缓存
-
-	return l.articleResponse.RPCSuccessGetArchiveResponse(resp, list)
+	return l.articleResponse.SuccessGetArchiveResponse(resp, "列表加载完成！ ", list)
 }

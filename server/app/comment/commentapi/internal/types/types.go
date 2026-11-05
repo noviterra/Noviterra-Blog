@@ -4,35 +4,45 @@
 package types
 
 type ArticleComment struct {
-	Root        string `json:"root" validate:"required,min=1,max=200"`
-	InitiatorID string `json:"initiator_id" validate:"required,min=1,max=100"`
-	Original    string `json:"original" validate:"required,min=1,max=200"`
-	RecipientID string `json:"recipient_id" validate:"required,min=1,max=100"`
-	SpeakerID   string `json:"speaker_id" validate:"required,min=1,max=100"`
-	Content     string `json:"comment" validate:"required,min=1,max=200"`
+	Address   int64  `json:"root" validate:"required,gt=10"`
+	ParentID  int64  `json:"parent_id" validate:"gt=0"` // 评论的唯一标识 评论的唯一ID
+	SpeakerID string `json:"speaker_id" validate:"required,min=6,max=10"`
+	Content   string `json:"comment" validate:"required,min=1,max=200"`
 }
 
 type CollectArticleRequest struct {
-	ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
-	Action    string `json:"action" validate:"required,oneof=0,1"` // 0为收藏 1为取消收藏
+	ArticleID int64  `json:"article_id" validate:"gt=0"`
+	Action    string `json:"action" validate:"required,oneof=collect,uncollect"`
 }
 
 type CommentArticleRequest struct {
-	Comment ArticleComment `json:"comment"`
+	Comment ArticleComment `json:"comment" validate:"required"`
+}
+
+type CommentInfo struct {
+	CommentID     string `json:"comment_id"`
+	SpeakerName   string `json:"speaker_name"`
+	SpeakerAvatar string `json:"speaker_avatar"`
+	Content       string `json:"content"`
+	SpeakTime     int64  `json:"speak_time"`
 }
 
 type CommentNoviterraRequest struct {
-	Comment ArticleComment `json:"comment"`
+	Comment ArticleComment `json:"comment" validate:"required"`
 }
 
-type GerAllArticleCommentResponse struct {
-	Comments []ArticleComment `json:"comments"`
-	Resp     Response         `json:"response"`
+type GetTopCommentRequest struct {
+	Address int64 `json:"address" validate:"required,gt=10"`
+}
+
+type GetTopCommentResponse struct {
+	Comments []CommentInfo `json:"comment"`
+	Resp     Response      `json:"response"`
 }
 
 type LikeArticleRequest struct {
-	ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
-	Action    string `json:"action" validate:"required,oneof=0,1"` // 0为点赞 1为取消点赞
+	ArticleID int64  `json:"article_id" validate:"gt=0"`
+	Action    string `json:"action" validate:"required,oneof=like,unlike"`
 }
 
 type Response struct {

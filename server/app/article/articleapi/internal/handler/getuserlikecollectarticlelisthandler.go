@@ -12,17 +12,17 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
-// 查看用户点赞文章列表
-func GetUserLikesArticleListHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+// 查看用户点赞或收藏文章列表
+func GetUserLikeCollectArticleListHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.GetUserLikesListRequest
+		var req types.GetUserLikeCollectListRequest
 		if err := httpx.Parse(r, &req); err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}
 
-		l := logic.NewGetUserLikesArticleListLogic(r.Context(), svcCtx)
-		resp, err := l.GetUserLikesArticleList(&req)
+		l := logic.NewGetUserLikeCollectArticleListLogic(r.Context(), svcCtx)
+		resp, err := l.GetUserLikeCollectArticleList(&req)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {

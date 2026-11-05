@@ -16,24 +16,27 @@ type (
 	}
 	// 评论属性 多层回复
 	ArticleComment {
-		// 顶层评论与评论者
-		Root        string `json:"root" validate:"required,min=1,max=200"`
-		InitiatorID string `json:"initiator_id" validate:"required,min=1,max=100"`
-		// 被回复的评论与被回复者
-		Original    string `json:"original" validate:"required,min=1,max=200"`
-		RecipientID string `json:"recipient_id" validate:"required,min=1,max=100"`
-		// 评论的内容与评论者
-		SpeakerID string `json:"speaker_id" validate:"required,min=1,max=100"`
+		Address   int64  `json:"root" validate:"required,gt=10"`
+		ParentID  int64  `json:"parent_id" validate:"gt=0"` // 评论的唯一标识 评论的唯一ID
+		SpeakerID string `json:"speaker_id" validate:"required,min=6,max=10"`
 		Content   string `json:"comment" validate:"required,min=1,max=200"`
+	}
+	// 评论内容+评论者属性 为完整的一条评论
+	CommentInfo {
+		CommentID     string `json:"comment_id"`
+		SpeakerName   string `json:"speaker_name"`
+		SpeakerAvatar string `json:"speaker_avatar"`
+		Content       string `json:"content"`
+		SpeakTime     int64  `json:"speak_time"`
 	}
 	// 对一篇文章进行点赞或取消点赞请求
 	LikeArticleRequest {
-		ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
+		ArticleID int64  `json:"article_id" validate:"gt=0"`
 		Action    string `json:"action" validate:"required,oneof=like,unlike"`
 	}
 	// 对文章进行收藏或取消收藏操作
 	CollectArticleRequest {
-		ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
+		ArticleID int64  `json:"article_id" validate:"gt=0"`
 		Action    string `json:"action" validate:"required,oneof=collect,uncollect"`
 	}
 	// 对一篇博客进行评论 保存为一个会话 从而保存一系列的回复 整体实现类似树的结构
@@ -44,10 +47,13 @@ type (
 	CommentNoviterraRequest {
 		Comment ArticleComment `json:"comment" validate:"required"`
 	}
-	// 得到全部评论 前端传递标识 articleID or noviterra@station（评论地）
-	GerAllArticleCommentResponse {
-		Comments []ArticleComment `json:"comments"`
-		Resp     Response         `json:"response"`
+	// 得到某个位置的全部评论
+	GetTopCommentRequest {
+		Address int64 `json:"address" validate:"required,gt=10"`
+	}
+	GetTopCommentResponse {
+		Comments []CommentInfo `json:"comment"`
+		Resp     Response      `json:"response"`
 	}
 )
 
@@ -57,15 +63,21 @@ type (
 service CommentService {
 	@doc "对一篇文章进行评论"
 	@handler CommentArticle
-	post /comment (CommentArticleRequest) returns (Response)
+	post /comment/comment (CommentArticleRequest) returns (Response)
 
 	@doc "对文章点赞操作"
 	@handler LikeArticle
-	post /like (LikeArticleRequest) returns (Response)
+	post /article/like (LikeArticleRequest) returns (Response)
 
 	@doc "对文章收藏操作"
 	@handler CollectArticle
-	post /collect (CollectArticleRequest) returns (Response)
+	post /article/collect (CollectArticleRequest) returns (Response)
+
+	@doc "得到一篇文章的顶层评论"
+	@handler GetTopComment
+	post /commet/top (GetTopCommentRequest) returns (GetTopCommentResponse)
 }
 
-// goctl api go -api ./doc/api/comment.api -dir ./server/app/comment/commentapi
+/*
+goctl api go -api ./doc/api/comment.api -dir ./server/app/comment/commentapi
+*/

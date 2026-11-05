@@ -12,19 +12,20 @@ import (
 )
 
 type ArticleCache struct {
-	rdb         *redis.Client
-	commonUtils *common.CommonUtils
+	rdb             *redis.Client
+	typesConversion *common.TypesConversion
 }
 
-func NewArticleCache(redisConfig RedisConfig, commonUtils *common.CommonUtils) *ArticleCache {
+func NewArticleCache(redisConfig RedisConfig,
+	typesConversion *common.TypesConversion) *ArticleCache {
 	return &ArticleCache{
-		rdb:         NewRDB(redisConfig),
-		commonUtils: commonUtils,
+		rdb:             NewRDB(redisConfig),
+		typesConversion: typesConversion,
 	}
 }
 
 // AddArticleToRank 将文章加入到排行榜中
-func (ac *ArticleCache) AddArticleToRank(ctx context.Context, articleID string) error {
+func (ac *ArticleCache) AddArticleToRank(ctx context.Context, articleID int64) error {
 	pipe := ac.rdb.Pipeline()
 
 	keyView := "rank:article:view"
@@ -43,7 +44,7 @@ func (ac *ArticleCache) AddArticleToRank(ctx context.Context, articleID string) 
 	// 逐个检查命令错误 精准到某个ZAdd命令
 	for _, cmd := range []*redis.IntCmd{cmdView, cmdLike, cmdCollect} {
 		if err := cmd.Err(); err != nil {
-			return fmt.Errorf("文章排行榜插入失败，failed：%s，err：%s", articleID, err.Error())
+			return fmt.Errorf("文章排行榜插入失败，failed：%d，err：%s", articleID, err.Error())
 		}
 	}
 	return nil
@@ -51,7 +52,7 @@ func (ac *ArticleCache) AddArticleToRank(ctx context.Context, articleID string) 
 
 // HSetArticle 将article信息存入缓存哈希表中
 func (ac *ArticleCache) HSetArticle(ctx context.Context, article *model.ArticleInfo) error {
-	key := fmt.Sprintf("%s:%s", article.ArticleID, "info")
+	key := fmt.Sprintf("%d:%s", article.ArticleID, "info")
 	err := ac.rdb.HSet(ctx, key,
 		"article_id", article.ArticleID,
 		"publisher_id", article.PublisherID,
@@ -76,8 +77,8 @@ func (ac *ArticleCache) HSetArticle(ctx context.Context, article *model.ArticleI
 }
 
 // HGetArticle 根据文章ID获取存储在缓存哈希表中的文章数据
-func (ac *ArticleCache) HGetArticle(ctx context.Context, articleID string) (*model.Article, error) {
-	key := fmt.Sprintf("%s:%s", articleID, "info")
+func (ac *ArticleCache) HGetArticle(ctx context.Context, articleID int64) (*model.Article, error) {
+	key := fmt.Sprintf("%d:%s", articleID, "info")
 	vs, err := ac.rdb.HGetAll(ctx, key).Result()
 	if err != nil {
 		return nil, fmt.Errorf("获取缓存数据失败：%w", err)
@@ -90,7 +91,6 @@ func (ac *ArticleCache) HGetArticle(ctx context.Context, articleID string) (*mod
 
 	article := new(model.Article)
 
-	article.ArticleID = vs["article_id"]
 	article.PublisherID = vs["publisher_id"]
 	article.Title = vs["title"]
 	article.Content = vs["content"]
@@ -104,11 +104,15 @@ func (ac *ArticleCache) HGetArticle(ctx context.Context, articleID string) (*mod
 		}
 	}
 	//string转为int64
-	article.CreatedAt, err = ac.commonUtils.ToInt64(vs["created_at"])
+	article.ArticleID, err = ac.typesConversion.StringConversionInt64(vs["article_id"])
+	if err != nil {
+		return nil, fmt.Errorf("解析article_id失败：%w", err)
+	}
+	article.CreatedAt, err = ac.typesConversion.StringConversionInt64(vs["created_at"])
 	if err != nil {
 		return nil, fmt.Errorf("解析createdAt失败：%w", err)
 	}
-	article.UpdatedAt, err = ac.commonUtils.ToInt64(vs["updated_at"])
+	article.UpdatedAt, err = ac.typesConversion.StringConversionInt64(vs["updated_at"])
 	if err != nil {
 		return nil, fmt.Errorf("解析updatedAt失败：%w", err)
 	}

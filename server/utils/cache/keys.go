@@ -1,6 +1,9 @@
 package cache
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 const (
 	// 点赞系列keys
@@ -18,36 +21,57 @@ const (
 
 	// 异步同步keys
 	prefixSyncQueue = "sync:queue" // 异步同步队列
+
+	// 评论相关keys
+	prefixTopComentList = "comment:top"  // 某文章or站点的顶层评论列表
+	prefixTreeComment   = "comment:tree" // 某文章or站点下某个顶评下的完整评论
 )
 
-func likeSetKey(articleID string) string {
-	return fmt.Sprintf("%s:%s", prefixLikeSet, articleID)
+const (
+	topCommentListTTL = 10 * time.Minute
+	treeCommentTTL    = 15 * time.Minute
+)
+
+func likeSetKey(articleID int64) string {
+	return fmt.Sprintf("%s:%d", prefixLikeSet, articleID)
 }
 
-func likeCntKey(articleID string) string {
-	return fmt.Sprintf("%s:%s", prefixLikeCnt, articleID)
+func likeCntKey(articleID int64) string {
+	return fmt.Sprintf("%s:%d", prefixLikeCnt, articleID)
 }
 
 func userLikeKey(userID string) string {
 	return fmt.Sprintf("%s:%s", prefixUserLikes, userID)
 }
 
-func collectSetKey(articleID string) string {
-	return fmt.Sprintf("%s:%s", prefixCollectSet, articleID)
+func collectSetKey(articleID int64) string {
+	return fmt.Sprintf("%s:%d", prefixCollectSet, articleID)
 }
 
-func collectCntKey(articleID string) string {
-	return fmt.Sprintf("%s:%s", prefixCollectCnt, articleID)
+func collectCntKey(articleID int64) string {
+	return fmt.Sprintf("%s:%d", prefixCollectCnt, articleID)
 }
 
 func userCollectKey(userID string) string {
 	return fmt.Sprintf("%s:%s", prefixUserCollects, userID)
 }
 
-func viewCntKey(articleID string) string {
-	return fmt.Sprintf("%s:%s", prefixViewCnt, articleID)
+func viewCntKey(articleID int64) string {
+	return fmt.Sprintf("%s:%d", prefixViewCnt, articleID)
+}
+
+func viewCntkeyPattern() string {
+	return fmt.Sprintf("%s:*", prefixViewCnt)
 }
 
 func syncQueueKey() string {
 	return prefixSyncQueue
+}
+
+func topCommentListKey(address int64) string {
+	return fmt.Sprintf("%s:%d", prefixTopComentList, address)
+}
+
+func treeCommentKey(commentID int64) string {
+	return fmt.Sprintf("%s:%d", prefixTreeComment, commentID)
 }

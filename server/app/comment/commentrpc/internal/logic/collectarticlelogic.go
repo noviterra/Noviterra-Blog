@@ -26,8 +26,8 @@ type (
 	}
 
 	collectArticleCommentCache interface {
-		Collect(ctx context.Context, articleID, userID string) (bool, int64, error)
-		Uncollect(ctx context.Context, articleID, userID string) (bool, int64, error)
+		Collect(ctx context.Context, articleID int64, userID string) (bool, int64, error)
+		Uncollect(ctx context.Context, articleID int64, userID string) (bool, int64, error)
 		PushSyncEvent(ctx context.Context, event model.SyncEvent) error
 	}
 )
@@ -79,7 +79,7 @@ func (l *CollectArticleLogic) CollectArticle(in *commentrpc.CollectArticleReques
 	}
 }
 
-func (l *CollectArticleLogic) collectHandler(resp *commentrpc.Response, articleID, userID string) (*commentrpc.Response, error) {
+func (l *CollectArticleLogic) collectHandler(resp *commentrpc.Response, articleID int64, userID string) (*commentrpc.Response, error) {
 	result, _, err := l.commentCache.Collect(l.ctx, articleID, userID)
 	if err != nil {
 		return l.commentResponse.FailResponse(resp, "系统繁忙，收藏失败！", errcode.InternalError, errcode.Failed)
@@ -98,7 +98,7 @@ func (l *CollectArticleLogic) collectHandler(resp *commentrpc.Response, articleI
 	return l.commentResponse.SuccessResponse(resp, "收藏成功！")
 }
 
-func (l *CollectArticleLogic) unCollectHandler(resp *commentrpc.Response, articleID, userID string) (*commentrpc.Response, error) {
+func (l *CollectArticleLogic) unCollectHandler(resp *commentrpc.Response, articleID int64, userID string) (*commentrpc.Response, error) {
 	result, _, err := l.commentCache.Uncollect(l.ctx, articleID, userID)
 	if err != nil {
 		return l.commentResponse.FailResponse(resp, "系统繁忙，取消收藏失败！", errcode.InternalError, errcode.Failed)

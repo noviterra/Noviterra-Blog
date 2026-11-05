@@ -81,32 +81,32 @@ func (x *Response) GetCode() int64 {
 	return 0
 }
 
-type ArticleComment struct {
+// 单个评论应该展示的信息
+type CommentInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Root          string                 `protobuf:"bytes,1,opt,name=Root,proto3" json:"Root,omitempty"`
-	InitiatorID   string                 `protobuf:"bytes,2,opt,name=InitiatorID,proto3" json:"InitiatorID,omitempty"`
-	Original      string                 `protobuf:"bytes,3,opt,name=Original,proto3" json:"Original,omitempty"`
-	RecipientID   string                 `protobuf:"bytes,4,opt,name=RecipientID,proto3" json:"RecipientID,omitempty"`
-	SpeakerID     string                 `protobuf:"bytes,5,opt,name=SpeakerID,proto3" json:"SpeakerID,omitempty"`
-	Content       string                 `protobuf:"bytes,6,opt,name=Content,proto3" json:"Content,omitempty"`
+	CommentID     int64                  `protobuf:"varint,1,opt,name=CommentID,proto3" json:"CommentID,omitempty"`
+	SpeakerName   string                 `protobuf:"bytes,2,opt,name=SpeakerName,proto3" json:"SpeakerName,omitempty"`
+	SpeakerAvatar string                 `protobuf:"bytes,3,opt,name=SpeakerAvatar,proto3" json:"SpeakerAvatar,omitempty"`
+	Content       string                 `protobuf:"bytes,4,opt,name=Content,proto3" json:"Content,omitempty"`
+	SpeakTime     int64                  `protobuf:"varint,5,opt,name=SpeakTime,proto3" json:"SpeakTime,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ArticleComment) Reset() {
-	*x = ArticleComment{}
+func (x *CommentInfo) Reset() {
+	*x = CommentInfo{}
 	mi := &file_doc_proto_comment_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ArticleComment) String() string {
+func (x *CommentInfo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ArticleComment) ProtoMessage() {}
+func (*CommentInfo) ProtoMessage() {}
 
-func (x *ArticleComment) ProtoReflect() protoreflect.Message {
+func (x *CommentInfo) ProtoReflect() protoreflect.Message {
 	mi := &file_doc_proto_comment_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -118,56 +118,49 @@ func (x *ArticleComment) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ArticleComment.ProtoReflect.Descriptor instead.
-func (*ArticleComment) Descriptor() ([]byte, []int) {
+// Deprecated: Use CommentInfo.ProtoReflect.Descriptor instead.
+func (*CommentInfo) Descriptor() ([]byte, []int) {
 	return file_doc_proto_comment_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ArticleComment) GetRoot() string {
+func (x *CommentInfo) GetCommentID() int64 {
 	if x != nil {
-		return x.Root
+		return x.CommentID
+	}
+	return 0
+}
+
+func (x *CommentInfo) GetSpeakerName() string {
+	if x != nil {
+		return x.SpeakerName
 	}
 	return ""
 }
 
-func (x *ArticleComment) GetInitiatorID() string {
+func (x *CommentInfo) GetSpeakerAvatar() string {
 	if x != nil {
-		return x.InitiatorID
+		return x.SpeakerAvatar
 	}
 	return ""
 }
 
-func (x *ArticleComment) GetOriginal() string {
-	if x != nil {
-		return x.Original
-	}
-	return ""
-}
-
-func (x *ArticleComment) GetRecipientID() string {
-	if x != nil {
-		return x.RecipientID
-	}
-	return ""
-}
-
-func (x *ArticleComment) GetSpeakerID() string {
-	if x != nil {
-		return x.SpeakerID
-	}
-	return ""
-}
-
-func (x *ArticleComment) GetContent() string {
+func (x *CommentInfo) GetContent() string {
 	if x != nil {
 		return x.Content
 	}
 	return ""
 }
 
+func (x *CommentInfo) GetSpeakTime() int64 {
+	if x != nil {
+		return x.SpeakTime
+	}
+	return 0
+}
+
 type LikeArticleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ArticleID     string                 `protobuf:"bytes,1,opt,name=ArticleID,proto3" json:"ArticleID,omitempty"`
+	ArticleID     int64                  `protobuf:"varint,1,opt,name=ArticleID,proto3" json:"ArticleID,omitempty"`
 	Action        string                 `protobuf:"bytes,2,opt,name=Action,proto3" json:"Action,omitempty"`
 	OperatorID    string                 `protobuf:"bytes,3,opt,name=OperatorID,proto3" json:"OperatorID,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -204,11 +197,11 @@ func (*LikeArticleRequest) Descriptor() ([]byte, []int) {
 	return file_doc_proto_comment_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *LikeArticleRequest) GetArticleID() string {
+func (x *LikeArticleRequest) GetArticleID() int64 {
 	if x != nil {
 		return x.ArticleID
 	}
-	return ""
+	return 0
 }
 
 func (x *LikeArticleRequest) GetAction() string {
@@ -227,7 +220,7 @@ func (x *LikeArticleRequest) GetOperatorID() string {
 
 type CollectArticleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ArticleID     string                 `protobuf:"bytes,1,opt,name=ArticleID,proto3" json:"ArticleID,omitempty"`
+	ArticleID     int64                  `protobuf:"varint,1,opt,name=ArticleID,proto3" json:"ArticleID,omitempty"`
 	Action        string                 `protobuf:"bytes,2,opt,name=Action,proto3" json:"Action,omitempty"`
 	OperatorID    string                 `protobuf:"bytes,3,opt,name=OperatorID,proto3" json:"OperatorID,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -264,11 +257,11 @@ func (*CollectArticleRequest) Descriptor() ([]byte, []int) {
 	return file_doc_proto_comment_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *CollectArticleRequest) GetArticleID() string {
+func (x *CollectArticleRequest) GetArticleID() int64 {
 	if x != nil {
 		return x.ArticleID
 	}
-	return ""
+	return 0
 }
 
 func (x *CollectArticleRequest) GetAction() string {
@@ -285,6 +278,223 @@ func (x *CollectArticleRequest) GetOperatorID() string {
 	return ""
 }
 
+type CommentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Address       int64                  `protobuf:"varint,1,opt,name=Address,proto3" json:"Address,omitempty"`
+	ParentID      int64                  `protobuf:"varint,2,opt,name=ParentID,proto3" json:"ParentID,omitempty"`
+	SpeakerID     string                 `protobuf:"bytes,3,opt,name=SpeakerID,proto3" json:"SpeakerID,omitempty"`
+	Content       string                 `protobuf:"bytes,4,opt,name=Content,proto3" json:"Content,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommentRequest) Reset() {
+	*x = CommentRequest{}
+	mi := &file_doc_proto_comment_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommentRequest) ProtoMessage() {}
+
+func (x *CommentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_doc_proto_comment_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommentRequest.ProtoReflect.Descriptor instead.
+func (*CommentRequest) Descriptor() ([]byte, []int) {
+	return file_doc_proto_comment_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *CommentRequest) GetAddress() int64 {
+	if x != nil {
+		return x.Address
+	}
+	return 0
+}
+
+func (x *CommentRequest) GetParentID() int64 {
+	if x != nil {
+		return x.ParentID
+	}
+	return 0
+}
+
+func (x *CommentRequest) GetSpeakerID() string {
+	if x != nil {
+		return x.SpeakerID
+	}
+	return ""
+}
+
+func (x *CommentRequest) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+type CommentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CommentID     int64                  `protobuf:"varint,1,opt,name=CommentID,proto3" json:"CommentID,omitempty"` // 评论成功后返回该条评论的唯一ID
+	Resp          *Response              `protobuf:"bytes,2,opt,name=Resp,proto3" json:"Resp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommentResponse) Reset() {
+	*x = CommentResponse{}
+	mi := &file_doc_proto_comment_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommentResponse) ProtoMessage() {}
+
+func (x *CommentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_doc_proto_comment_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommentResponse.ProtoReflect.Descriptor instead.
+func (*CommentResponse) Descriptor() ([]byte, []int) {
+	return file_doc_proto_comment_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *CommentResponse) GetCommentID() int64 {
+	if x != nil {
+		return x.CommentID
+	}
+	return 0
+}
+
+func (x *CommentResponse) GetResp() *Response {
+	if x != nil {
+		return x.Resp
+	}
+	return nil
+}
+
+// 得到某个位置的顶层评论
+type GetTopCommentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Address       int64                  `protobuf:"varint,1,opt,name=address,proto3" json:"address,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTopCommentRequest) Reset() {
+	*x = GetTopCommentRequest{}
+	mi := &file_doc_proto_comment_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTopCommentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTopCommentRequest) ProtoMessage() {}
+
+func (x *GetTopCommentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_doc_proto_comment_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTopCommentRequest.ProtoReflect.Descriptor instead.
+func (*GetTopCommentRequest) Descriptor() ([]byte, []int) {
+	return file_doc_proto_comment_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetTopCommentRequest) GetAddress() int64 {
+	if x != nil {
+		return x.Address
+	}
+	return 0
+}
+
+type GetTopCommentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Comments      []*CommentInfo         `protobuf:"bytes,1,rep,name=Comments,proto3" json:"Comments,omitempty"`
+	Resp          *Response              `protobuf:"bytes,2,opt,name=Resp,proto3" json:"Resp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTopCommentResponse) Reset() {
+	*x = GetTopCommentResponse{}
+	mi := &file_doc_proto_comment_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTopCommentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTopCommentResponse) ProtoMessage() {}
+
+func (x *GetTopCommentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_doc_proto_comment_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTopCommentResponse.ProtoReflect.Descriptor instead.
+func (*GetTopCommentResponse) Descriptor() ([]byte, []int) {
+	return file_doc_proto_comment_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetTopCommentResponse) GetComments() []*CommentInfo {
+	if x != nil {
+		return x.Comments
+	}
+	return nil
+}
+
+func (x *GetTopCommentResponse) GetResp() *Response {
+	if x != nil {
+		return x.Resp
+	}
+	return nil
+}
+
 var File_doc_proto_comment_proto protoreflect.FileDescriptor
 
 const file_doc_proto_comment_proto_rawDesc = "" +
@@ -294,29 +504,43 @@ const file_doc_proto_comment_proto_rawDesc = "" +
 	"\bResponse\x12\x18\n" +
 	"\aMessage\x18\x01 \x01(\tR\aMessage\x12\x16\n" +
 	"\x06Status\x18\x02 \x01(\x05R\x06Status\x12\x12\n" +
-	"\x04Code\x18\x03 \x01(\x03R\x04Code\"\xbc\x01\n" +
-	"\x0eArticleComment\x12\x12\n" +
-	"\x04Root\x18\x01 \x01(\tR\x04Root\x12 \n" +
-	"\vInitiatorID\x18\x02 \x01(\tR\vInitiatorID\x12\x1a\n" +
-	"\bOriginal\x18\x03 \x01(\tR\bOriginal\x12 \n" +
-	"\vRecipientID\x18\x04 \x01(\tR\vRecipientID\x12\x1c\n" +
-	"\tSpeakerID\x18\x05 \x01(\tR\tSpeakerID\x12\x18\n" +
-	"\aContent\x18\x06 \x01(\tR\aContent\"j\n" +
+	"\x04Code\x18\x03 \x01(\x03R\x04Code\"\xab\x01\n" +
+	"\vCommentInfo\x12\x1c\n" +
+	"\tCommentID\x18\x01 \x01(\x03R\tCommentID\x12 \n" +
+	"\vSpeakerName\x18\x02 \x01(\tR\vSpeakerName\x12$\n" +
+	"\rSpeakerAvatar\x18\x03 \x01(\tR\rSpeakerAvatar\x12\x18\n" +
+	"\aContent\x18\x04 \x01(\tR\aContent\x12\x1c\n" +
+	"\tSpeakTime\x18\x05 \x01(\x03R\tSpeakTime\"j\n" +
 	"\x12LikeArticleRequest\x12\x1c\n" +
-	"\tArticleID\x18\x01 \x01(\tR\tArticleID\x12\x16\n" +
+	"\tArticleID\x18\x01 \x01(\x03R\tArticleID\x12\x16\n" +
 	"\x06Action\x18\x02 \x01(\tR\x06Action\x12\x1e\n" +
 	"\n" +
 	"OperatorID\x18\x03 \x01(\tR\n" +
 	"OperatorID\"m\n" +
 	"\x15CollectArticleRequest\x12\x1c\n" +
-	"\tArticleID\x18\x01 \x01(\tR\tArticleID\x12\x16\n" +
+	"\tArticleID\x18\x01 \x01(\x03R\tArticleID\x12\x16\n" +
 	"\x06Action\x18\x02 \x01(\tR\x06Action\x12\x1e\n" +
 	"\n" +
 	"OperatorID\x18\x03 \x01(\tR\n" +
-	"OperatorID2\xa0\x01\n" +
+	"OperatorID\"~\n" +
+	"\x0eCommentRequest\x12\x18\n" +
+	"\aAddress\x18\x01 \x01(\x03R\aAddress\x12\x1a\n" +
+	"\bParentID\x18\x02 \x01(\x03R\bParentID\x12\x1c\n" +
+	"\tSpeakerID\x18\x03 \x01(\tR\tSpeakerID\x12\x18\n" +
+	"\aContent\x18\x04 \x01(\tR\aContent\"Y\n" +
+	"\x0fCommentResponse\x12\x1c\n" +
+	"\tCommentID\x18\x01 \x01(\x03R\tCommentID\x12(\n" +
+	"\x04Resp\x18\x02 \x01(\v2\x14.commentrpc.ResponseR\x04Resp\"0\n" +
+	"\x14GetTopCommentRequest\x12\x18\n" +
+	"\aaddress\x18\x01 \x01(\x03R\aaddress\"v\n" +
+	"\x15GetTopCommentResponse\x123\n" +
+	"\bComments\x18\x01 \x03(\v2\x17.commentrpc.CommentInfoR\bComments\x12(\n" +
+	"\x04Resp\x18\x02 \x01(\v2\x14.commentrpc.ResponseR\x04Resp2\xc0\x02\n" +
 	"\x0eCommentService\x12C\n" +
 	"\vLikeArticle\x12\x1e.commentrpc.LikeArticleRequest\x1a\x14.commentrpc.Response\x12I\n" +
-	"\x0eCollectArticle\x12!.commentrpc.CollectArticleRequest\x1a\x14.commentrpc.ResponseB\rZ\v/commentrpcb\x06proto3"
+	"\x0eCollectArticle\x12!.commentrpc.CollectArticleRequest\x1a\x14.commentrpc.Response\x12H\n" +
+	"\rCreateComment\x12\x1a.commentrpc.CommentRequest\x1a\x1b.commentrpc.CommentResponse\x12T\n" +
+	"\rGetTopComment\x12 .commentrpc.GetTopCommentRequest\x1a!.commentrpc.GetTopCommentResponseB\rZ\v/commentrpcb\x06proto3"
 
 var (
 	file_doc_proto_comment_proto_rawDescOnce sync.Once
@@ -330,23 +554,34 @@ func file_doc_proto_comment_proto_rawDescGZIP() []byte {
 	return file_doc_proto_comment_proto_rawDescData
 }
 
-var file_doc_proto_comment_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_doc_proto_comment_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_doc_proto_comment_proto_goTypes = []any{
 	(*Response)(nil),              // 0: commentrpc.Response
-	(*ArticleComment)(nil),        // 1: commentrpc.ArticleComment
+	(*CommentInfo)(nil),           // 1: commentrpc.CommentInfo
 	(*LikeArticleRequest)(nil),    // 2: commentrpc.LikeArticleRequest
 	(*CollectArticleRequest)(nil), // 3: commentrpc.CollectArticleRequest
+	(*CommentRequest)(nil),        // 4: commentrpc.CommentRequest
+	(*CommentResponse)(nil),       // 5: commentrpc.CommentResponse
+	(*GetTopCommentRequest)(nil),  // 6: commentrpc.GetTopCommentRequest
+	(*GetTopCommentResponse)(nil), // 7: commentrpc.GetTopCommentResponse
 }
 var file_doc_proto_comment_proto_depIdxs = []int32{
-	2, // 0: commentrpc.CommentService.LikeArticle:input_type -> commentrpc.LikeArticleRequest
-	3, // 1: commentrpc.CommentService.CollectArticle:input_type -> commentrpc.CollectArticleRequest
-	0, // 2: commentrpc.CommentService.LikeArticle:output_type -> commentrpc.Response
-	0, // 3: commentrpc.CommentService.CollectArticle:output_type -> commentrpc.Response
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: commentrpc.CommentResponse.Resp:type_name -> commentrpc.Response
+	1, // 1: commentrpc.GetTopCommentResponse.Comments:type_name -> commentrpc.CommentInfo
+	0, // 2: commentrpc.GetTopCommentResponse.Resp:type_name -> commentrpc.Response
+	2, // 3: commentrpc.CommentService.LikeArticle:input_type -> commentrpc.LikeArticleRequest
+	3, // 4: commentrpc.CommentService.CollectArticle:input_type -> commentrpc.CollectArticleRequest
+	4, // 5: commentrpc.CommentService.CreateComment:input_type -> commentrpc.CommentRequest
+	6, // 6: commentrpc.CommentService.GetTopComment:input_type -> commentrpc.GetTopCommentRequest
+	0, // 7: commentrpc.CommentService.LikeArticle:output_type -> commentrpc.Response
+	0, // 8: commentrpc.CommentService.CollectArticle:output_type -> commentrpc.Response
+	5, // 9: commentrpc.CommentService.CreateComment:output_type -> commentrpc.CommentResponse
+	7, // 10: commentrpc.CommentService.GetTopComment:output_type -> commentrpc.GetTopCommentResponse
+	7, // [7:11] is the sub-list for method output_type
+	3, // [3:7] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_doc_proto_comment_proto_init() }
@@ -360,7 +595,7 @@ func file_doc_proto_comment_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_doc_proto_comment_proto_rawDesc), len(file_doc_proto_comment_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

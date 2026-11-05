@@ -30,14 +30,14 @@ type updateArticleCoverServiceTokenInterceptor interface {
 	GetServiceTokenInConf() string
 }
 
-type updatearticlecoverCommonutils interface {
-	SaveImageFile(header *multipart.FileHeader, file multipart.File, saveDir, fileName string) (string, error)
+type updatearticlecoverArticleValidate interface {
+	SaveImageFile(header *multipart.FileHeader, file multipart.File, saveDir string, fileName int64) (string, error)
 }
 
 type UpdateArticleCoverLogic struct {
 	ctx                     context.Context
 	articleModel            updateArticleCoverArticleModel
-	commonUtils             updatearticlecoverCommonutils
+	articleValidate         updatearticlecoverArticleValidate
 	ctxdata                 updateArticleCoverctxdata
 	serviceTokenInterceptor updateArticleCoverServiceTokenInterceptor
 }
@@ -46,7 +46,7 @@ func NewUpdateArticleCoverLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 	return &UpdateArticleCoverLogic{
 		ctx:                     ctx,
 		articleModel:            svcCtx.ArticleModel,
-		commonUtils:             svcCtx.CommonUtils,
+		articleValidate:         svcCtx.ArticleValidate,
 		ctxdata:                 svcCtx.CtxData,
 		serviceTokenInterceptor: svcCtx.ServiceTokenInterceptor,
 	}
@@ -84,7 +84,7 @@ func (l *UpdateArticleCoverLogic) UpdateArticleCover(req *types.UpdateArticleCov
 	)
 
 	// 文件校验 图片保存的名称格式为  cover*time*.*
-	cover, err := l.commonUtils.SaveImageFile(header, file, "articlecover", req.ArticleID)
+	cover, err := l.articleValidate.SaveImageFile(header, file, "articlecover", req.ArticleID)
 	if err != nil {
 		return l.failUpdateArticleCoverResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}

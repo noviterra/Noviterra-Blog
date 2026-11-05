@@ -70,3 +70,15 @@ func (s *ArticleServiceServer) GetArchive(ctx context.Context, in *articlerpc.Ge
 	l := logic.NewGetArchiveLogic(ctx, s.svcCtx)
 	return l.GetArchive(in)
 }
+
+// 得到用户发布的全部文章列表
+func (s *ArticleServiceServer) GetUserArticleList(ctx context.Context, in *articlerpc.GetUserArticleListRequest) (*articlerpc.GetArticleListResponse, error) {
+	l := logic.NewGetUserArticleListLogic(ctx, s.svcCtx)
+	return l.GetUserArticleList(in)
+}
+
+// 得到用户点赞或收藏的全部文章列表
+func (s *ArticleServiceServer) GetUserLikeArticleList(ctx context.Context, in *articlerpc.GetUserLikeCollectArticleListRequest) (*articlerpc.GetArticleListResponse, error) {
+	l := logic.NewGetUserLikeArticleListLogic(ctx, s.svcCtx)
+	return l.GetUserLikeArticleList(in)
+}

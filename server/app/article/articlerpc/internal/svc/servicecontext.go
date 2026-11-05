@@ -10,6 +10,7 @@ import (
 	"Noviterra/server/utils/repo"
 	"Noviterra/server/utils/response"
 	"Noviterra/server/utils/snowflake"
+	"Noviterra/server/utils/validate"
 	"Noviterra/server/utils/zaplogger"
 	"fmt"
 )
@@ -21,11 +22,15 @@ type ServiceContext struct {
 	CtxData                 *ctxdata.CtxData
 	Logger                  *zaplogger.Logger
 	ArticleBloomFilter      *bloomfilter.ArticleBloomFilter
+	ArticleValidate         *validate.ArticleValidate
+	IdentityValidate        *validate.IdentityValidate
+	CommentValidate         *validate.CommentValidate
 	ArticleResponse         *response.ArticleResponse
 	ArticleRepository       *repo.ArticleRepository
 	ArticleCache            *cache.ArticleCache
 	UserRepository          *repo.UserRepository
 	IdentityRepository      *repo.IdentityRepository
+	CommentCache            *cache.CommentCache
 	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 }
 
@@ -42,10 +47,14 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Logger:                  tool.logger,
 		ArticleResponse:         tool.articleResponse,
 		ArticleBloomFilter:      tool.articleBloomFilter,
+		ArticleValidate:         tool.articleValidate,
+		IdentityValidate:        tool.identityValidate,
+		CommentValidate:         tool.commentValidate,
 		UserRepository:          store.userRepository,
 		ArticleRepository:       store.articleRepository,
 		ArticleCache:            store.articleCache,
 		IdentityRepository:      store.identityRepository,
+		CommentCache:            store.commentCache,
 		ServiceTokenInterceptor: aspect.serviceTokenInterceptor,
 	}
 }
@@ -57,9 +66,16 @@ type toolCollection struct {
 	logger             *zaplogger.Logger
 	articleBloomFilter *bloomfilter.ArticleBloomFilter
 	articleResponse    *response.ArticleResponse
+	articleValidate    *validate.ArticleValidate
+	identityValidate   *validate.IdentityValidate
+	typeConversion     *common.TypesConversion
+	commentValidate    *validate.CommentValidate
 }
 
 func initTool() toolCollection {
+	identityValidate := validate.NewIdentityValidate()
+	articleValidate := validate.NewArticleValidate(identityValidate)
+	commentValidate := validate.NewCommentValidate(identityValidate, articleValidate)
 	// 雪花ID生成器
 	sf, err := snowflake.NewSnowFlake(1)
 	if err != nil {
@@ -75,8 +91,10 @@ func initTool() toolCollection {
 	// 日志写入器
 	logger := zaplogger.NewLogger()
 
+	typeConversion := common.NewTypesConversion()
+
 	// 文章布隆过滤器
-	articleBloomFilter, err := bloomfilter.NewArticleBloomFilter(1000, 0.001)
+	articleBloomFilter, err := bloomfilter.NewArticleBloomFilter(bloomfilter.ArticleBloomFilterParam{N: 10000, P: 0.001}, typeConversion)
 	if err != nil {
 		panic(fmt.Errorf("布隆过滤器初始化失败！%w", err))
 	}
@@ -90,6 +108,9 @@ func initTool() toolCollection {
 		logger:             logger,
 		articleBloomFilter: articleBloomFilter,
 		articleResponse:    articleResponse,
+		articleValidate:    articleValidate,
+		identityValidate:   identityValidate,
+		commentValidate:    commentValidate,
 	}
 }
 
@@ -98,6 +119,7 @@ type storeCollection struct {
 	articleCache       *cache.ArticleCache
 	userRepository     *repo.UserRepository
 	identityRepository *repo.IdentityRepository
+	commentCache       *cache.CommentCache
 }
 
 func initStore(c config.Config, tool toolCollection) storeCollection {
@@ -119,13 +141,15 @@ func initStore(c config.Config, tool toolCollection) storeCollection {
 	identityRepo := repo.NewIdentityRespository(repositoryConfig, "identity")
 	articleRepo := repo.NewArticleRepository(repositoryConfig, "article")
 
-	articleCache := cache.NewArticleCache(cacheConfig, tool.commonUtils)
+	articleCache := cache.NewArticleCache(cacheConfig, tool.typeConversion)
+	commentCache := cache.NewCommentCache(cacheConfig, tool.typeConversion)
 
 	return storeCollection{
 		articleRepository:  articleRepo,
 		articleCache:       articleCache,
 		userRepository:     userRepo,
 		identityRepository: identityRepo,
+		commentCache:       commentCache,
 	}
 }
 

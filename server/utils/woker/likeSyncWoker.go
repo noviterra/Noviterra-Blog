@@ -84,18 +84,18 @@ func (lsw *LikeSyncWoker) flush(ctx context.Context) {
 // userArticleSet数据结构变为map[string]map[string][]bool bool切片 0为点赞状态 1为收藏状态
 func (lsw *LikeSyncWoker) proccessEvents(ctx context.Context, events []model.SyncEvent) error {
 	// 去重聚合
-	userLikeArticleSet := make(map[string]map[string]bool) // userID -> set<articleID> -> {like, collect}
-	articleLikeSet := make(map[string]bool)                // 所有涉及点赞的文章
-	userCollectArticleSet := make(map[string]map[string]bool)
-	articleCollectSet := make(map[string]bool)
+	userLikeArticleSet := make(map[string]map[int64]bool) // userID -> set<articleID>
+	articleLikeSet := make(map[int64]bool)                // 所有涉及点赞的文章
+	userCollectArticleSet := make(map[string]map[int64]bool)
+	articleCollectSet := make(map[int64]bool)
 
 	// 区分action
 	for _, event := range events {
 		if userLikeArticleSet[event.UserID] == nil {
-			userLikeArticleSet[event.UserID] = make(map[string]bool)
+			userLikeArticleSet[event.UserID] = make(map[int64]bool)
 		}
 		if userCollectArticleSet[event.UserID] == nil {
-			userCollectArticleSet[event.UserID] = make(map[string]bool)
+			userCollectArticleSet[event.UserID] = make(map[int64]bool)
 		}
 		// 一个事件仅记录一个行为 一个用户对一个文章点赞并收藏为两个事件
 		// 不会丢失收藏事件
@@ -110,7 +110,7 @@ func (lsw *LikeSyncWoker) proccessEvents(ctx context.Context, events []model.Syn
 
 	// 批量查询Redis （每个用户与每篇文章只查一次）
 	// 查询每篇文章的点赞总数
-	articleLikeCounts := make(map[string]int64, len(articleLikeSet))
+	articleLikeCounts := make(map[int64]int64, len(articleLikeSet))
 	for articleID := range articleLikeSet {
 		count, err := lsw.commentCache.GetLikeCount(ctx, articleID)
 		if err != nil {
@@ -130,7 +130,7 @@ func (lsw *LikeSyncWoker) proccessEvents(ctx context.Context, events []model.Syn
 	}
 
 	// 每篇文章的收藏总数
-	articleCollectCount := make(map[string]int64, len(articleCollectSet))
+	articleCollectCount := make(map[int64]int64, len(articleCollectSet))
 	for articleID := range articleCollectSet {
 		count, err := lsw.commentCache.GetCollectCount(ctx, articleID)
 		if err != nil {

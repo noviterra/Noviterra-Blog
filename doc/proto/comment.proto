@@ -10,25 +10,46 @@ message Response {
   int64 Code = 3;
 }
 
-message ArticleComment {
-  string Root = 1;
-  string InitiatorID = 2;
-  string Original = 3;
-  string RecipientID = 4;
-  string SpeakerID = 5;
-  string Content = 6;
+// 单个评论应该展示的信息
+message CommentInfo {
+  int64 CommentID = 1;
+  string SpeakerName = 2;
+  string SpeakerAvatar = 3;
+  string Content = 4;
+  int64 SpeakTime = 5;
 }
 
 message LikeArticleRequest {
-  string ArticleID = 1;
+  int64 ArticleID = 1;
   string Action = 2;
   string OperatorID = 3;
 }
 
 message CollectArticleRequest {
-  string ArticleID = 1;
+  int64 ArticleID = 1;
   string Action = 2;
   string OperatorID = 3;
+}
+
+message CommentRequest {
+  int64 Address = 1;
+  int64 ParentID = 2;
+  string SpeakerID = 3;
+  string Content = 4;
+}
+
+message CommentResponse {
+  int64 CommentID = 1;  // 评论成功后返回该条评论的唯一ID
+  Response Resp = 2;
+}
+
+// 得到某个位置的顶层评论
+message GetTopCommentRequest {
+  int64 address = 1;
+}
+message GetTopCommentResponse {
+  repeated CommentInfo Comments = 1;
+  Response Resp = 2;
 }
 
 service CommentService {
@@ -37,6 +58,12 @@ service CommentService {
 
   // 对文章的收藏操作
   rpc CollectArticle(CollectArticleRequest) returns (Response);
+
+  // 发表评论
+  rpc CreateComment(CommentRequest) returns (CommentResponse);
+
+  // 得到某个位置的全部顶层评论
+  rpc GetTopComment(GetTopCommentRequest) returns (GetTopCommentResponse);
 }
 
 /*

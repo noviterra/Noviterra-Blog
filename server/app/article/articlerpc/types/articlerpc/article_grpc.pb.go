@@ -19,14 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ArticleService_PublishArticle_FullMethodName     = "/articlerpc.ArticleService/PublishArticle"
-	ArticleService_DeleteArticle_FullMethodName      = "/articlerpc.ArticleService/DeleteArticle"
-	ArticleService_UpdateArticle_FullMethodName      = "/articlerpc.ArticleService/UpdateArticle"
-	ArticleService_UpdateArticleCover_FullMethodName = "/articlerpc.ArticleService/UpdateArticleCover"
-	ArticleService_GetArticleList_FullMethodName     = "/articlerpc.ArticleService/GetArticleList"
-	ArticleService_SearchArticle_FullMethodName      = "/articlerpc.ArticleService/SearchArticle"
-	ArticleService_GetArticleDetail_FullMethodName   = "/articlerpc.ArticleService/GetArticleDetail"
-	ArticleService_GetArchive_FullMethodName         = "/articlerpc.ArticleService/GetArchive"
+	ArticleService_PublishArticle_FullMethodName         = "/articlerpc.ArticleService/PublishArticle"
+	ArticleService_DeleteArticle_FullMethodName          = "/articlerpc.ArticleService/DeleteArticle"
+	ArticleService_UpdateArticle_FullMethodName          = "/articlerpc.ArticleService/UpdateArticle"
+	ArticleService_UpdateArticleCover_FullMethodName     = "/articlerpc.ArticleService/UpdateArticleCover"
+	ArticleService_GetArticleList_FullMethodName         = "/articlerpc.ArticleService/GetArticleList"
+	ArticleService_SearchArticle_FullMethodName          = "/articlerpc.ArticleService/SearchArticle"
+	ArticleService_GetArticleDetail_FullMethodName       = "/articlerpc.ArticleService/GetArticleDetail"
+	ArticleService_GetArchive_FullMethodName             = "/articlerpc.ArticleService/GetArchive"
+	ArticleService_GetUserArticleList_FullMethodName     = "/articlerpc.ArticleService/GetUserArticleList"
+	ArticleService_GetUserLikeArticleList_FullMethodName = "/articlerpc.ArticleService/GetUserLikeArticleList"
 )
 
 // ArticleServiceClient is the client API for ArticleService service.
@@ -49,6 +51,10 @@ type ArticleServiceClient interface {
 	GetArticleDetail(ctx context.Context, in *GetArticleDetailRequest, opts ...grpc.CallOption) (*GetArticleDetailResponse, error)
 	// 得到文章归档
 	GetArchive(ctx context.Context, in *GetArchiveRequest, opts ...grpc.CallOption) (*GetArchiveResponse, error)
+	// 得到用户发布的全部文章列表
+	GetUserArticleList(ctx context.Context, in *GetUserArticleListRequest, opts ...grpc.CallOption) (*GetArticleListResponse, error)
+	// 得到用户点赞或收藏的全部文章列表
+	GetUserLikeArticleList(ctx context.Context, in *GetUserLikeCollectArticleListRequest, opts ...grpc.CallOption) (*GetArticleListResponse, error)
 }
 
 type articleServiceClient struct {
@@ -139,6 +145,26 @@ func (c *articleServiceClient) GetArchive(ctx context.Context, in *GetArchiveReq
 	return out, nil
 }
 
+func (c *articleServiceClient) GetUserArticleList(ctx context.Context, in *GetUserArticleListRequest, opts ...grpc.CallOption) (*GetArticleListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetArticleListResponse)
+	err := c.cc.Invoke(ctx, ArticleService_GetUserArticleList_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *articleServiceClient) GetUserLikeArticleList(ctx context.Context, in *GetUserLikeCollectArticleListRequest, opts ...grpc.CallOption) (*GetArticleListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetArticleListResponse)
+	err := c.cc.Invoke(ctx, ArticleService_GetUserLikeArticleList_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ArticleServiceServer is the server API for ArticleService service.
 // All implementations must embed UnimplementedArticleServiceServer
 // for forward compatibility.
@@ -159,6 +185,10 @@ type ArticleServiceServer interface {
 	GetArticleDetail(context.Context, *GetArticleDetailRequest) (*GetArticleDetailResponse, error)
 	// 得到文章归档
 	GetArchive(context.Context, *GetArchiveRequest) (*GetArchiveResponse, error)
+	// 得到用户发布的全部文章列表
+	GetUserArticleList(context.Context, *GetUserArticleListRequest) (*GetArticleListResponse, error)
+	// 得到用户点赞或收藏的全部文章列表
+	GetUserLikeArticleList(context.Context, *GetUserLikeCollectArticleListRequest) (*GetArticleListResponse, error)
 	mustEmbedUnimplementedArticleServiceServer()
 }
 
@@ -192,6 +222,12 @@ func (UnimplementedArticleServiceServer) GetArticleDetail(context.Context, *GetA
 }
 func (UnimplementedArticleServiceServer) GetArchive(context.Context, *GetArchiveRequest) (*GetArchiveResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetArchive not implemented")
+}
+func (UnimplementedArticleServiceServer) GetUserArticleList(context.Context, *GetUserArticleListRequest) (*GetArticleListResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserArticleList not implemented")
+}
+func (UnimplementedArticleServiceServer) GetUserLikeArticleList(context.Context, *GetUserLikeCollectArticleListRequest) (*GetArticleListResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserLikeArticleList not implemented")
 }
 func (UnimplementedArticleServiceServer) mustEmbedUnimplementedArticleServiceServer() {}
 func (UnimplementedArticleServiceServer) testEmbeddedByValue()                        {}
@@ -358,6 +394,42 @@ func _ArticleService_GetArchive_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ArticleService_GetUserArticleList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserArticleListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticleServiceServer).GetUserArticleList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ArticleService_GetUserArticleList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticleServiceServer).GetUserArticleList(ctx, req.(*GetUserArticleListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ArticleService_GetUserLikeArticleList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserLikeCollectArticleListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticleServiceServer).GetUserLikeArticleList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ArticleService_GetUserLikeArticleList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticleServiceServer).GetUserLikeArticleList(ctx, req.(*GetUserLikeCollectArticleListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ArticleService_ServiceDesc is the grpc.ServiceDesc for ArticleService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -396,6 +468,14 @@ var ArticleService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetArchive",
 			Handler:    _ArticleService_GetArchive_Handler,
+		},
+		{
+			MethodName: "GetUserArticleList",
+			Handler:    _ArticleService_GetUserArticleList_Handler,
+		},
+		{
+			MethodName: "GetUserLikeArticleList",
+			Handler:    _ArticleService_GetUserLikeArticleList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

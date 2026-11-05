@@ -10,6 +10,7 @@ import (
 	"Noviterra/server/utils/common"
 	"Noviterra/server/utils/ctxdata"
 	"Noviterra/server/utils/repo"
+	"Noviterra/server/utils/validate"
 
 	"github.com/zeromicro/go-zero/zrpc"
 )
@@ -20,6 +21,7 @@ type ServiceContext struct {
 	CommonUtils             *common.CommonUtils
 	CtxData                 *ctxdata.CtxData
 	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
+	ArticleValidate         *validate.ArticleValidate
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -33,6 +35,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		ServiceTokenInterceptor: aspect.ServiceTokenInterceptor,
 		CommonUtils:             tool.CommonUtils,
 		CtxData:                 tool.ctxdata,
+		ArticleValidate:         tool.articleValidate,
 	}
 }
 
@@ -52,8 +55,9 @@ func initRPC(c config.Config) rpcCollection {
 
 // 工具类
 type toolCollection struct {
-	ctxdata     *ctxdata.CtxData
-	CommonUtils *common.CommonUtils
+	ctxdata         *ctxdata.CtxData
+	CommonUtils     *common.CommonUtils
+	articleValidate *validate.ArticleValidate
 }
 
 func initTool() toolCollection {
@@ -63,9 +67,14 @@ func initTool() toolCollection {
 	// 基础工具包
 	commonUtils := common.NewCommonUtils()
 
+	// 文章校验器
+	identityValidate := validate.NewIdentityValidate()
+	articleValidate := validate.NewArticleValidate(identityValidate)
+
 	return toolCollection{
-		ctxdata:     cd,
-		CommonUtils: commonUtils,
+		ctxdata:         cd,
+		CommonUtils:     commonUtils,
+		articleValidate: articleValidate,
 	}
 }
 

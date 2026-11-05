@@ -17,20 +17,26 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			{
 				// 对文章收藏操作
 				Method:  http.MethodPost,
-				Path:    "/collect",
+				Path:    "/article/collect",
 				Handler: CollectArticleHandler(serverCtx),
-			},
-			{
-				// 对一篇文章进行评论
-				Method:  http.MethodPost,
-				Path:    "/comment",
-				Handler: CommentArticleHandler(serverCtx),
 			},
 			{
 				// 对文章点赞操作
 				Method:  http.MethodPost,
-				Path:    "/like",
+				Path:    "/article/like",
 				Handler: LikeArticleHandler(serverCtx),
+			},
+			{
+				// 对一篇文章进行评论
+				Method:  http.MethodPost,
+				Path:    "/comment/comment",
+				Handler: CommentArticleHandler(serverCtx),
+			},
+			{
+				// 得到一篇文章的顶层评论
+				Method:  http.MethodPost,
+				Path:    "/commet/top",
+				Handler: GetTopCommentHandler(serverCtx),
 			},
 		},
 		rest.WithPrefix("/novblog/comment"),

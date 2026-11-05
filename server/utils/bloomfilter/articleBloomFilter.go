@@ -1,16 +1,26 @@
 package bloomfilter
 
-type ArticleBloomFilter struct {
-	bf *BloomFilter
+import "Noviterra/server/utils/common"
+
+type ArticleBloomFilterParam struct {
+	N uint
+	P float64
 }
 
-func NewArticleBloomFilter(n uint, p float64) (*ArticleBloomFilter, error) {
-	bf, err := NewBloomFilter(n, p)
+type ArticleBloomFilter struct {
+	bf              *BloomFilter
+	typesConversion *common.TypesConversion
+}
+
+func NewArticleBloomFilter(param ArticleBloomFilterParam,
+	typesConversion *common.TypesConversion) (*ArticleBloomFilter, error) {
+	bf, err := NewBloomFilter(param.N, param.P)
 	if err != nil {
 		return nil, err
 	}
 	return &ArticleBloomFilter{
-		bf: bf,
+		bf:              bf,
+		typesConversion: typesConversion,
 	}, nil
 }
 
@@ -19,19 +29,19 @@ func (abf *ArticleBloomFilter) InitArticleBloomFilter(articleID []string) {
 
 }
 
-func (abf *ArticleBloomFilter) AddArticle(data string) {
-	if len(data) <= 0 {
+func (abf *ArticleBloomFilter) AddArticle(data int64) {
+	if data <= 0 {
 		return
 	}
-	in := []byte(data)
+	in := abf.typesConversion.Int64ConversionBytes(data)
 	abf.bf.AddBloomFilterElem(in)
 }
 
-func (abf *ArticleBloomFilter) IsExistArticle(data string) bool {
-	if len(data) <= 0 {
+func (abf *ArticleBloomFilter) IsExistArticle(data int64) bool {
+	if data <= 0 {
 		return false
 	}
-	in := []byte(data)
+	in := abf.typesConversion.Int64ConversionBytes(data)
 	exist := abf.bf.IsExistElem(in)
 	return exist
 }

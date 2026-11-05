@@ -85,7 +85,7 @@ func (l *DeleteArticleLogic) DeleteArticle(req *types.DeleteArticleRequest) (res
 		return failResponse(resp, rep.Message, errcode.InvalidParam, int(rep.Code))
 	}
 
-	return successResponse(resp, fmt.Sprintf("文章：%s删除成功！", req.ArticleID))
+	return successResponse(resp, fmt.Sprintf("文章：%d删除成功！", req.ArticleID))
 }
 
 // 封装Response的对外导出 不绑定结构体之下

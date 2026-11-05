@@ -4,6 +4,7 @@ import (
 	"Noviterra/server/app/model"
 	"Noviterra/server/utils/common"
 	"context"
+	"errors"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -27,11 +28,11 @@ func NewCommentRepository(repoConfig RepoConfig, field string,
 // 事务进行article_stat与user_like表的操作
 // 相对上面的两个方法（UpsertUserLikes与UpsertArticleStatus）这里事务保障原子一致性 对比两边数据进行最小的变更 只对变化的数据操作
 func (cr *CommentRepository) BatchUpsertSyncStatus(ctx context.Context,
-	userLikedArtcles map[string][]string,
-	articleLikeCount map[string]int64,
-	userCollectArticles map[string][]string,
-	articleCollect map[string]int64,
-	articleViewCount map[string]int64,
+	userLikedArtcles map[string][]int64,
+	articleLikeCount map[int64]int64,
+	userCollectArticles map[string][]int64,
+	articleCollect map[int64]int64,
+	articleViewCount map[int64]int64,
 ) error {
 	// 依赖于redis中的数据 传参为redis清洗之后的数据
 	return cr.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -42,7 +43,7 @@ func (cr *CommentRepository) BatchUpsertSyncStatus(ctx context.Context,
 		// redis与MySQL中都有/没有：不操作
 		for userID, redisArticleIDs := range userLikedArtcles {
 			// 查询MySQL当前的点赞记录
-			var dbLikeArticles []string
+			var dbLikeArticles []int64
 			if err := tx.Model(&model.UserLike{}).
 				Where("user_id = ? AND like_status = 1", userID).
 				Pluck("article_id", &dbLikeArticles).Error; err != nil {
@@ -62,7 +63,7 @@ func (cr *CommentRepository) BatchUpsertSyncStatus(ctx context.Context,
 				}
 			}
 			// 需要取消的 DB有但redis中没有
-			var toLikeRemove []string
+			var toLikeRemove []int64
 			for aid := range dbLikeSet {
 				if !redisLikeSet[aid] {
 					toLikeRemove = append(toLikeRemove, aid)
@@ -92,7 +93,7 @@ func (cr *CommentRepository) BatchUpsertSyncStatus(ctx context.Context,
 
 		// 同步用户文章点赞数据 操作同理
 		for userID, redisArticles := range userCollectArticles {
-			var dbCollectArticles []string
+			var dbCollectArticles []int64
 			if err := tx.Model(&model.UserLike{}).
 				Where("user_id = ? AND collect_status = 1", userID).
 				Pluck("article_id", &dbCollectArticles).Error; err != nil {
@@ -112,7 +113,7 @@ func (cr *CommentRepository) BatchUpsertSyncStatus(ctx context.Context,
 					})
 				}
 			}
-			var toRemoveCollect []string
+			var toRemoveCollect []int64
 			for articleID := range dbCollectArticleSet {
 				if !redisCollectArticleSet[articleID] {
 					toRemoveCollect = append(toRemoveCollect, articleID)
@@ -190,4 +191,144 @@ func (cr *CommentRepository) BatchUpsertSyncStatus(ctx context.Context,
 
 		return nil
 	})
+}
+
+// InsertComment 插入一条评论
+func (cr *CommentRepository) InsertComment(ctx context.Context, comment *model.ArticleComment) error {
+	return cr.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if comment.ParentID <= 0 { // 父节点为空 表示该为顶层评论
+			comment.ParentID = 0
+			comment.RootID = 0
+		} else {
+			// 子回复 开始查询父评论
+			var parent model.ArticleComment
+			if err := tx.Where("comment_id = ? AND status = ?", comment.ParentID, 1).
+				First(&parent).Error; err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return fmt.Errorf("回复的评论不存在或已删除！")
+				}
+				return fmt.Errorf("查询父评论失败：%w", err)
+			}
+			comment.RootID = parent.RootID // root_id集成父节点的
+			comment.Depth = parent.Depth + 1
+		}
+
+		// 插入操作
+		if err := tx.Create(comment).Error; err != nil {
+			return fmt.Errorf("评论插入失败：%w", err)
+		}
+
+		// 回填RootID
+		if comment.RootID == 0 {
+			if err := tx.Model(comment).
+				Update("root_id", comment.CommentID).Error; err != nil {
+				return fmt.Errorf("回填RootID失败: %w", err)
+			}
+		}
+
+		return nil
+	})
+}
+
+// FirstLoadTopComment 首次进入文章后 加载顶层评论
+func (cr *CommentRepository) FirstLoadTopComment(ctx context.Context, address string) ([]model.TopCommentNode, error) {
+	var comments []model.TopCommentNode
+	err := cr.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := cr.db.Model(&model.ArticleComment{}).
+			Where("address = ? AND parent_id = ? AND status = ?",
+				address, "0", 1).Order("created_at ASC").
+			Find(&comments).Error; err != nil {
+			return fmt.Errorf("评论加载失败：%w", err)
+		}
+
+		if len(comments) == 0 {
+			return nil
+		}
+		// 统计每个顶层评论下有多少评论
+		// 收集顶层评论ID
+		topIDs := make([]string, 0, len(comments)) // 预分配容量 直接make([]string, legth)导致长度翻倍
+		for _, c := range comments {
+			topIDs = append(topIDs, c.CommentID)
+		}
+		// 查出全部后代 后续继续比对parentID
+		type child struct {
+			ID       string
+			ParentID string
+		}
+		var childs []child
+		if err := cr.db.Model(&model.ArticleComment{}).
+			Select("id,parent_id").
+			Where("address = ? AND status = ? AND parent_id <> ?",
+				address, 1, "0").
+			Find(&childs).Error; err != nil {
+			return fmt.Errorf("统计子评论失败：%w", err)
+		}
+
+		// parent -> children
+		children := make(map[string][]string, len(childs))
+		for _, cd := range childs {
+			children[cd.ParentID] = append(children[cd.ParentID], cd.ID)
+		}
+
+		// BFS 计算每个顶层评论的后代总数
+		countMap := make(map[string]int64, len(topIDs))
+		for _, id := range topIDs {
+			var cnt int64
+			queue := []string{id}
+			for len(queue) > 0 {
+				cur := queue[0]
+				queue = queue[1:]
+				for _, cd := range children[cur] {
+					cnt++
+					queue = append(queue, cd)
+				}
+			}
+			countMap[id] = cnt
+		}
+
+		// 回填
+		for i := range comments {
+			comments[i].Count = countMap[comments[i].CommentID]
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(comments) == 0 {
+		return []model.TopCommentNode{}, nil
+	}
+
+	return comments, nil
+}
+
+// OpenComment 展开评论 根据顶层评论ID得到全部评论
+func (cr *CommentRepository) OpenComment(ctx context.Context, commentID string) ([]model.CommentNode, error) {
+	// 校验顶层评论的有效性
+	var top model.TopCommentNode
+	if err := cr.db.WithContext(ctx).
+		Where("comment_id = ? AND status = ?", commentID, 1).
+		First(&top).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("展开的评论不存在或已被删除！")
+		}
+		return nil, fmt.Errorf("校验顶层评论失败：%w", err)
+	}
+
+	var comments []model.CommentNode
+	if err := cr.db.WithContext(ctx).
+		Model(&model.ArticleComment{}).
+		Where("root_id = ? AND status = ?", commentID, 1).
+		Order("created_at ASC, comment_id ASC").
+		Find(&comments).Error; err != nil {
+		return nil, fmt.Errorf("评论展开失败：%w", err)
+	}
+	if len(comments) == 0 {
+		return []model.CommentNode{}, nil
+	}
+
+	return comments, nil
 }

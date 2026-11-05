@@ -14,24 +14,26 @@ import (
 )
 
 type (
-	ArchiveArticle             = articlerpc.ArchiveArticle
-	Article                    = articlerpc.Article
-	ArticleList                = articlerpc.ArticleList
-	DeleteArticleRequest       = articlerpc.DeleteArticleRequest
-	GetArchiveRequest          = articlerpc.GetArchiveRequest
-	GetArchiveResponse         = articlerpc.GetArchiveResponse
-	GetArticleDetailRequest    = articlerpc.GetArticleDetailRequest
-	GetArticleDetailResponse   = articlerpc.GetArticleDetailResponse
-	GetArticleListRequest      = articlerpc.GetArticleListRequest
-	GetArticleListResponse     = articlerpc.GetArticleListResponse
-	PublishArticleRequest      = articlerpc.PublishArticleRequest
-	PublishArticleResponse     = articlerpc.PublishArticleResponse
-	Response                   = articlerpc.Response
-	SearchArticleRequest       = articlerpc.SearchArticleRequest
-	SearchArticleResponse      = articlerpc.SearchArticleResponse
-	UpdateArticleCoverRequest  = articlerpc.UpdateArticleCoverRequest
-	UpdateArticleCoverResponse = articlerpc.UpdateArticleCoverResponse
-	UpdateArticleRequest       = articlerpc.UpdateArticleRequest
+	ArchiveArticle                       = articlerpc.ArchiveArticle
+	Article                              = articlerpc.Article
+	ArticleList                          = articlerpc.ArticleList
+	DeleteArticleRequest                 = articlerpc.DeleteArticleRequest
+	GetArchiveRequest                    = articlerpc.GetArchiveRequest
+	GetArchiveResponse                   = articlerpc.GetArchiveResponse
+	GetArticleDetailRequest              = articlerpc.GetArticleDetailRequest
+	GetArticleDetailResponse             = articlerpc.GetArticleDetailResponse
+	GetArticleListRequest                = articlerpc.GetArticleListRequest
+	GetArticleListResponse               = articlerpc.GetArticleListResponse
+	GetUserArticleListRequest            = articlerpc.GetUserArticleListRequest
+	GetUserLikeCollectArticleListRequest = articlerpc.GetUserLikeCollectArticleListRequest
+	PublishArticleRequest                = articlerpc.PublishArticleRequest
+	PublishArticleResponse               = articlerpc.PublishArticleResponse
+	Response                             = articlerpc.Response
+	SearchArticleRequest                 = articlerpc.SearchArticleRequest
+	SearchArticleResponse                = articlerpc.SearchArticleResponse
+	UpdateArticleCoverRequest            = articlerpc.UpdateArticleCoverRequest
+	UpdateArticleCoverResponse           = articlerpc.UpdateArticleCoverResponse
+	UpdateArticleRequest                 = articlerpc.UpdateArticleRequest
 
 	ArticleService interface {
 		// 发布文章
@@ -50,6 +52,10 @@ type (
 		GetArticleDetail(ctx context.Context, in *GetArticleDetailRequest, opts ...grpc.CallOption) (*GetArticleDetailResponse, error)
 		// 得到文章归档
 		GetArchive(ctx context.Context, in *GetArchiveRequest, opts ...grpc.CallOption) (*GetArchiveResponse, error)
+		// 得到用户发布的全部文章列表
+		GetUserArticleList(ctx context.Context, in *GetUserArticleListRequest, opts ...grpc.CallOption) (*GetArticleListResponse, error)
+		// 得到用户点赞或收藏的全部文章列表
+		GetUserLikeArticleList(ctx context.Context, in *GetUserLikeCollectArticleListRequest, opts ...grpc.CallOption) (*GetArticleListResponse, error)
 	}
 
 	defaultArticleService struct {
@@ -109,4 +115,16 @@ func (m *defaultArticleService) GetArticleDetail(ctx context.Context, in *GetArt
 func (m *defaultArticleService) GetArchive(ctx context.Context, in *GetArchiveRequest, opts ...grpc.CallOption) (*GetArchiveResponse, error) {
 	client := articlerpc.NewArticleServiceClient(m.cli.Conn())
 	return client.GetArchive(ctx, in, opts...)
+}
+
+// 得到用户发布的全部文章列表
+func (m *defaultArticleService) GetUserArticleList(ctx context.Context, in *GetUserArticleListRequest, opts ...grpc.CallOption) (*GetArticleListResponse, error) {
+	client := articlerpc.NewArticleServiceClient(m.cli.Conn())
+	return client.GetUserArticleList(ctx, in, opts...)
+}
+
+// 得到用户点赞或收藏的全部文章列表
+func (m *defaultArticleService) GetUserLikeArticleList(ctx context.Context, in *GetUserLikeCollectArticleListRequest, opts ...grpc.CallOption) (*GetArticleListResponse, error) {
+	client := articlerpc.NewArticleServiceClient(m.cli.Conn())
+	return client.GetUserLikeArticleList(ctx, in, opts...)
 }

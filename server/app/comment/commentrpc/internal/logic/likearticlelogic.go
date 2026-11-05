@@ -22,8 +22,8 @@ type (
 	}
 
 	likeArticleCommentCache interface {
-		Like(ctx context.Context, articleID, userID string) (bool, int64, error)
-		Unlike(ctx context.Context, articleID, userID string) (bool, int64, error)
+		Like(ctx context.Context, articleID int64, userID string) (bool, int64, error)
+		Unlike(ctx context.Context, articleID int64, userID string) (bool, int64, error)
 		PushSyncEvent(ctx context.Context, event model.SyncEvent) error
 	}
 )
@@ -68,7 +68,7 @@ func (l *LikeArticleLogic) LikeArticle(in *commentrpc.LikeArticleRequest) (*comm
 	}
 }
 
-func (l *LikeArticleLogic) LikeHandler(resp *commentrpc.Response, articleID, userID string) (*commentrpc.Response, error) {
+func (l *LikeArticleLogic) LikeHandler(resp *commentrpc.Response, articleID int64, userID string) (*commentrpc.Response, error) {
 	result, _, err := l.commentCache.Like(l.ctx, articleID, userID)
 	if err != nil {
 		return l.commentResponse.FailResponse(resp, "系统繁忙，请稍后重试！", errcode.InternalError, errcode.Failed)
@@ -83,7 +83,7 @@ func (l *LikeArticleLogic) LikeHandler(resp *commentrpc.Response, articleID, use
 	return l.commentResponse.SuccessResponse(resp, "点赞成功！")
 }
 
-func (l *LikeArticleLogic) UnLikeHandler(resp *commentrpc.Response, articleID, userID string) (*commentrpc.Response, error) {
+func (l *LikeArticleLogic) UnLikeHandler(resp *commentrpc.Response, articleID int64, userID string) (*commentrpc.Response, error) {
 	result, _, err := l.commentCache.Unlike(l.ctx, articleID, userID)
 	if err != nil {
 		return l.commentResponse.FailResponse(resp, "系统繁忙，请稍后重试！", errcode.InternalError, errcode.Failed)
@@ -98,7 +98,7 @@ func (l *LikeArticleLogic) UnLikeHandler(resp *commentrpc.Response, articleID, u
 	return l.commentResponse.SuccessResponse(resp, "取消点赞成功！")
 }
 
-func (l *LikeArticleLogic) pushSync(articleID, userID, action string) {
+func (l *LikeArticleLogic) pushSync(articleID int64, userID, action string) {
 	_ = l.commentCache.PushSyncEvent(context.Background(), model.SyncEvent{
 		ArticleID: articleID,
 		UserID:    userID,

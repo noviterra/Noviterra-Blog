@@ -11,7 +11,7 @@ type ArchiveArticle struct {
 
 type Article struct {
 	PublisherID string   `json:"publisher_id" validate:"required,min=1,max=100"`
-	ArticleID   string   `json:"article_id" validate:"required,min=1,max=100"`
+	ArticleID   int64    `json:"article_id" validate:"required,gt=0"`
 	Title       string   `json:"title" validate:"required,min=1,max=100"`
 	Content     string   `json:"content" validate:"required,min=1"`
 	Cover       string   `json:"cover" validate:"required,min=1,max=20"`
@@ -23,16 +23,16 @@ type Article struct {
 }
 
 type ArticleList struct {
-	ArticleID   string   `json:"article_id" validate:"required,min=1,max=100"`
+	ArticleID   int64    `json:"article_id" validate:"required,gt=0"`
 	Title       string   `json:"title" validate:"required,min=1,max=100"`
 	Cover       string   `json:"cover" validate:"required,min=1,max=20"`
 	Tags        []string `json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
 	Information string   `json:"information" validate:"required,min=1,max=200"`
-	CreatedAt   string   `json:"created_at" validate:"required,timeformat=2006-01-02 15:04:05"`
+	CreatedAt   int64    `json:"created_at" validate:"required,timeformat=2006-01-02 15:04:05"`
 }
 
 type DeleteArticleRequest struct {
-	ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
+	ArticleID int64 `json:"article_id" validate:"required,gt=0"`
 }
 
 type GetArchiveResponse struct {
@@ -41,7 +41,7 @@ type GetArchiveResponse struct {
 }
 
 type GetArticleDetailRequest struct {
-	ArticleID string `path:"article" validate:"required,min=1,max=100"`
+	ArticleID int64 `json:"article_id" validate:"required,gt=0"`
 }
 
 type GetArticleDetailResponse struct {
@@ -51,7 +51,7 @@ type GetArticleDetailResponse struct {
 
 type GetArticleListRequest struct {
 	Page     int `json:"page" validate:"required,min=1"`
-	PageSize int `json:"page_size" validate:"required,min=1,max=100"`
+	PageSize int `json:"page_size" validate:"required,min=5,max=15"`
 }
 
 type GetArticleListResponse struct {
@@ -59,36 +59,23 @@ type GetArticleListResponse struct {
 	Resp         Response      `json:"response"`
 }
 
-type GetUserCollectListRequest struct {
-	UserID string `json:"user_id" validate:"required,min=1,max=100"`
-}
-
-type GetUserCollectListResponse struct {
-	ArticleList []ArticleList `json:"articles_list"`
-	Resp        Response      `json:"response"`
-}
-
-type GetUserLikesListRequest struct {
-	UserID string `json:"user_id" validate:"required,min=1,max=100"`
-}
-
-type GetUserLikesListResponse struct {
-	ArticleList []ArticleList `json:"articles_list"`
-	Resp        Response      `json:"response"`
+type GetUserLikeCollectListRequest struct {
+	UserID   string `json:"user_id" validate:"required,min=1,max=100"`
+	Page     int    `json:"page" validate:"required,min=1"`
+	PageSize int    `json:"page_size" validate:"required,min=5,max=15"`
+	Fields   string `json:"fields" validate:oneof=like collect`
 }
 
 type GetUsersArticleListRequest struct {
-	UserID string `json:"user_id" validate:"required,min=1,max=100"`
-}
-
-type GetUsersArticleListResponse struct {
-	ArticleList []ArticleList `json:"articles_list"`
-	Resp        Response      `json:"response"`
+	UserID   string `json:"user_id" validate:"required,min=1,max=100"`
+	Page     int    `json:"page" validate:"required,min=1"`
+	PageSize int    `json:"page_size" validate:"required,min=5,max=15"`
 }
 
 type PublishArticleRequest struct {
 	Title       string   `form:"title" json:"title" validate:"required,min=1,max=100"`
 	Content     string   `form:"content" json:"content" validate:"required,min=1"`
+	ArticleID   int64    `json:"article_id" validate:"required,gt=0"`
 	Tags        []string `form:"tags" json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
 	Information string   `form:"information" json:"information" validate:"required,min=1,max=200"` // 作为一篇文章的总结or简短介绍
 }
@@ -111,7 +98,7 @@ type SearchArticleResponse struct {
 }
 
 type UpdateArticleCoverRequest struct {
-	ArticleID string `json:"article_id" validate:"required,min=1,max=100"`
+	ArticleID int64 `json:"article_id" validate:"required,gt=0"`
 }
 
 type UpdateArticleCoverResponse struct {
@@ -120,7 +107,7 @@ type UpdateArticleCoverResponse struct {
 }
 
 type UpdateArticleRequest struct {
-	ArticleID   string   `json:"article_id" validate:"required,min=1,max=100"`
+	ArticleID   int64    `json:"article_id" validate:"required,gt=0"`
 	Title       string   `json:"title" validate:"omitempty,min=1,max=100"`
 	Content     string   `json:"content" validate:"omitempty,min=1"`
 	Tags        []string `json:"tags" validate:"omitempty,min=1,max=5,dive,required,min=1,max=20"`
