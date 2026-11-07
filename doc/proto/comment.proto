@@ -4,6 +4,27 @@ option go_package = "/commentrpc";
 
 // 9005
 
+/*
+goctl rpc protoc ./doc/proto/comment.proto --go_out=./server/app/comment/commentrpc/types --go-grpc_out=./server/app/comment/commentrpc/types --zrpc_out=./server/app/comment/commentrpc
+*/
+
+service CommentService {
+  // 对文章的点赞操作
+  rpc LikeArticle(LikeArticleRequest) returns (Response);
+
+  // 对文章的收藏操作
+  rpc CollectArticle(CollectArticleRequest) returns (Response);
+
+  // 发表评论
+  rpc CreateComment(CommentRequest) returns (CommentResponse);
+
+  // 得到某个位置的全部顶层评论
+  rpc GetTopComment(GetTopCommentRequest) returns (GetTopCommentResponse);
+
+  // 得到某个评论的全部子评论
+  rpc GetTreeComment(GetTreeCommentRequest) returns (GetTopCommentResponse);
+}
+
 message Response {
   string Message = 1;
   int32 Status = 2;
@@ -12,6 +33,16 @@ message Response {
 
 // 单个评论应该展示的信息
 message CommentInfo {
+  int64 CommentID = 1;
+  string SpeakerName = 2;
+  string SpeakerAvatar = 3;
+  string Content = 4;
+  int64  Count = 5;
+  int64 SpeakTime = 6;
+}
+
+// 单个子评论展示的信息
+message TreeCommentInfo {
   int64 CommentID = 1;
   string SpeakerName = 2;
   string SpeakerAvatar = 3;
@@ -52,20 +83,11 @@ message GetTopCommentResponse {
   Response Resp = 2;
 }
 
-service CommentService {
-  // 对文章的点赞操作
-  rpc LikeArticle(LikeArticleRequest) returns (Response);
-
-  // 对文章的收藏操作
-  rpc CollectArticle(CollectArticleRequest) returns (Response);
-
-  // 发表评论
-  rpc CreateComment(CommentRequest) returns (CommentResponse);
-
-  // 得到某个位置的全部顶层评论
-  rpc GetTopComment(GetTopCommentRequest) returns (GetTopCommentResponse);
+// 得到某个评论的全部子评论
+message GetTreeCommentRequest {
+  int64 CommentID = 1;
 }
-
-/*
-goctl rpc protoc ./doc/proto/comment.proto --go_out=./server/app/comment/commentrpc/types --go-grpc_out=./server/app/comment/commentrpc/types --zrpc_out=./server/app/comment/commentrpc
-*/
+message GetTreeCommentResponse {
+  repeated TreeCommentInfo Comments = 1;
+  Response Resp = 2;
+}

@@ -23,6 +23,7 @@ const (
 	CommentService_CollectArticle_FullMethodName = "/commentrpc.CommentService/CollectArticle"
 	CommentService_CreateComment_FullMethodName  = "/commentrpc.CommentService/CreateComment"
 	CommentService_GetTopComment_FullMethodName  = "/commentrpc.CommentService/GetTopComment"
+	CommentService_GetTreeComment_FullMethodName = "/commentrpc.CommentService/GetTreeComment"
 )
 
 // CommentServiceClient is the client API for CommentService service.
@@ -37,6 +38,8 @@ type CommentServiceClient interface {
 	CreateComment(ctx context.Context, in *CommentRequest, opts ...grpc.CallOption) (*CommentResponse, error)
 	// 得到某个位置的全部顶层评论
 	GetTopComment(ctx context.Context, in *GetTopCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error)
+	// 得到某个评论的全部子评论
+	GetTreeComment(ctx context.Context, in *GetTreeCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error)
 }
 
 type commentServiceClient struct {
@@ -87,6 +90,16 @@ func (c *commentServiceClient) GetTopComment(ctx context.Context, in *GetTopComm
 	return out, nil
 }
 
+func (c *commentServiceClient) GetTreeComment(ctx context.Context, in *GetTreeCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTopCommentResponse)
+	err := c.cc.Invoke(ctx, CommentService_GetTreeComment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CommentServiceServer is the server API for CommentService service.
 // All implementations must embed UnimplementedCommentServiceServer
 // for forward compatibility.
@@ -99,6 +112,8 @@ type CommentServiceServer interface {
 	CreateComment(context.Context, *CommentRequest) (*CommentResponse, error)
 	// 得到某个位置的全部顶层评论
 	GetTopComment(context.Context, *GetTopCommentRequest) (*GetTopCommentResponse, error)
+	// 得到某个评论的全部子评论
+	GetTreeComment(context.Context, *GetTreeCommentRequest) (*GetTopCommentResponse, error)
 	mustEmbedUnimplementedCommentServiceServer()
 }
 
@@ -120,6 +135,9 @@ func (UnimplementedCommentServiceServer) CreateComment(context.Context, *Comment
 }
 func (UnimplementedCommentServiceServer) GetTopComment(context.Context, *GetTopCommentRequest) (*GetTopCommentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetTopComment not implemented")
+}
+func (UnimplementedCommentServiceServer) GetTreeComment(context.Context, *GetTreeCommentRequest) (*GetTopCommentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetTreeComment not implemented")
 }
 func (UnimplementedCommentServiceServer) mustEmbedUnimplementedCommentServiceServer() {}
 func (UnimplementedCommentServiceServer) testEmbeddedByValue()                        {}
@@ -214,6 +232,24 @@ func _CommentService_GetTopComment_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CommentService_GetTreeComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTreeCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommentServiceServer).GetTreeComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommentService_GetTreeComment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommentServiceServer).GetTreeComment(ctx, req.(*GetTreeCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CommentService_ServiceDesc is the grpc.ServiceDesc for CommentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -236,6 +272,10 @@ var CommentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopComment",
 			Handler:    _CommentService_GetTopComment_Handler,
+		},
+		{
+			MethodName: "GetTreeComment",
+			Handler:    _CommentService_GetTreeComment_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

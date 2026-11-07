@@ -2,12 +2,11 @@ package ctxdata
 
 import "context"
 
-type ctxKeyID string
-type ctxKeyRole string
-
 const (
-	ctxkeyUserID   ctxKeyID   = "user_id"
-	ctxKeyUserRole ctxKeyRole = "user_role"
+	ctxkeyUserID   = "user_id"
+	ctxKeyUserRole = "user_role"
+
+	ctxUserLoginStatus = "user_login_status"
 )
 
 func (c *CtxData) StoreUserIDInContext(ctx context.Context, userID string) context.Context {
@@ -30,4 +29,15 @@ func (c *CtxData) GetUserRoleFromContext(ctx context.Context) int {
 		return v
 	}
 	return -1
+}
+
+func (c *CtxData) SetUserLoginStatus(ctx context.Context, isLogin bool) context.Context {
+	return context.WithValue(ctx, ctxUserLoginStatus, isLogin)
+}
+
+func (c *CtxData) GetUserLoginStatus(ctx context.Context) bool {
+	if v, ok := ctx.Value(ctxUserLoginStatus).(bool); ok {
+		return v
+	}
+	return false
 }

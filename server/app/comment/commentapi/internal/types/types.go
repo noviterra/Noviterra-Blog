@@ -11,7 +11,7 @@ type ArticleComment struct {
 }
 
 type CollectArticleRequest struct {
-	ArticleID int64  `json:"article_id" validate:"gt=0"`
+	ArticleID int64  `json:"article_id" validate:"gt=10"`
 	Action    string `json:"action" validate:"required,oneof=collect,uncollect"`
 }
 
@@ -20,11 +20,12 @@ type CommentArticleRequest struct {
 }
 
 type CommentInfo struct {
-	CommentID     string `json:"comment_id"`
+	CommentID     int64  `json:"comment_id"`
 	SpeakerName   string `json:"speaker_name"`
 	SpeakerAvatar string `json:"speaker_avatar"`
 	Content       string `json:"content"`
 	SpeakTime     int64  `json:"speak_time"`
+	Count         int64  `json:"count"`
 }
 
 type CommentNoviterraRequest struct {
@@ -36,12 +37,21 @@ type GetTopCommentRequest struct {
 }
 
 type GetTopCommentResponse struct {
-	Comments []CommentInfo `json:"comment"`
+	Comments []CommentInfo `json:"comments"`
 	Resp     Response      `json:"response"`
 }
 
+type GetTreeCommentRequest struct {
+	CommentID string `json:"comment_id" validate:"gt=10"`
+}
+
+type GetTreeCommentResponse struct {
+	Comments []TreeCommentInfo `json:"comments"`
+	Resp     Response          `json:"response"`
+}
+
 type LikeArticleRequest struct {
-	ArticleID int64  `json:"article_id" validate:"gt=0"`
+	ArticleID int64  `json:"article_id" validate:"gt=10"`
 	Action    string `json:"action" validate:"required,oneof=like,unlike"`
 }
 
@@ -49,4 +59,12 @@ type Response struct {
 	Status  int    `json:"status"`
 	Code    int    `json:"errcode"`
 	Message string `json:"message"`
+}
+
+type TreeCommentInfo struct {
+	CommentID     int64  `json:"comment_id"`
+	SpeakerName   string `json:"speaker_name"`
+	SpeakerAvatar string `json:"speaker_avatar"`
+	Content       string `json:"content"`
+	SpeakTime     int64  `json:"speak_time"`
 }

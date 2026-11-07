@@ -2,6 +2,7 @@ package repo
 
 import (
 	"Noviterra/server/app/model"
+	"context"
 	"errors"
 
 	"gorm.io/gorm"
@@ -60,4 +61,28 @@ func (ur *UserRepository) GetUserPassword(id string) (string, error) {
 		return "", err
 	}
 	return u.Password, nil
+}
+
+// GetUserInfoInComment 得到展示在评论区中的用户信息
+func (ur *UserRepository) GetUserInfoInComment(ctx context.Context, userIDs []string) (map[string]model.CommentSpeaker, error) {
+	if len(userIDs) == 0 {
+		return map[string]model.CommentSpeaker{}, nil
+	}
+
+	var speakerInfo []model.CommentSpeaker
+	if err := ur.db.WithContext(ctx).
+		Model(&model.UserInfo{}).
+		Select([]string{"id", "name", "avatar"}).
+		Where("id IN ? AND is_deleted = ?", userIDs, false).
+		Find(&speakerInfo).Error; err != nil {
+		return nil, err
+	}
+
+	// 转换为map[<userID>]<UserInfo>
+	result := make(map[string]model.CommentSpeaker, len(speakerInfo))
+	for _, speaker := range speakerInfo {
+		result[speaker.ID] = speaker
+	}
+
+	return result, nil
 }

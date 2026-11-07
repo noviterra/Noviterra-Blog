@@ -62,8 +62,8 @@ type SyncEvent struct {
 
 // CommentNode DTO 多层评论中单个评论属性
 type CommentNode struct {
-	CommentID string    // 文章唯一ID
-	ParentID  string    // 父节点评论ID  为空表示为顶层评论
+	CommentID int64     // 文章唯一ID
+	ParentID  int64     // 父节点评论ID  为空表示为顶层评论
 	SpeakerID string    // 回复者ID
 	Content   string    // 评论内容
 	CreatedAt time.Time // 评论时间
@@ -71,7 +71,7 @@ type CommentNode struct {
 
 // TopCommentNode 顶层评论属性
 type TopCommentNode struct {
-	CommentID string
+	CommentID int64
 	SpeakerID string
 	Content   string
 	Count     int64

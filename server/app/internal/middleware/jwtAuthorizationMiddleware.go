@@ -74,7 +74,7 @@ func (am *AuthMiddleware) JwtAuthMiddleware() rest.Middleware {
 				return
 			}
 			if !idExist {
-				httpx.ErrorCtx(r.Context(), w, errors.New("疑似伪造用户，劝你心善！"))
+				httpx.ErrorCtx(r.Context(), w, errors.New("不存在的账号！"))
 				return
 			}
 			status, err := am.identityRepo.GetUserAccountStatus(claim.ID)

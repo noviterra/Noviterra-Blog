@@ -33,3 +33,9 @@ type UserInfo struct {
 func (UserInfo) TableName() string {
 	return "users"
 }
+
+type CommentSpeaker struct {
+	ID     string
+	Name   string
+	Avatar string
+}

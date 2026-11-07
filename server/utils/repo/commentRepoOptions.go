@@ -194,8 +194,9 @@ func (cr *CommentRepository) BatchUpsertSyncStatus(ctx context.Context,
 }
 
 // InsertComment 插入一条评论
-func (cr *CommentRepository) InsertComment(ctx context.Context, comment *model.ArticleComment) error {
-	return cr.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+func (cr *CommentRepository) InsertComment(ctx context.Context, comment *model.ArticleComment) (int64, error) {
+	var rootID int64
+	err := cr.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if comment.ParentID <= 0 { // 父节点为空 表示该为顶层评论
 			comment.ParentID = 0
 			comment.RootID = 0
@@ -211,6 +212,7 @@ func (cr *CommentRepository) InsertComment(ctx context.Context, comment *model.A
 			}
 			comment.RootID = parent.RootID // root_id集成父节点的
 			comment.Depth = parent.Depth + 1
+			rootID = parent.RootID
 		}
 
 		// 插入操作
@@ -220,6 +222,7 @@ func (cr *CommentRepository) InsertComment(ctx context.Context, comment *model.A
 
 		// 回填RootID
 		if comment.RootID == 0 {
+			rootID = comment.CommentID
 			if err := tx.Model(comment).
 				Update("root_id", comment.CommentID).Error; err != nil {
 				return fmt.Errorf("回填RootID失败: %w", err)
@@ -228,15 +231,22 @@ func (cr *CommentRepository) InsertComment(ctx context.Context, comment *model.A
 
 		return nil
 	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	return rootID, nil
 }
 
 // FirstLoadTopComment 首次进入文章后 加载顶层评论
-func (cr *CommentRepository) FirstLoadTopComment(ctx context.Context, address string) ([]model.TopCommentNode, error) {
+func (cr *CommentRepository) FirstLoadTopComment(ctx context.Context,
+	address int64) ([]model.TopCommentNode, error) {
 	var comments []model.TopCommentNode
 	err := cr.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := cr.db.Model(&model.ArticleComment{}).
+		if err := tx.Model(&model.ArticleComment{}).
 			Where("address = ? AND parent_id = ? AND status = ?",
-				address, "0", 1).Order("created_at ASC").
+				address, 0, 1).Order("created_at ASC").
 			Find(&comments).Error; err != nil {
 			return fmt.Errorf("评论加载失败：%w", err)
 		}
@@ -246,35 +256,35 @@ func (cr *CommentRepository) FirstLoadTopComment(ctx context.Context, address st
 		}
 		// 统计每个顶层评论下有多少评论
 		// 收集顶层评论ID
-		topIDs := make([]string, 0, len(comments)) // 预分配容量 直接make([]string, legth)导致长度翻倍
+		topIDs := make([]int64, 0, len(comments)) // 预分配容量 直接make([]string, legth)导致长度翻倍
 		for _, c := range comments {
 			topIDs = append(topIDs, c.CommentID)
 		}
 		// 查出全部后代 后续继续比对parentID
 		type child struct {
-			ID       string
-			ParentID string
+			CommentID int64
+			ParentID  int64
 		}
 		var childs []child
-		if err := cr.db.Model(&model.ArticleComment{}).
-			Select("id,parent_id").
+		if err := tx.Model(&model.ArticleComment{}).
+			Select("comment_id,parent_id").
 			Where("address = ? AND status = ? AND parent_id <> ?",
-				address, 1, "0").
+				address, 1, 0).
 			Find(&childs).Error; err != nil {
 			return fmt.Errorf("统计子评论失败：%w", err)
 		}
 
 		// parent -> children
-		children := make(map[string][]string, len(childs))
+		children := make(map[int64][]int64, len(childs))
 		for _, cd := range childs {
-			children[cd.ParentID] = append(children[cd.ParentID], cd.ID)
+			children[cd.ParentID] = append(children[cd.ParentID], cd.CommentID)
 		}
 
 		// BFS 计算每个顶层评论的后代总数
-		countMap := make(map[string]int64, len(topIDs))
+		countMap := make(map[int64]int64, len(topIDs))
 		for _, id := range topIDs {
 			var cnt int64
-			queue := []string{id}
+			queue := []int64{id}
 			for len(queue) > 0 {
 				cur := queue[0]
 				queue = queue[1:]

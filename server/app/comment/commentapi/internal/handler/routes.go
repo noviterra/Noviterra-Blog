@@ -33,6 +33,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: CommentArticleHandler(serverCtx),
 			},
 			{
+				// 展开某个评论
+				Method:  http.MethodPost,
+				Path:    "/comment/tree",
+				Handler: GetTreeCommentHandler(serverCtx),
+			},
+			{
 				// 得到一篇文章的顶层评论
 				Method:  http.MethodPost,
 				Path:    "/commet/top",

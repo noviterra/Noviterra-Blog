@@ -392,20 +392,26 @@ func (cc *CommentCache) SetTopComment(ctx context.Context,
 
 // GetTopComment 得到顶层评论列表
 func (cc *CommentCache) GetTopComment(ctx context.Context,
-	address int64) ([]model.TopCommentNode, error) {
+	address int64) ([]model.TopCommentNode, bool, error) {
 	data, err := cc.rdb.Get(ctx, topCommentListKey(address)).Bytes()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return nil, nil
+			return nil, false, nil
 		}
-		return nil, err
+		return nil, false, err
 	}
 
 	var list []model.TopCommentNode
 	if err := json.Unmarshal(data, &list); err != nil {
-		return nil, fmt.Errorf("反序列化顶层评论列表失败：%w", err)
+		return nil, false, fmt.Errorf("反序列化顶层评论列表失败：%w", err)
 	}
-	return list, nil
+	return list, true, nil
+}
+
+// DelTopComment 删除顶层评论列表
+func (cc *CommentCache) DelTopComment(ctx context.Context,
+	address int64) error {
+	return cc.rdb.Del(ctx, topCommentListKey(address)).Err()
 }
 
 // SetTreeComment 缓存某棵评论树
@@ -434,6 +440,12 @@ func (cc *CommentCache) GetTreeComment(ctx context.Context,
 		return nil, fmt.Errorf("反序列化评论树失败：%w", err)
 	}
 	return result, nil
+}
+
+// DelTreeComment 删除某棵评论树
+func (cc *CommentCache) DelTreeComment(ctx context.Context,
+	rootID int64) error {
+	return cc.rdb.Del(ctx, treeCommentKey(rootID)).Err()
 }
 
 // GetUserLikeCollectArticleList 得到用户点赞或收藏的全部文章ID

@@ -25,11 +25,18 @@ type (
 	}
 
 	createCommentRepository interface {
-		InsertComment(ctx context.Context, comment *model.ArticleComment) error
+		InsertComment(ctx context.Context, comment *model.ArticleComment) (int64, error)
 	}
 
 	createCommentSnowFlake interface {
 		GenerateSnowFlakeID() int64
+	}
+
+	createCommentCache interface {
+		DelTreeComment(ctx context.Context,
+			rootID int64) error
+		DelTopComment(ctx context.Context,
+			address int64) error
 	}
 )
 
@@ -40,6 +47,7 @@ type CreateCommentLogic struct {
 	ctxdata           createCommentCtxData
 	commentRepository createCommentRepository
 	snowflake         createCommentSnowFlake
+	commentCache      createCommentCache
 }
 
 func NewCreateCommentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CreateCommentLogic {
@@ -50,6 +58,7 @@ func NewCreateCommentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Cre
 		commentValidate:   svcCtx.CommentValidate,
 		commentRepository: svcCtx.CommentRepository,
 		snowflake:         svcCtx.Snowfake,
+		commentCache:      svcCtx.CommentCache,
 	}
 }
 
@@ -78,7 +87,7 @@ func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*comm
 	commentID := l.snowflake.GenerateSnowFlakeID()
 
 	// 入库
-	err = l.commentRepository.InsertComment(l.ctx, &model.ArticleComment{
+	rootID, err := l.commentRepository.InsertComment(l.ctx, &model.ArticleComment{
 		CommentID: commentID,
 		ParentID:  commentReq.ParentID,
 		SpeakerID: commentReq.SpeakerID,
@@ -87,6 +96,13 @@ func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*comm
 	})
 	if err != nil {
 		return l.commentResponse.FailResponse(resp, "系统繁忙，评论失败！", errcode.InternalError, errcode.Failed)
+	}
+
+	// 评论发布后 删除缓存 日志记录
+	if commentReq.ParentID == 0 { // 发布的为顶层评论 则删除顶层评论缓存
+		err = l.commentCache.DelTopComment(l.ctx, commentReq.Address)
+	} else { // 子级评论 将所在的评论树缓存删除
+		err = l.commentCache.DelTreeComment(l.ctx, rootID)
 	}
 
 	return l.commentResponse.SuccessResponse(resp, "评论成功！")

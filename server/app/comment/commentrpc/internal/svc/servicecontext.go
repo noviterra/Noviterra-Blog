@@ -19,10 +19,12 @@ type ServiceContext struct {
 	Config                  config.Config
 	CommentCache            *cache.CommentCache
 	CommentRepository       *repo.CommentRepository
+	UserRepository          *repo.UserRepository
 	CommentResponse         *response.CommentResponse
 	CtxData                 *ctxdata.CtxData
 	CommentValidate         *validate.CommentValidate
 	Snowfake                *snowflake.SnowFlake
+	DataDeduplication       *common.DataDeduplication
 	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 	CommentWoker            *woker.LikeSyncWoker
 }
@@ -38,10 +40,12 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Config:                  c,
 		CommentCache:            store.commentCache,
 		CommentRepository:       store.commentRepository,
+		UserRepository:          store.userRepository,
 		CtxData:                 tool.ctxdata,
 		CommentResponse:         tool.commentResponse,
 		CommentValidate:         tool.commentValidate,
 		Snowfake:                tool.snowfake,
+		DataDeduplication:       tool.dataDeduplication,
 		ServiceTokenInterceptor: aspect.serviceTokenInterceptor,
 		CommentWoker:            woke.commentWoker,
 	}
@@ -50,6 +54,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 type storeCollection struct {
 	commentCache      *cache.CommentCache
 	commentRepository *repo.CommentRepository
+	userRepository    *repo.UserRepository
 }
 
 func initStore(c config.Config, tool toolCollection) storeCollection {
@@ -66,12 +71,14 @@ func initStore(c config.Config, tool toolCollection) storeCollection {
 		DBName:   c.Repo.DBName,
 	}
 
-	commentCache := cache.NewCommentCache(cacheConfig)
+	commentCache := cache.NewCommentCache(cacheConfig, tool.typeConversion)
 	commentRepository := repo.NewCommentRepository(repositoryConfig, "comment", tool.commonUtils)
+	userRepository := repo.NewUserRepository(repositoryConfig, "user")
 
 	return storeCollection{
 		commentCache:      commentCache,
 		commentRepository: commentRepository,
+		userRepository:    userRepository,
 	}
 }
 
@@ -93,31 +100,37 @@ func initAspect(c config.Config, tool toolCollection) aspectCollection {
 }
 
 type toolCollection struct {
-	commentResponse *response.CommentResponse
-	ctxdata         *ctxdata.CtxData
-	commentValidate *validate.CommentValidate
-	commonUtils     *common.CommonUtils
-	snowfake        *snowflake.SnowFlake
+	commentResponse   *response.CommentResponse
+	ctxdata           *ctxdata.CtxData
+	commentValidate   *validate.CommentValidate
+	commonUtils       *common.CommonUtils
+	snowfake          *snowflake.SnowFlake
+	typeConversion    *common.TypesConversion
+	dataDeduplication *common.DataDeduplication
 }
 
 func initTool() toolCollection {
 	commentResponse := response.NewCommentResponse()
 	cd := ctxdata.NewCtxData()
 	commonUtils := common.NewCommonUtils()
-	articleValidate := validate.NewArticleValidate(commonUtils)
 	identityValidate := validate.NewIdentityValidate()
-	commentValidate := validate.NewCommentValidate(articleValidate, identityValidate)
+	articleValidate := validate.NewArticleValidate(identityValidate)
+	commentValidate := validate.NewCommentValidate(articleValidate, articleValidate)
+	typeConversion := common.NewTypesConversion()
+	dataDeduplication := common.NewDataDeduplication()
 	sf, err := snowflake.NewSnowFlake(1)
 	if err != nil {
 		panic(fmt.Errorf("雪花ID生成器初始化失败！%w", err))
 	}
 
 	return toolCollection{
-		commentResponse: commentResponse,
-		ctxdata:         cd,
-		commentValidate: commentValidate,
-		commonUtils:     commonUtils,
-		snowfake:        sf,
+		commentResponse:   commentResponse,
+		ctxdata:           cd,
+		commentValidate:   commentValidate,
+		commonUtils:       commonUtils,
+		snowfake:          sf,
+		typeConversion:    typeConversion,
+		dataDeduplication: dataDeduplication,
 	}
 }
 

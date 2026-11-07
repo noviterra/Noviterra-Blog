@@ -7,55 +7,10 @@ info (
 )
 
 // 8005
-type (
-	// api层统一响应体 请求状态承载体 需要特殊响应（需要包含数据）的将其嵌入到结构体中
-	Response {
-		Status  int    `json:"status"`
-		Code    int    `json:"errcode"`
-		Message string `json:"message"`
-	}
-	// 评论属性 多层回复
-	ArticleComment {
-		Address   int64  `json:"root" validate:"required,gt=10"`
-		ParentID  int64  `json:"parent_id" validate:"gt=0"` // 评论的唯一标识 评论的唯一ID
-		SpeakerID string `json:"speaker_id" validate:"required,min=6,max=10"`
-		Content   string `json:"comment" validate:"required,min=1,max=200"`
-	}
-	// 评论内容+评论者属性 为完整的一条评论
-	CommentInfo {
-		CommentID     string `json:"comment_id"`
-		SpeakerName   string `json:"speaker_name"`
-		SpeakerAvatar string `json:"speaker_avatar"`
-		Content       string `json:"content"`
-		SpeakTime     int64  `json:"speak_time"`
-	}
-	// 对一篇文章进行点赞或取消点赞请求
-	LikeArticleRequest {
-		ArticleID int64  `json:"article_id" validate:"gt=0"`
-		Action    string `json:"action" validate:"required,oneof=like,unlike"`
-	}
-	// 对文章进行收藏或取消收藏操作
-	CollectArticleRequest {
-		ArticleID int64  `json:"article_id" validate:"gt=0"`
-		Action    string `json:"action" validate:"required,oneof=collect,uncollect"`
-	}
-	// 对一篇博客进行评论 保存为一个会话 从而保存一系列的回复 整体实现类似树的结构
-	CommentArticleRequest {
-		Comment ArticleComment `json:"comment" validate:"required"`
-	}
-	// 对网页评论
-	CommentNoviterraRequest {
-		Comment ArticleComment `json:"comment" validate:"required"`
-	}
-	// 得到某个位置的全部评论
-	GetTopCommentRequest {
-		Address int64 `json:"address" validate:"required,gt=10"`
-	}
-	GetTopCommentResponse {
-		Comments []CommentInfo `json:"comment"`
-		Resp     Response      `json:"response"`
-	}
-)
+
+/*
+goctl api go -api ./doc/api/comment.api -dir ./server/app/comment/commentapi
+*/
 
 @server (
 	prefix: novblog/comment
@@ -76,8 +31,75 @@ service CommentService {
 	@doc "得到一篇文章的顶层评论"
 	@handler GetTopComment
 	post /commet/top (GetTopCommentRequest) returns (GetTopCommentResponse)
+
+	@doc "展开某个评论"
+	@handler GetTreeComment
+	post /comment/tree (GetTreeCommentRequest) returns (GetTreeCommentResponse)
 }
 
-/*
-goctl api go -api ./doc/api/comment.api -dir ./server/app/comment/commentapi
-*/
+type (
+	// api层统一响应体 请求状态承载体 需要特殊响应（需要包含数据）的将其嵌入到结构体中
+	Response {
+		Status  int    `json:"status"`
+		Code    int    `json:"errcode"`
+		Message string `json:"message"`
+	}
+	// 评论属性 多层回复
+	ArticleComment {
+		Address   int64  `json:"root" validate:"required,gt=10"`
+		ParentID  int64  `json:"parent_id" validate:"gt=0"` // 评论的唯一标识 评论的唯一ID
+		SpeakerID string `json:"speaker_id" validate:"required,min=6,max=10"`
+		Content   string `json:"comment" validate:"required,min=1,max=200"`
+	}
+	// 顶层评论内容+评论者属性 为完整的一条评论
+	CommentInfo {
+		CommentID     int64  `json:"comment_id"`
+		SpeakerName   string `json:"speaker_name"`
+		SpeakerAvatar string `json:"speaker_avatar"`
+		Content       string `json:"content"`
+		SpeakTime     int64  `json:"speak_time"`
+		Count         int64  `json:"count"`
+	}
+	// 子评论内容
+	TreeCommentInfo {
+		CommentID     int64  `json:"comment_id"`
+		SpeakerName   string `json:"speaker_name"`
+		SpeakerAvatar string `json:"speaker_avatar"`
+		Content       string `json:"content"`
+		SpeakTime     int64  `json:"speak_time"`
+	}
+	// 对一篇文章进行点赞或取消点赞请求
+	LikeArticleRequest {
+		ArticleID int64  `json:"article_id" validate:"gt=10"`
+		Action    string `json:"action" validate:"required,oneof=like,unlike"`
+	}
+	// 对文章进行收藏或取消收藏操作
+	CollectArticleRequest {
+		ArticleID int64  `json:"article_id" validate:"gt=10"`
+		Action    string `json:"action" validate:"required,oneof=collect,uncollect"`
+	}
+	// 对一篇博客进行评论 保存为一个会话 从而保存一系列的回复 整体实现类似树的结构
+	CommentArticleRequest {
+		Comment ArticleComment `json:"comment" validate:"required"`
+	}
+	// 对网页评论
+	CommentNoviterraRequest {
+		Comment ArticleComment `json:"comment" validate:"required"`
+	}
+	// 得到某个位置的全部顶层评论
+	GetTopCommentRequest {
+		Address int64 `json:"address" validate:"required,gt=10"`
+	}
+	GetTopCommentResponse {
+		Comments []CommentInfo `json:"comments"`
+		Resp     Response      `json:"response"`
+	}
+	// 得到某个顶层评论的全部评论
+	GetTreeCommentRequest {
+		CommentID string `json:"comment_id" validate:"gt=10"`
+	}
+	GetTreeCommentResponse {
+		Comments []TreeCommentInfo `json:"comments"`
+		Resp     Response          `json:"response"`
+	}
+)
