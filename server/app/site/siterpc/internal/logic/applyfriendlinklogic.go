@@ -37,7 +37,7 @@ type (
 	}
 
 	applyFriendLinkIdentityRespository interface {
-		GetUserEmailByID(id string) (string, error)
+		GetUserEmailByID(ctx context.Context, id string) (string, error)
 	}
 )
 
@@ -87,7 +87,7 @@ func (l *ApplyFriendLinkLogic) ApplyFriendLink(in *siterpc.FriendLinkRequest) (*
 	}
 
 	if email == "" {
-		email, err = l.identityRepository.GetUserEmailByID(id)
+		email, err = l.identityRepository.GetUserEmailByID(l.ctx, id)
 		if err != nil {
 			l.logger.Error("site/applyfriendlink：数据库异常，查询用户邮箱失败！",
 				zap.String("ERROR", err.Error()))

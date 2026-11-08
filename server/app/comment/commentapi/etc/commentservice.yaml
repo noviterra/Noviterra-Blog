@@ -1,6 +1,6 @@
 Name: CommentService
 Host: 0.0.0.0
-Port: 8888
+Port: 8005
 
 CommentRPC:
   Etcd:

@@ -26,6 +26,10 @@ type (
 		Unlike(ctx context.Context, articleID int64, userID string) (bool, int64, error)
 		PushSyncEvent(ctx context.Context, event model.SyncEvent) error
 	}
+
+	likeArticleCtxData interface {
+		GetUserIDFromContext(ctx context.Context) string
+	}
 )
 
 type LikeArticleLogic struct {
@@ -33,6 +37,7 @@ type LikeArticleLogic struct {
 	commentResponse likeArticleCommentResponse
 	commentValidate likeArticleCommentValidate
 	commentCache    likeArticleCommentCache
+	ctxdata         likeArticleCtxData
 }
 
 func NewLikeArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LikeArticleLogic {
@@ -41,6 +46,7 @@ func NewLikeArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LikeA
 		commentResponse: svcCtx.CommentResponse,
 		commentValidate: svcCtx.CommentValidate,
 		commentCache:    svcCtx.CommentCache,
+		ctxdata:         svcCtx.CtxData,
 	}
 }
 
@@ -48,6 +54,12 @@ func NewLikeArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LikeA
 func (l *LikeArticleLogic) LikeArticle(in *commentrpc.LikeArticleRequest) (*commentrpc.Response, error) {
 	// todo: add your logic here and delete this line
 	resp := new(commentrpc.Response)
+	// 身份校验
+	userID := l.ctxdata.GetUserIDFromContext(l.ctx)
+	if userID == "" {
+		return l.commentResponse.FailResponse(resp, "用户信息校验失败！", errcode.Unauthorized, errcode.Failed)
+	}
+
 	// 参数校验
 	likeInfo, err := l.commentValidate.ValidateLikeComment(validate.InputLikeComment{
 		ArticleID: in.ArticleID,

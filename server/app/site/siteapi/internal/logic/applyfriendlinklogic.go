@@ -5,13 +5,11 @@ package logic
 
 import (
 	"Noviterra/server/app/notice/noticerpc/types/noticerpc"
+	"Noviterra/server/app/site/siteapi/internal/svc"
+	"Noviterra/server/app/site/siteapi/internal/types"
 	"Noviterra/server/app/site/siterpc/types/siterpc"
 	"Noviterra/server/utils/errcode"
 	"context"
-	"fmt"
-
-	"Noviterra/server/app/site/siteapi/internal/svc"
-	"Noviterra/server/app/site/siteapi/internal/types"
 
 	"github.com/go-playground/validator/v10"
 	"google.golang.org/grpc"
@@ -99,11 +97,9 @@ func (l *ApplyFriendLinkLogic) ApplyFriendLink(req *types.FriendLinkRequest) (re
 		Link:    req.RequestInfo.Link,
 	})
 	if err != nil {
-		fmt.Println("err:", err)
 		return successResponse(resp, "申请成功提交成功！")
 	}
 	if rep2.Code != 0 {
-		fmt.Println("rep", rep2.Message)
 		return successResponse(resp, "申请提交成功！")
 	}
 

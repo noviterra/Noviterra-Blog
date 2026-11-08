@@ -24,7 +24,7 @@ type (
 	}
 
 	getUserLikeArticleListIdentityRepository interface {
-		CheckIDExists(id string) (bool, error)
+		CheckIDExists(ctx context.Context, id string) (bool, error)
 	}
 
 	getUserLikeArticleListCommentCache interface {
@@ -74,7 +74,7 @@ func (l *GetUserLikeArticleListLogic) GetUserLikeArticleList(in *articlerpc.GetU
 	}
 
 	// 被查询用户ID校验 查询用户ID是否存在
-	idExist, err := l.identityRepository.CheckIDExists(param.UserID)
+	idExist, err := l.identityRepository.CheckIDExists(l.ctx, param.UserID)
 	if err != nil {
 		return l.articleResponse.FailGetArticleListResponse(resp, "系统繁忙，请稍后再试！", errcode.InternalError, errcode.Failed)
 	}

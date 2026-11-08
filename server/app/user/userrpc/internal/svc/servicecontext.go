@@ -9,24 +9,25 @@ import (
 	"Noviterra/server/utils/jwtauth"
 	"Noviterra/server/utils/repo"
 	"Noviterra/server/utils/response"
+	"Noviterra/server/utils/validate"
 	"Noviterra/server/utils/zaplogger"
 )
 
 type ServiceContext struct {
 	Config config.Config
 
-	Logger       *zaplogger.Logger
-	EmailSender  *email.EmailSender
-	CommonUtils  *common.CommonUtils
-	Crypt        *bcryptinfo.Crypt
-	UserResponse *response.UserResponse
-
+	Logger             *zaplogger.Logger
+	EmailSender        *email.EmailSender
+	CommonUtils        *common.CommonUtils
+	Crypt              *bcryptinfo.Crypt
+	UserResponse       *response.UserResponse
+	IdentityValidate   *validate.IdentityValidate
 	UserCache          *cache.UserCache
 	UserRepository     *repo.UserRepository
 	IdentityRepository *repo.IdentityRepository
+	UserValidate       *validate.UserValidate
 	NoticeCache        *cache.NoticeCache
-
-	Authentication *jwtauth.Authentication
+	Authentication     *jwtauth.Authentication
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -42,6 +43,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		CommonUtils:        tool.commonUtils,
 		Crypt:              tool.crypt,
 		UserResponse:       tool.UserResponse,
+		IdentityValidate:   tool.identityValidate,
+		UserValidate:       tool.userValidate,
 		UserCache:          store.userCache,
 		UserRepository:     store.userRepository,
 		IdentityRepository: store.identityRepository,
@@ -52,11 +55,13 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 // 工具类
 type toolCollection struct {
-	logger       *zaplogger.Logger
-	emailSender  *email.EmailSender
-	commonUtils  *common.CommonUtils
-	crypt        *bcryptinfo.Crypt
-	UserResponse *response.UserResponse
+	logger           *zaplogger.Logger
+	emailSender      *email.EmailSender
+	commonUtils      *common.CommonUtils
+	crypt            *bcryptinfo.Crypt
+	UserResponse     *response.UserResponse
+	identityValidate *validate.IdentityValidate
+	userValidate     *validate.UserValidate
 }
 
 func initTool(c config.Config) toolCollection {
@@ -82,12 +87,18 @@ func initTool(c config.Config) toolCollection {
 	// 用户统一响应
 	userResponse := response.NewUserResponse()
 
+	// 校验器
+	identityValidate := validate.NewIdentityValidate()
+	userValidate := validate.NewUserValidate()
+
 	return toolCollection{
-		logger:       logger,
-		emailSender:  emailSender,
-		commonUtils:  commonUtils,
-		crypt:        crypt,
-		UserResponse: userResponse,
+		logger:           logger,
+		emailSender:      emailSender,
+		commonUtils:      commonUtils,
+		crypt:            crypt,
+		UserResponse:     userResponse,
+		identityValidate: identityValidate,
+		userValidate:     userValidate,
 	}
 }
 

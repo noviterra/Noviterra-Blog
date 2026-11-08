@@ -28,7 +28,7 @@ service CommentService {
 
 	@doc "得到一篇文章的顶层评论"
 	@handler GetTopComment
-	post /commet/top (GetTopCommentRequest) returns (GetTopCommentResponse)
+	post /comment/top (GetTopCommentRequest) returns (GetTopCommentResponse)
 
 	@doc "展开某个评论"
 	@handler GetTreeComment

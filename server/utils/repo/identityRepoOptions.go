@@ -2,8 +2,8 @@ package repo
 
 import (
 	"Noviterra/server/app/model"
+	"context"
 	"errors"
-	"fmt"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -19,9 +19,10 @@ func NewIdentityRespository(repoConfig RepoConfig, field string) *IdentityReposi
 	}
 }
 
-func (ir *IdentityRepository) InsertUsersAccount(userAccount model.UserAccount, userInfo model.UserInfo) error {
+func (ir *IdentityRepository) InsertUsersAccount(ctx context.Context,
+	userAccount model.UserAccount, userInfo model.UserInfo) error {
 	// 使用事务保证两张表结果保持一致
-	return ir.db.Transaction(func(tx *gorm.DB) error {
+	return ir.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// 插入用户信息表
 		err := tx.Create(&userInfo).Error
 		if err != nil {
@@ -38,9 +39,11 @@ func (ir *IdentityRepository) InsertUsersAccount(userAccount model.UserAccount, 
 	})
 }
 
-func (ir *IdentityRepository) GetUserIDByEmail(email string) (string, error) {
+func (ir *IdentityRepository) GetUserIDByEmail(ctx context.Context, email string) (string, error) {
 	var u model.UserAccount
-	err := ir.db.Model(&model.UserAccount{}).Where("email = ?", email).Take(&u).Error
+	err := ir.db.WithContext(ctx).
+		Model(&model.UserAccount{}).
+		Where("email = ?", email).Take(&u).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return "", nil
@@ -50,9 +53,11 @@ func (ir *IdentityRepository) GetUserIDByEmail(email string) (string, error) {
 	return u.ID, nil
 }
 
-func (ir *IdentityRepository) GetUserEmailByID(id string) (string, error) {
+func (ir *IdentityRepository) GetUserEmailByID(ctx context.Context, id string) (string, error) {
 	var u model.UserAccount
-	err := ir.db.Model(&model.UserAccount{}).Where("id = ?", id).Take(&u).Error
+	err := ir.db.WithContext(ctx).
+		Model(&model.UserAccount{}).
+		Where("id = ?", id).Take(&u).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return "", nil
@@ -62,8 +67,12 @@ func (ir *IdentityRepository) GetUserEmailByID(id string) (string, error) {
 	return u.Email, nil
 }
 
-func (ir *IdentityRepository) UpdateUsersAccount(userAccount model.UserAccount) error {
-	err := ir.db.Model(&model.UserAccount{}).Where("id = ?", userAccount.ID).Updates(userAccount).Error
+func (ir *IdentityRepository) UpdateUsersAccount(ctx context.Context,
+	userAccount model.UserAccount) error {
+	err := ir.db.WithContext(ctx).
+		Model(&model.UserAccount{}).
+		Where("id = ?", userAccount.ID).
+		Updates(userAccount).Error
 	if err != nil {
 		return err
 	}
@@ -71,8 +80,9 @@ func (ir *IdentityRepository) UpdateUsersAccount(userAccount model.UserAccount) 
 }
 
 // 存储RefreshToken Create->Upset 有则更新 无则创建
-func (ir *IdentityRepository) InsertUserToken(userToken model.UserRefreshToken) error {
-	err := ir.db.
+func (ir *IdentityRepository) InsertUserToken(ctx context.Context,
+	userToken model.UserRefreshToken) error {
+	err := ir.db.WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "id"}}, // 主键
 			DoUpdates: clause.AssignmentColumns([]string{
@@ -87,9 +97,12 @@ func (ir *IdentityRepository) InsertUserToken(userToken model.UserRefreshToken) 
 	return nil
 }
 
-func (ir *IdentityRepository) GetUserPasswordByID(id string) (string, error) {
+func (ir *IdentityRepository) GetUserPasswordByID(ctx context.Context, id string) (string, error) {
 	var u model.UserAccount
-	err := ir.db.Model(&model.UserAccount{}).Where("id = ?", id).Take(&u).Error
+	err := ir.db.WithContext(ctx).
+		Model(&model.UserAccount{}).
+		Where("id = ?", id).
+		Take(&u).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return "", nil
@@ -99,11 +112,14 @@ func (ir *IdentityRepository) GetUserPasswordByID(id string) (string, error) {
 	return u.Password, nil
 }
 
-func (ir *IdentityRepository) CheckIDExists(id string) (bool, error) {
+func (ir *IdentityRepository) CheckIDExists(ctx context.Context, id string) (bool, error) {
 	var u model.UserAccount
-	err := ir.db.Model(&model.UserAccount{}).Select("id").Where("id = ?", id).Take((&u)).Error
+	err := ir.db.WithContext(ctx).
+		Model(&model.UserAccount{}).
+		Select("id").
+		Where("id = ?", id).
+		Take(&u).Error
 	if err != nil {
-		fmt.Println(err)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil
 		}
@@ -112,11 +128,14 @@ func (ir *IdentityRepository) CheckIDExists(id string) (bool, error) {
 	return true, nil
 }
 
-func (ir *IdentityRepository) CheckEmailExists(email string) (bool, error) {
+func (ir *IdentityRepository) CheckEmailExists(ctx context.Context, email string) (bool, error) {
 	var u model.UserAccount
-	err := ir.db.Model(&model.UserAccount{}).Select("email").Where("email = ?", email).Take((&u)).Error
+	err := ir.db.WithContext(ctx).
+		Model(&model.UserAccount{}).
+		Select("email").
+		Where("email = ?", email).
+		Take(&u).Error
 	if err != nil {
-		fmt.Println(err)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil
 		}
@@ -126,8 +145,12 @@ func (ir *IdentityRepository) CheckEmailExists(email string) (bool, error) {
 }
 
 // 更新Token信息
-func (ir *IdentityRepository) UpdateUserToken(userToken model.UserRefreshToken) error {
-	err := ir.db.Model(&model.UserRefreshToken{}).Where("id = ?", userToken.ID).Updates(userToken).Error
+func (ir *IdentityRepository) UpdateUserToken(ctx context.Context,
+	userToken model.UserRefreshToken) error {
+	err := ir.db.WithContext(ctx).
+		Model(&model.UserRefreshToken{}).
+		Where("id = ?", userToken.ID).
+		Updates(userToken).Error
 	if err != nil {
 		return err
 	}
@@ -135,9 +158,12 @@ func (ir *IdentityRepository) UpdateUserToken(userToken model.UserRefreshToken) 
 }
 
 // 获取用户账号状态
-func (ir *IdentityRepository) GetUserAccountStatus(id string) (int, error) {
+func (ir *IdentityRepository) GetUserAccountStatus(ctx context.Context, id string) (int, error) {
 	var u model.UserAccount
-	err := ir.db.Model(&model.UserAccount{}).Where("id = ?", id).Take(&u).Error
+	err := ir.db.WithContext(ctx).
+		Model(&model.UserAccount{}).
+		Where("id = ?", id).
+		Take(&u).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return -1, nil
@@ -148,9 +174,12 @@ func (ir *IdentityRepository) GetUserAccountStatus(id string) (int, error) {
 }
 
 // 获取用户身份
-func (ir *IdentityRepository) GetUserRole(id string) (int, error) {
+func (ir *IdentityRepository) GetUserRole(ctx context.Context, id string) (int, error) {
 	var u model.UserInfo
-	err := ir.db.Model(&model.UserInfo{}).Where("id = ?", id).Take(&u).Error
+	err := ir.db.WithContext(ctx).
+		Model(&model.UserInfo{}).
+		Where("id = ?", id).
+		Take(&u).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return -1, nil

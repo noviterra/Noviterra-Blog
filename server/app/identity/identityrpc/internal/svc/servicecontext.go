@@ -5,11 +5,11 @@ import (
 	"Noviterra/server/app/internal/interceptor"
 	"Noviterra/server/utils/bcryptinfo"
 	"Noviterra/server/utils/cache"
-	"Noviterra/server/utils/common"
 	"Noviterra/server/utils/ctxdata"
 	"Noviterra/server/utils/jwtauth"
 	"Noviterra/server/utils/repo"
 	"Noviterra/server/utils/response"
+	"Noviterra/server/utils/validate"
 )
 
 type ServiceContext struct {
@@ -18,8 +18,8 @@ type ServiceContext struct {
 	NoticeCache             *cache.NoticeCache
 	Authentication          *jwtauth.Authentication
 	Crypt                   *bcryptinfo.Crypt
-	CommonUtils             *common.CommonUtils
 	Ctxdata                 *ctxdata.CtxData
+	IdentityValidate        *validate.IdentityValidate
 	IdentityResponse        *response.IdentityResponse
 	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 }
@@ -31,11 +31,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 	return &ServiceContext{
 		Config:                  c,
-		CommonUtils:             tool.commonUtils,
 		Crypt:                   tool.crypt,
 		Authentication:          tool.authentication,
 		IdentityResponse:        tool.identityResponse,
 		Ctxdata:                 tool.ctxdata,
+		IdentityValidate:        tool.identityValidate,
 		NoticeCache:             store.noticeCache,
 		IdentityRepository:      store.identityRepository,
 		ServiceTokenInterceptor: aspect.serviceTokenInterceptor,
@@ -44,10 +44,10 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 type toolCollection struct {
 	crypt            *bcryptinfo.Crypt
-	commonUtils      *common.CommonUtils
 	authentication   *jwtauth.Authentication // utils中的jwt操作集合 解析、生成Token操作
 	identityResponse *response.IdentityResponse
 	ctxdata          *ctxdata.CtxData
+	identityValidate *validate.IdentityValidate
 }
 
 func initTool(c config.Config) toolCollection {
@@ -63,19 +63,19 @@ func initTool(c config.Config) toolCollection {
 	authentication := jwtauth.NewAuthentication(authenticationConfig)
 	// 加密工具 bcrypt
 	crypt := bcryptinfo.NewCrypt()
-	// 基础工具包
-	commonUtils := common.NewCommonUtils()
 	// 认证模块响应封装
 	identityResponse := response.NewIdentityResponse()
 	// 上下文存储
 	cd := ctxdata.NewCtxData()
+	// 校验器
+	identityValidate := validate.NewIdentityValidate()
 
 	return toolCollection{
 		crypt:            crypt,
-		commonUtils:      commonUtils,
 		authentication:   authentication,
 		identityResponse: identityResponse,
 		ctxdata:          cd,
+		identityValidate: identityValidate,
 	}
 }
 

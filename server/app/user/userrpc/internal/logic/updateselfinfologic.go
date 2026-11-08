@@ -1,7 +1,7 @@
 package logic
 
 import (
-	"Noviterra/server/utils/common"
+	"Noviterra/server/utils/validate"
 	"context"
 
 	"Noviterra/server/app/model"
@@ -14,18 +14,18 @@ type updateInfoUserRepository interface {
 }
 
 type updateInfoIdentityRepository interface {
-	CheckIDExists(id string) (bool, error)
+	CheckIDExists(ctx context.Context, id string) (bool, error)
 }
 
-type updateInfoCommonUtils interface {
-	ValidateUserInfo(in *common.ValidateUserInfoInput) (*common.ValidateUserInfoOutput, error)
+type updateInfoUserValidate interface {
+	ValidateUserInfo(in *validate.InputValidateUserInfo) (*validate.OutputValidateUserInfo, error)
 }
 
 type UpdateSelfInfoLogic struct {
 	ctx                context.Context
 	identityRespotiory updateInfoIdentityRepository
 	userRepository     updateInfoUserRepository
-	commonUtils        updateInfoCommonUtils
+	userValidate       updateInfoUserValidate
 }
 
 func NewUpdateSelfInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UpdateSelfInfoLogic {
@@ -33,7 +33,7 @@ func NewUpdateSelfInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Up
 		ctx:                ctx,
 		identityRespotiory: svcCtx.IdentityRepository,
 		userRepository:     svcCtx.UserRepository,
-		commonUtils:        svcCtx.CommonUtils,
+		userValidate:       svcCtx.UserValidate,
 	}
 }
 
@@ -41,7 +41,7 @@ func (l *UpdateSelfInfoLogic) UpdateSelfInfo(in *userrpc.UpdateUserInfoRequest) 
 	// todo: add your logic here and delete this line
 	// 校验用户ID是否存在
 	// ：即使鉴权中间件做了对用户的校验 但是在rpc层仍需要校验数据 防止恶意请求绕过api层直接进入rpc层
-	idExist, err := l.identityRespotiory.CheckIDExists(in.ID)
+	idExist, err := l.identityRespotiory.CheckIDExists(l.ctx, in.ID)
 	if err != nil {
 		return &userrpc.Response{
 			Code:    1,
@@ -55,7 +55,7 @@ func (l *UpdateSelfInfoLogic) UpdateSelfInfo(in *userrpc.UpdateUserInfoRequest) 
 		}, nil
 	}
 
-	userInfo, err := l.commonUtils.ValidateUserInfo(&common.ValidateUserInfoInput{
+	userInfo, err := l.userValidate.ValidateUserInfo(&validate.InputValidateUserInfo{
 		Age:              int(in.Age),
 		Name:             in.UserName,
 		Gender:           int(in.Gender),

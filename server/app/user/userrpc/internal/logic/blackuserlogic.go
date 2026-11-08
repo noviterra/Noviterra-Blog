@@ -9,9 +9,10 @@ import (
 )
 
 type blackUserIdentityRepository interface {
-	CheckIDExists(id string) (bool, error)
-	UpdateUsersAccount(userAccount model.UserAccount) error
-	GetUserRole(id string) (int, error)
+	CheckIDExists(ctx context.Context, id string) (bool, error)
+	UpdateUsersAccount(ctx context.Context,
+		userAccount model.UserAccount) error
+	GetUserRole(ctx context.Context, id string) (int, error)
 }
 
 type BlackUserLogic struct {
@@ -30,8 +31,7 @@ func NewLogic(ctx context.Context, svcCtx *svc.ServiceContext) *BlackUserLogic {
 func (l *BlackUserLogic) BlackUser(in *userrpc.BlackUserRequest) (*userrpc.Response, error) {
 	// todo: add your logic here and delete this line
 	// 校验操作者ID与用户ID的有效性
-	// todo：绕过api层获取管理员账号后之间进入rpc层怎么解决？ 设置拦截器 api层注入用户信息与服务凭证 作为rpc是否继续操作下去的密钥
-	operatorRole, err := l.identityRepository.GetUserRole(in.Operator)
+	operatorRole, err := l.identityRepository.GetUserRole(l.ctx, in.Operator)
 	if err != nil {
 		return &userrpc.Response{
 			Code:    1,
@@ -45,7 +45,7 @@ func (l *BlackUserLogic) BlackUser(in *userrpc.BlackUserRequest) (*userrpc.Respo
 		}, nil
 	}
 
-	idExist, err := l.identityRepository.CheckIDExists(in.ID)
+	idExist, err := l.identityRepository.CheckIDExists(l.ctx, in.ID)
 	if err != nil {
 		return &userrpc.Response{
 			Code:    1,
@@ -60,7 +60,7 @@ func (l *BlackUserLogic) BlackUser(in *userrpc.BlackUserRequest) (*userrpc.Respo
 	}
 
 	// 修改数据库字段
-	err = l.identityRepository.UpdateUsersAccount(model.UserAccount{
+	err = l.identityRepository.UpdateUsersAccount(l.ctx, model.UserAccount{
 		ID:     in.ID,
 		Status: 1,
 	})

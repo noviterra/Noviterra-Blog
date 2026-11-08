@@ -9,10 +9,10 @@ import (
 )
 
 type loginByIDIdentityRepository interface {
-	GetUserPasswordByID(id string) (string, error)
+	GetUserPasswordByID(ctx context.Context, id string) (string, error)
 }
 
-type loginByIdentityCommonUtils interface {
+type loginByIdentityValidate interface {
 	CheckPasswordFormat(password string) bool
 }
 
@@ -28,7 +28,7 @@ type loginByIDIdentityResponse interface {
 type LoginByIDLogic struct {
 	ctx                context.Context
 	identityRepository loginByIDIdentityRepository
-	commonUtils        loginByIdentityCommonUtils
+	identityValidate   loginByIdentityValidate
 	crypt              loginByIdentityCrypt
 	identityResponse   loginByIDIdentityResponse
 }
@@ -37,7 +37,7 @@ func NewLoginByIDLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginBy
 	return &LoginByIDLogic{
 		ctx:                ctx,
 		identityRepository: svcCtx.IdentityRepository,
-		commonUtils:        svcCtx.CommonUtils,
+		identityValidate:   svcCtx.IdentityValidate,
 		crypt:              svcCtx.Crypt,
 		identityResponse:   svcCtx.IdentityResponse,
 	}
@@ -49,13 +49,13 @@ func (l *LoginByIDLogic) LoginByID(in *identityrpc.LoginByIDRequest) (*identityr
 	// todo: 后期增加布隆过滤器
 	resp := new(identityrpc.Response)
 	// 密码格式判断
-	pwdAvailable := l.commonUtils.CheckPasswordFormat(in.Password)
+	pwdAvailable := l.identityValidate.CheckPasswordFormat(in.Password)
 	if !pwdAvailable {
 		return l.identityResponse.FailResponse(resp, "密码格式输入有误！", errcode.InvalidParam, errcode.PasswordInvalidFormat)
 	}
 
 	// 根据账号返回密码
-	hashPwd, err := l.identityRepository.GetUserPasswordByID(in.ID)
+	hashPwd, err := l.identityRepository.GetUserPasswordByID(l.ctx, in.ID)
 	if err != nil {
 		return l.identityResponse.FailResponse(resp, "数据库操作异常！", errcode.InvalidParam, errcode.PasswordInvalidFormat)
 	}

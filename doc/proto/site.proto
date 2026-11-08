@@ -4,6 +4,15 @@ option go_package = "/siterpc";
 
 // 9006
 
+/*
+goctl rpc protoc ./doc/proto/site.proto --go_out=./server/app/site/siterpc/types --go-grpc_out=./server/app/site/siterpc/types --zrpc_out=./server/app/site/siterpc
+*/
+
+service SiteService {
+  // 申请友链rpc方法
+  rpc ApplyFriendLink(FriendLinkRequest) returns (Response);
+}
+
 message Response {
   int32 Status = 1;
   int64 Code = 2;
@@ -20,10 +29,3 @@ message FriendLinkRequest {
   FriendLink RequestInfo = 1;
   string Email = 2;
 }
-
-service SiteService {
-  // 申请友链rpc方法
-  rpc ApplyFriendLink(FriendLinkRequest) returns (Response);
-}
-
-// goctl rpc protoc ./doc/proto/site.proto --go_out=./server/app/site/siterpc/types --go-grpc_out=./server/app/site/siterpc/types --zrpc_out=./server/app/site/siterpc

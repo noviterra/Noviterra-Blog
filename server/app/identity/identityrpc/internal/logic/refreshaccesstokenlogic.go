@@ -11,24 +11,28 @@ import (
 	"Noviterra/server/app/identity/identityrpc/internal/svc"
 )
 
-type refreshAccessTokenAuthentication interface {
-	ParseRefreshToken(tokenStr string) (*jwtauth.UserClaims, error)
-	GenerateDoubleToken(id string) (string, string, error)
-}
+type (
+	refreshAccessTokenAuthentication interface {
+		ParseRefreshToken(tokenStr string) (*jwtauth.UserClaims, error)
+		GenerateDoubleToken(id string) (string, string, error)
+		ReturnRefreshTokenExpire() int64
+	}
 
-type refreshAccessTokenIdentityRepository interface {
-	CheckIDExists(id string) (bool, error)
-	UpdateUserToken(userToken model.UserRefreshToken) error
-}
+	refreshAccessTokenIdentityRepository interface {
+		CheckIDExists(ctx context.Context, id string) (bool, error)
+		UpdateUserToken(ctx context.Context,
+			userToken model.UserRefreshToken) error
+	}
 
-type refreshAccessTokenIdentityResponse interface {
-	SuccessRefreshAccessTokenResponse(resp *identityrpc.RefreshAccessTokenResponse,
-		accessToken, refreshToken string) (*identityrpc.RefreshAccessTokenResponse, error)
-	FailRefreshAccessTokenResponse(resp *identityrpc.RefreshAccessTokenResponse,
-		msg string, status int32, code int64) (*identityrpc.RefreshAccessTokenResponse, error)
-	FailRefreshAccessTokenResponseWithErr(resp *identityrpc.RefreshAccessTokenResponse,
-		err error) (*identityrpc.RefreshAccessTokenResponse, error)
-}
+	refreshAccessTokenIdentityResponse interface {
+		SuccessRefreshAccessTokenResponse(resp *identityrpc.RefreshAccessTokenResponse,
+			accessToken, refreshToken string) (*identityrpc.RefreshAccessTokenResponse, error)
+		FailRefreshAccessTokenResponse(resp *identityrpc.RefreshAccessTokenResponse,
+			msg string, status int32, code int64) (*identityrpc.RefreshAccessTokenResponse, error)
+		FailRefreshAccessTokenResponseWithErr(resp *identityrpc.RefreshAccessTokenResponse,
+			err error) (*identityrpc.RefreshAccessTokenResponse, error)
+	}
+)
 
 type RefreshAccessTokenLogic struct {
 	ctx                context.Context
@@ -56,7 +60,7 @@ func (l *RefreshAccessTokenLogic) RefreshAccessToken(in *identityrpc.RefreshAcce
 		return l.identityResponse.FailRefreshAccessTokenResponse(resp, "账号信息校验失败！", errcode.InvalidParam, errcode.Failed)
 	}
 
-	idExist, err := l.identityRepository.CheckIDExists(claim.ID)
+	idExist, err := l.identityRepository.CheckIDExists(l.ctx, claim.ID)
 	if err != nil {
 		return l.identityResponse.FailRefreshAccessTokenResponse(resp, "数据库操作异常！", errcode.InvalidParam, errcode.Failed)
 
@@ -72,11 +76,11 @@ func (l *RefreshAccessTokenLogic) RefreshAccessToken(in *identityrpc.RefreshAcce
 	}
 
 	// Token存储
-	err = l.identityRepository.UpdateUserToken(model.UserRefreshToken{
+	err = l.identityRepository.UpdateUserToken(l.ctx, model.UserRefreshToken{
 		ID:           claim.ID,
 		RefreshToken: refreshToken,
 		UpdatedAt:    time.Now(),
-		// ExpireAt:  time.Now().Add(time.Duration(l.svcCtx.Authentication.RefreshExpire) * time.Second),  // 过期时间不重置
+		ExpireAt:     time.Now().Add(time.Duration(l.authentication.ReturnRefreshTokenExpire()) * time.Second),
 	})
 	if err != nil {
 		return l.identityResponse.FailRefreshAccessTokenResponse(resp, "数据库操作异常！", errcode.InvalidParam, errcode.Failed)

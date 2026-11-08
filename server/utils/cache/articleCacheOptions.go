@@ -53,19 +53,25 @@ func (ac *ArticleCache) AddArticleToRank(ctx context.Context, articleID int64) e
 // HSetArticle 将article信息存入缓存哈希表中
 func (ac *ArticleCache) HSetArticle(ctx context.Context, article *model.ArticleInfo) error {
 	key := fmt.Sprintf("%d:%s", article.ArticleID, "info")
-	err := ac.rdb.HSet(ctx, key,
+
+	// 将tags序列化
+	tagsJSON, err := json.Marshal(article.Tags)
+	if err != nil {
+		return fmt.Errorf("tags序列化失败：%w", err)
+	}
+	err = ac.rdb.HSet(ctx, key,
 		"article_id", article.ArticleID,
 		"publisher_id", article.PublisherID,
 		"title", article.Title,
 		"cover", article.Cover,
 		"content", article.Content,
-		"tags", article.Tags,
+		"tags", tagsJSON,
 		"information", article.Information,
 		"created_at", article.CreatedAt,
 		"updated_at", article.UpdatedAt,
 	).Err()
 	if err != nil {
-		return err
+		return fmt.Errorf("缓存设置文章信息失败：%w", err)
 	}
 
 	// 时间设置为1小时+随机数 防止缓存雪崩

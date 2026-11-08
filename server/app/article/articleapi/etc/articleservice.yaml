@@ -1,6 +1,6 @@
 Name: articleService
 Host: 0.0.0.0
-Port: 8001
+Port: 8004
 
 ArticleRPC:
   Etcd:

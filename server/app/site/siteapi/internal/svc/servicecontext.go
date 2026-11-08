@@ -37,7 +37,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		NoticeModel:             rpc.noticeModel,
 		CtaData:                 tool.ctxdata,
 		AuthMiddleware:          aspect.authMiddleware,
-		ServiceTokenInterceptor: aspect.serviceToeknInterceptor,
+		ServiceTokenInterceptor: aspect.serviceTokenInterceptor,
 	}
 }
 
@@ -89,7 +89,7 @@ func initStore(c config.Config) storeCollection {
 }
 
 type aspectCollection struct {
-	serviceToeknInterceptor *interceptor.ServiceTokenInterceptor
+	serviceTokenInterceptor *interceptor.ServiceTokenInterceptor
 	authMiddleware          *middleware.AuthMiddleware
 }
 
@@ -110,7 +110,7 @@ func initAspect(c config.Config, tool toolCollection, store storeCollection) asp
 	authMiddleware := middleware.NewAuthMiddleware(jwtAuth, store.identityRepository, tool.ctxdata)
 
 	return aspectCollection{
-		serviceToeknInterceptor: serviceTokenInterceptor,
+		serviceTokenInterceptor: serviceTokenInterceptor,
 		authMiddleware:          authMiddleware,
 	}
 }

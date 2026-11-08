@@ -27,7 +27,7 @@ type (
 	}
 
 	updateArticleCoverIdentityRepository interface {
-		GetUserRole(articleID string) (int, error)
+		GetUserRole(ctx context.Context, articleID string) (int, error)
 	}
 
 	updateCoverArticleRepository interface {
@@ -104,7 +104,7 @@ func (l *UpdateArticleCoverLogic) UpdateArticleCover(in *articlerpc.UpdateArticl
 	}
 
 	// 获取用户权限
-	updaterRole, err := l.identityRepository.GetUserRole(updaterID)
+	updaterRole, err := l.identityRepository.GetUserRole(l.ctx, updaterID)
 	if err != nil {
 		l.logger.Error("article/updatearticlecover：数据库获取用户权限失败", zap.Int64("ArticleID", in.ArticleID),
 			zap.String("updaterID", updaterID), zap.String("ERROR", err.Error()))

@@ -21,7 +21,7 @@ type (
 	}
 
 	publishNoticeIdentityRepository interface {
-		GetUserRole(id string) (int, error)
+		GetUserRole(ctx context.Context, id string) (int, error)
 	}
 
 	publishNoticeValidate interface {
@@ -71,7 +71,7 @@ func (l *PublishNoticeLogic) PublishNotice(in *noticerpc.PublishNoticeRequest) (
 	if id == "" {
 		return l.noticeResonse.FailResponse(resp, "身份信息校验失败！", errcode.InvalidParam, errcode.Failed)
 	}
-	role, err := l.identityRepository.GetUserRole(id)
+	role, err := l.identityRepository.GetUserRole(l.ctx, id)
 	if err != nil {
 		return l.noticeResonse.FailResponse(resp, "数据库操作异常！", errcode.InternalError, errcode.Failed)
 	}

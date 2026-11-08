@@ -24,7 +24,7 @@ type (
 	}
 
 	getUserArticleListIdentityRepository interface {
-		GetUserRole(id string) (int, error)
+		GetUserRole(ctx context.Context, id string) (int, error)
 	}
 
 	getUserArticleListArticleRepository interface {
@@ -68,7 +68,7 @@ func (l *GetUserArticleListLogic) GetUserArticleList(in *articlerpc.GetUserArtic
 	// 校验userID的权限
 	// 只有role>=1 即管理员或超级管理员才能进行发布文章
 	// 普通用户的该列表直接返回空就行
-	userRole, err := l.identityRepository.GetUserRole(data.UserID)
+	userRole, err := l.identityRepository.GetUserRole(l.ctx, data.UserID)
 	if err != nil {
 		return l.articleResponse.FailGetArticleListResponse(resp, "系统繁忙，请稍后再试！", errcode.InternalError, errcode.Failed)
 	}

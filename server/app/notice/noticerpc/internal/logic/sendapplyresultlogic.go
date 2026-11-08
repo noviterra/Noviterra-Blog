@@ -26,7 +26,7 @@ type (
 	}
 
 	sendApplyResultIdentityRepositity interface {
-		GetUserIDByEmail(email string) (string, error)
+		GetUserEmailByID(ctx context.Context, email string) (string, error)
 	}
 
 	sendApplyResultNoticeValidate interface {
@@ -72,6 +72,14 @@ func (l *SendApplyResultLogic) SendApplyResult(in *noticerpc.SendApplyResultRequ
 	id := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if id == "" {
 		return l.noticeResponse.FailResponse(resp, "信息校验失败！", errcode.InvalidParam, errcode.Failed)
+	}
+
+	// 邮箱输入为空的话 找用户注册账号对应的email
+	if op.Email == "" {
+		op.Email, err = l.identityRepositity.GetUserEmailByID(l.ctx, id)
+		if err != nil {
+			// 日志记录
+		}
 	}
 
 	emailSubject, emailBody := l.emailSender.TextFriendLinkEmail(op.Link, op.Process)

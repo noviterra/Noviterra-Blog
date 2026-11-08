@@ -155,7 +155,7 @@ func (lsw *LikeSyncWoker) proccessEvents(ctx context.Context, events []model.Syn
 		return fmt.Errorf("扫描浏览量key失败：%w", err)
 	}
 	var viewCount map[int64]int64
-	if len(viewCount) > 0 {
+	if len(viewArticleIDs) > 0 { // 有文章新增浏览量执行
 		viewCount, err = lsw.commentCache.BatchGetArticleView(ctx, viewArticleIDs)
 		if err != nil {
 			return fmt.Errorf("获取文章浏览量失败：%w", err)

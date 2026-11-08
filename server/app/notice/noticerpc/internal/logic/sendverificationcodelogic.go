@@ -10,7 +10,7 @@ import (
 
 type (
 	sendVerificaitonCodeIdentityRepository interface {
-		CheckEmailExists(email string) (bool, error)
+		CheckEmailExists(ctx context.Context, email string) (bool, error)
 	}
 
 	sendVerificationCodeNoticeResponse interface {
@@ -59,7 +59,7 @@ func (l *SendVerificationCodeLogic) SendVerificationCode(in *noticerpc.SendVerif
 	// todo: add your logic here and delete this line
 	resp := new(noticerpc.Response)
 	// 检查邮箱是否存在
-	emailExist, err := l.identityRepository.CheckEmailExists(in.Email)
+	emailExist, err := l.identityRepository.CheckEmailExists(l.ctx, in.Email)
 	if err != nil {
 		return l.noticeResponse.FailResponse(resp, "数据库操作异常！", errcode.InvalidParam, errcode.Failed)
 	}

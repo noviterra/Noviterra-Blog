@@ -29,7 +29,7 @@ type (
 	}
 
 	updateArticleIdentityRepository interface {
-		GetUserRole(userID string) (int, error)
+		GetUserRole(ctx context.Context, userID string) (int, error)
 	}
 	updateArticleResponse interface {
 		SuccessResponse(resp *articlerpc.Response, msg string) (*articlerpc.Response, error)
@@ -88,7 +88,7 @@ func (l *UpdateArticleLogic) UpdateArticle(in *articlerpc.UpdateArticleRequest) 
 	}
 
 	// 获取用户权限
-	updaterRole, err := l.identityRepository.GetUserRole(updaterID)
+	updaterRole, err := l.identityRepository.GetUserRole(l.ctx, updaterID)
 	if updaterRole < 1 {
 		l.logger.Error("article/updatearticle：普通用户访问修改文章操作",
 			zap.String("UpdaterID", updaterID), zap.Int("UpdaterRole", updaterRole))

@@ -13,7 +13,7 @@ import (
 
 type (
 	publishArticleIdentityRepository interface {
-		GetUserRole(id string) (int, error)
+		GetUserRole(ctx context.Context, id string) (int, error)
 	}
 
 	publishArticleRepository interface {
@@ -93,7 +93,7 @@ func (l *PublishArticleLogic) PublishArticle(in *articlerpc.PublishArticleReques
 	}
 
 	// 校验用户身份 查库
-	role, err := l.identityRepository.GetUserRole(publisherID)
+	role, err := l.identityRepository.GetUserRole(l.ctx, publisherID)
 	if err != nil {
 		l.logger.Error("article/publisharticlelogic：数据库查询失败：查询用户权限失败", zap.String("ERROR", err.Error()), zap.String("UserID", publisherID))
 		return l.articleResponse.FailPublishArticleResponse(resp, "数据库查询失败！", errcode.ServerError, errcode.Failed)

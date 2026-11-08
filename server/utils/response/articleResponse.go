@@ -115,6 +115,9 @@ func (arp *ArticleResponse) SuccessGetArticleDetailResponse(resp *articlerpc.Get
 	if resp == nil {
 		resp = new(articlerpc.GetArticleDetailResponse)
 	}
+	if resp.A == nil {
+		resp.A = new(articlerpc.Article)
+	}
 
 	resp.A.ArticleID = article.ArticleID
 	resp.A.Title = article.Title

@@ -5,14 +5,14 @@ import (
 	"Noviterra/server/app/model"
 	"Noviterra/server/utils/errcode"
 	"context"
-	"fmt"
 	"time"
 
 	"Noviterra/server/app/identity/identityrpc/internal/svc"
 )
 
 type generateTokenIdentityRespository interface {
-	InsertUserToken(userToken model.UserRefreshToken) error
+	InsertUserToken(ctx context.Context,
+		userToken model.UserRefreshToken) error
 }
 
 type generateTokenIdentityAuthentication interface {
@@ -57,8 +57,6 @@ func (l *GenerateTokenLogic) GenerateToken(in *identityrpc.GenerateTokenRequest)
 		return l.identityResponse.FailGenerateTokenResponse(resp, "用户ID校验失败！", errcode.InvalidParam, errcode.Failed)
 	}
 	if id != in.ID {
-		fmt.Println("id", id)
-		fmt.Println("in.ID", in.ID)
 		return l.identityResponse.FailGenerateTokenResponse(resp, "用户操作异常！", errcode.InvalidParam, errcode.Failed)
 	}
 
@@ -67,7 +65,7 @@ func (l *GenerateTokenLogic) GenerateToken(in *identityrpc.GenerateTokenRequest)
 		return l.identityResponse.FailGenerateTokenResponse(resp, "Token生成失败！", errcode.InvalidParam, errcode.Failed)
 	}
 
-	err = l.identityRespository.InsertUserToken(model.UserRefreshToken{
+	err = l.identityRespository.InsertUserToken(l.ctx, model.UserRefreshToken{
 		ID:           in.ID,
 		RefreshToken: refreshToken,
 		CreateAt:     time.Now(),

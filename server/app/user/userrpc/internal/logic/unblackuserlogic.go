@@ -9,9 +9,10 @@ import (
 )
 
 type unBlackUserIdentityRepository interface {
-	CheckIDExists(id string) (bool, error)
-	UpdateUsersAccount(userAccount model.UserAccount) error
-	GetUserRole(id string) (int, error)
+	CheckIDExists(ctx context.Context, id string) (bool, error)
+	UpdateUsersAccount(ctx context.Context,
+		userAccount model.UserAccount) error
+	GetUserRole(ctx context.Context, id string) (int, error)
 }
 
 type UnBlackUserLogic struct {
@@ -27,7 +28,7 @@ func NewUnBlackUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UnBla
 }
 
 func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc.Response, error) {
-	operatorRole, err := l.identityRepository.GetUserRole(in.Operator)
+	operatorRole, err := l.identityRepository.GetUserRole(l.ctx, in.Operator)
 	if err != nil {
 		return &userrpc.Response{
 			Code:    1,
@@ -41,7 +42,7 @@ func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc
 		}, nil
 	}
 
-	idExist, err := l.identityRepository.CheckIDExists(in.ID)
+	idExist, err := l.identityRepository.CheckIDExists(l.ctx, in.ID)
 	if err != nil {
 		return &userrpc.Response{
 			Code:    1,
@@ -57,7 +58,7 @@ func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc
 
 	// 修改数据库字段
 	// todo： q1 解封字段无法更新
-	err = l.identityRepository.UpdateUsersAccount(model.UserAccount{
+	err = l.identityRepository.UpdateUsersAccount(l.ctx, model.UserAccount{
 		ID:     in.ID,
 		Status: 0,
 	})

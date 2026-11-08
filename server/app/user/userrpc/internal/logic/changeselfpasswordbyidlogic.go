@@ -13,7 +13,8 @@ type changPwdByIDUserRepository interface {
 }
 
 type changePwdByIDIdentityRepository interface {
-	UpdateUsersAccount(userAccount model.UserAccount) error
+	UpdateUsersAccount(ctx context.Context,
+		userAccount model.UserAccount) error
 }
 
 type changePwdByIDCrypt interface {
@@ -21,7 +22,7 @@ type changePwdByIDCrypt interface {
 	HashPassword(password string) (string, error)
 }
 
-type changePwdByIDCommonUtils interface {
+type changePwdByIDIdentityValidate interface {
 	CheckPasswordFormat(password string) bool
 }
 type ChangeSelfPasswordByIDLogic struct {
@@ -29,7 +30,7 @@ type ChangeSelfPasswordByIDLogic struct {
 	userRepository     changPwdByIDUserRepository
 	identityRepository changePwdByIDIdentityRepository
 	crypt              changePwdByIDCrypt
-	commonUtils        changePwdByIDCommonUtils
+	identityValidate   changePwdByIDIdentityValidate
 }
 
 func NewChangeSelfPasswordByIDLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ChangeSelfPasswordByIDLogic {
@@ -38,7 +39,7 @@ func NewChangeSelfPasswordByIDLogic(ctx context.Context, svcCtx *svc.ServiceCont
 		identityRepository: svcCtx.IdentityRepository,
 		userRepository:     svcCtx.UserRepository,
 		crypt:              svcCtx.Crypt,
-		commonUtils:        svcCtx.CommonUtils,
+		identityValidate:   svcCtx.IdentityValidate,
 	}
 }
 
@@ -73,7 +74,7 @@ func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangeP
 		}, nil
 	}
 
-	passwordAvailable := l.commonUtils.CheckPasswordFormat(in.NewPassword)
+	passwordAvailable := l.identityValidate.CheckPasswordFormat(in.NewPassword)
 	if !passwordAvailable {
 		return &userrpc.Response{
 			Code:    1,
@@ -90,7 +91,7 @@ func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangeP
 		}, err
 	}
 
-	err = l.identityRepository.UpdateUsersAccount(model.UserAccount{
+	err = l.identityRepository.UpdateUsersAccount(l.ctx, model.UserAccount{
 		ID:       in.ID,
 		Password: hashPwd1,
 	})

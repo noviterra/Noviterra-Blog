@@ -18,8 +18,8 @@ type forgerPasswordIdentityCache interface {
 }
 
 type forgetPasswordIdentityRepository interface {
-	GetUserEmailByID(id string) (string, error)
-	UpdateUsersAccount(account model.UserAccount) error
+	GetUserEmailByID(ctx context.Context, id string) (string, error)
+	UpdateUsersAccount(ctx context.Context, account model.UserAccount) error
 }
 
 type forgetPasswordIdentiryBcrypt interface {
@@ -48,7 +48,7 @@ type ForgetPasswordLogic struct {
 func NewForgetPasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ForgetPasswordLogic {
 	return &ForgetPasswordLogic{
 		ctx:                 ctx,
-		commonUtils:         svcCtx.CommonUtils,
+		commonUtils:         svcCtx.IdentityValidate,
 		noticeCache:         svcCtx.NoticeCache,
 		identityRespository: svcCtx.IdentityRepository,
 		crypt:               svcCtx.Crypt,
@@ -97,7 +97,7 @@ func (l *ForgetPasswordLogic) ForgetPassword(in *identityrpc.ForgetPasswordReque
 
 	// 最后再进行仓库操作
 	// 根据用户ID得到对应的邮箱  邮箱与ID强绑定并且唯一
-	email, err := l.identityRespository.GetUserEmailByID(in.ID)
+	email, err := l.identityRespository.GetUserEmailByID(l.ctx, in.ID)
 	if err != nil {
 		return l.identityResponse.FailResponse(resp, "数据库操作异常！", errcode.InternalError, errcode.Failed)
 	}
@@ -115,7 +115,7 @@ func (l *ForgetPasswordLogic) ForgetPassword(in *identityrpc.ForgetPasswordReque
 	}
 
 	// 更新账号信息
-	err = l.identityRespository.UpdateUsersAccount(model.UserAccount{
+	err = l.identityRespository.UpdateUsersAccount(l.ctx, model.UserAccount{
 		ID:       in.ID,
 		Email:    in.Email,
 		Password: hashPwd,

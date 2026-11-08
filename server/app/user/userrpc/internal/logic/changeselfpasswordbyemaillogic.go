@@ -13,11 +13,11 @@ type changePwdByEmailNoticeCache interface {
 }
 
 type changePwdByEmailIdentityRepository interface {
-	GetUserEmailByID(id string) (string, error)
-	UpdateUsersAccount(userAccount model.UserAccount) error
+	GetUserEmailByID(ctx context.Context, id string) (string, error)
+	UpdateUsersAccount(ctx context.Context, userAccount model.UserAccount) error
 }
 
-type changePwdByEmailCommonUtils interface {
+type changePwdByEmailIdentityValidate interface {
 	CheckPasswordFormat(password string) bool
 }
 
@@ -26,20 +26,20 @@ type changePwdByEmailCrypt interface {
 }
 
 type ChangeSelfPasswordByEmailLogic struct {
-	ctx            context.Context
-	noticeCache    changePwdByEmailNoticeCache
-	userRepository changePwdByEmailIdentityRepository
-	commonUtils    changePwdByEmailCommonUtils
-	crypt          changePwdByEmailCrypt
+	ctx              context.Context
+	noticeCache      changePwdByEmailNoticeCache
+	userRepository   changePwdByEmailIdentityRepository
+	identityValidate changePwdByEmailIdentityValidate
+	crypt            changePwdByEmailCrypt
 }
 
 func NewChangeSelfPasswordByEmailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ChangeSelfPasswordByEmailLogic {
 	return &ChangeSelfPasswordByEmailLogic{
-		ctx:            ctx,
-		userRepository: svcCtx.IdentityRepository,
-		noticeCache:    svcCtx.NoticeCache,
-		crypt:          svcCtx.Crypt,
-		commonUtils:    svcCtx.CommonUtils,
+		ctx:              ctx,
+		userRepository:   svcCtx.IdentityRepository,
+		noticeCache:      svcCtx.NoticeCache,
+		crypt:            svcCtx.Crypt,
+		identityValidate: svcCtx.IdentityValidate,
 	}
 }
 
@@ -67,7 +67,7 @@ func (l *ChangeSelfPasswordByEmailLogic) ChangeSelfPasswordByEmail(in *userrpc.C
 	}
 
 	// 根据ID获得用户邮箱
-	email, err := l.userRepository.GetUserEmailByID(in.ID)
+	email, err := l.userRepository.GetUserEmailByID(l.ctx, in.ID)
 	if err != nil {
 		return &userrpc.Response{
 			Code:    1,
@@ -90,7 +90,7 @@ func (l *ChangeSelfPasswordByEmailLogic) ChangeSelfPasswordByEmail(in *userrpc.C
 	}
 
 	// 密码校验
-	passwordAvailable := l.commonUtils.CheckPasswordFormat(in.NewPassword)
+	passwordAvailable := l.identityValidate.CheckPasswordFormat(in.NewPassword)
 	if !passwordAvailable {
 		return &userrpc.Response{
 			Code:    1,
@@ -108,7 +108,7 @@ func (l *ChangeSelfPasswordByEmailLogic) ChangeSelfPasswordByEmail(in *userrpc.C
 	}
 
 	// 更新数据库
-	err = l.userRepository.UpdateUsersAccount(model.UserAccount{
+	err = l.userRepository.UpdateUsersAccount(l.ctx, model.UserAccount{
 		ID:       in.ID,
 		Password: hashPwd,
 	})

@@ -354,6 +354,7 @@ func (cc *CommentCache) PushSyncEvent(ctx context.Context, event model.SyncEvent
 // 保障数据安全性 防止数据丢失
 // eg：防止执行到第10个同步事件的时候 redis or mysql挂载导致同步事件丢失
 // 执行到多少事件删除多少事件
+// 存在peek-ack并发竞态
 func (cc *CommentCache) PeekSyncEvents(ctx context.Context, count int) ([]model.SyncEvent, error) {
 	key := syncQueueKey()
 	results, err := cc.rdb.LRange(ctx, key, 0, int64(count-1)).Result()
@@ -377,8 +378,6 @@ func (cc *CommentCache) AckSyncEvents(ctx context.Context, count int) error {
 	key := syncQueueKey()
 	return cc.rdb.LTrim(ctx, key, int64(count), -1).Err()
 }
-
-// 存在peek-ack并发竞态
 
 // SetTopComment 缓存某地址的顶层评论列表
 func (cc *CommentCache) SetTopComment(ctx context.Context,

@@ -14,8 +14,8 @@ type loginByEmailIdentityCache interface {
 }
 
 type loginByEmailIdentityRepository interface {
-	CheckEmailExists(email string) (bool, error)
-	GetUserIDByEmail(id string) (string, error)
+	CheckEmailExists(ctx context.Context, email string) (bool, error)
+	GetUserIDByEmail(ctx context.Context, id string) (string, error)
 }
 
 type loginByEmailIdentityResponse interface {
@@ -56,7 +56,7 @@ func (l *LoginByEmailLogic) LoginByEmail(in *identityrpc.LoginByEmailRequest) (*
 	}
 
 	// 检验邮箱是否存在
-	emailExist, err := l.identityRepository.CheckEmailExists(in.Email)
+	emailExist, err := l.identityRepository.CheckEmailExists(l.ctx, in.Email)
 	if err != nil {
 		return l.identityResponse.FailLoginByEmailResponse(resp, "数据库操作异常！", errcode.InvalidParam, errcode.Failed)
 	}
@@ -65,7 +65,7 @@ func (l *LoginByEmailLogic) LoginByEmail(in *identityrpc.LoginByEmailRequest) (*
 	}
 
 	// 获取用户ID
-	id, err := l.identityRepository.GetUserIDByEmail(in.Email)
+	id, err := l.identityRepository.GetUserIDByEmail(l.ctx, in.Email)
 	if err != nil {
 		return l.identityResponse.FailLoginByEmailResponse(resp, "数据库操作异常！", errcode.InvalidParam, errcode.Failed)
 

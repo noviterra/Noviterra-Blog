@@ -31,7 +31,7 @@ type (
 		ValidateSnowID(id int64) (int64, error)
 	}
 	deleteArticleIdentityRepository interface {
-		GetUserRole(id string) (int, error)
+		GetUserRole(ctx context.Context, id string) (int, error)
 	}
 
 	deleteArticleRepository interface {
@@ -74,7 +74,7 @@ func (l *DeleteArticleLogic) DeleteArticle(in *articlerpc.DeleteArticleRequest) 
 	}
 
 	// 校验发起删除请求者的用户权限 至少管理员能操作
-	deleterRole, err := l.identityRepository.GetUserRole(deleterID)
+	deleterRole, err := l.identityRepository.GetUserRole(l.ctx, deleterID)
 	if deleterRole < 1 { // 1管理员 2超级管理员
 		l.logger.Error("article/deletearticle：普通用户访问删除文章操作，需要严重标记该用户", zap.String("deleterID", deleterID), zap.Int("role", deleterRole))
 		return l.articleResponse.FailResponse(resp, "权限不足", errcode.Forbidden, errcode.Failed)
@@ -105,7 +105,7 @@ func (l *DeleteArticleLogic) DeleteArticle(in *articlerpc.DeleteArticleRequest) 
 	// 判断删除者与发布者是否是同一个
 	if deleterID != publisherID { // 不是同一个则对比权限
 		// 获取发布者的身份权限
-		publisherRole, err := l.identityRepository.GetUserRole(publisherID)
+		publisherRole, err := l.identityRepository.GetUserRole(l.ctx, publisherID)
 		if err != nil {
 			l.logger.Error("article/deletearticle：数据库查询发布者身份权限失败", zap.String("PublisherID", publisherID), zap.String("ERROR", err.Error()))
 			return l.articleResponse.FailResponse(resp, "数据库操作失败！", errcode.ServerError, errcode.Failed)

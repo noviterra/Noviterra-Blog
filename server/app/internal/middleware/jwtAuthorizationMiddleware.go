@@ -13,9 +13,9 @@ import (
 )
 
 type identityRepository interface {
-	GetUserAccountStatus(id string) (int, error)
-	GetUserRole(id string) (int, error)
-	CheckIDExists(id string) (bool, error)
+	GetUserAccountStatus(ctx context.Context, id string) (int, error)
+	GetUserRole(ctx context.Context, id string) (int, error)
+	CheckIDExists(ctx context.Context, id string) (bool, error)
 }
 
 type authMiddlewareCtxData interface {
@@ -23,13 +23,17 @@ type authMiddlewareCtxData interface {
 	StoreUserRoleInContext(ctx context.Context, userRole int) context.Context
 }
 
+type authMiddlewareAuthorization interface {
+	ParseAccessToken(tokenStr string) (*jwtauth.UserClaims, error)
+}
+
 type AuthMiddleware struct {
-	authorization *jwtauth.Authentication
+	authorization authMiddlewareAuthorization
 	identityRepo  identityRepository
 	ctxdata       authMiddlewareCtxData
 }
 
-func NewAuthMiddleware(authorization *jwtauth.Authentication,
+func NewAuthMiddleware(authorization authMiddlewareAuthorization,
 	identityRepo identityRepository, ctxdata authMiddlewareCtxData) *AuthMiddleware {
 	return &AuthMiddleware{
 		authorization: authorization,
@@ -41,6 +45,7 @@ func NewAuthMiddleware(authorization *jwtauth.Authentication,
 func (am *AuthMiddleware) JwtAuthMiddleware() rest.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
 			// 从请求头中获取Token
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
@@ -68,7 +73,7 @@ func (am *AuthMiddleware) JwtAuthMiddleware() rest.Middleware {
 			}
 
 			// 用户信息获取与校验
-			idExist, err := am.identityRepo.CheckIDExists(claim.ID)
+			idExist, err := am.identityRepo.CheckIDExists(ctx, claim.ID)
 			if err != nil {
 				httpx.ErrorCtx(r.Context(), w, errors.New("用户校验失败！"))
 				return
@@ -77,7 +82,7 @@ func (am *AuthMiddleware) JwtAuthMiddleware() rest.Middleware {
 				httpx.ErrorCtx(r.Context(), w, errors.New("不存在的账号！"))
 				return
 			}
-			status, err := am.identityRepo.GetUserAccountStatus(claim.ID)
+			status, err := am.identityRepo.GetUserAccountStatus(ctx, claim.ID)
 			if err != nil {
 				httpx.ErrorCtx(r.Context(), w, errors.New("状态校验失败！"))
 				return
@@ -86,14 +91,13 @@ func (am *AuthMiddleware) JwtAuthMiddleware() rest.Middleware {
 				httpx.ErrorCtx(r.Context(), w, errors.New("账号被封禁，操作失败！"))
 				return
 			}
-			role, err := am.identityRepo.GetUserRole(claim.ID)
+			role, err := am.identityRepo.GetUserRole(ctx, claim.ID)
 			if err != nil {
 				httpx.ErrorCtx(r.Context(), w, errors.New("身份校验失败！"))
 				return
 			}
 
 			// 写入context中
-			ctx := r.Context()
 			ctx = am.ctxdata.StoreUserIDInContext(ctx, claim.ID)
 			ctx = am.ctxdata.StoreUserRoleInContext(ctx, role)
 			next(w, r.WithContext(ctx))

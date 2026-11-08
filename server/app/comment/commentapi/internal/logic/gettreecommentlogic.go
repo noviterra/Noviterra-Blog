@@ -56,7 +56,7 @@ func (l *GetTreeCommentLogic) GetTreeComment(req *types.GetTreeCommentRequest) (
 
 	if err := Validate.Struct(*req); err != nil {
 		if errs, ok := err.(validator.ValidationErrors); ok && len(errs) > 0 {
-			return l.failGetTreeCommentResponse(resp, TypeName[errs[1].Field()]+"格式错误！", errcode.InvalidParam, errcode.Failed)
+			return l.failGetTreeCommentResponse(resp, TypeName[errs[0].Field()]+"格式错误！", errcode.InvalidParam, errcode.Failed)
 		}
 		return l.failGetTreeCommentResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)
 	}

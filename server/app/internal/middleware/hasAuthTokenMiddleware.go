@@ -24,9 +24,8 @@ type hasAuthTokenAuthentication interface {
 }
 
 type hasAuthTokenIdentityRepository interface {
-	GetUserAccountStatus(id string) (int, error)
-	GetUserRole(id string) (int, error)
-	CheckIDExists(id string) (bool, error)
+	GetUserAccountStatus(ctx context.Context, id string) (int, error)
+	CheckIDExists(ctx context.Context, id string) (bool, error)
 }
 
 type HasAuthTokenMiddleware struct {
@@ -75,14 +74,14 @@ func (hm *HasAuthTokenMiddleware) HasAuthToken() rest.Middleware {
 			}
 
 			// 用户信息获取与校验
-			idExist, err := hm.identityRepository.CheckIDExists(claim.ID)
+			idExist, err := hm.identityRepository.CheckIDExists(ctx, claim.ID)
 			if err != nil {
 				return
 			}
 			if !idExist {
 				return
 			}
-			status, err := hm.identityRepository.GetUserAccountStatus(claim.ID)
+			status, err := hm.identityRepository.GetUserAccountStatus(ctx, claim.ID)
 			if err != nil {
 				return
 			}

@@ -25,10 +25,9 @@ func (s *SnowFlake) GenerateSnowFlakeID() int64 {
 	timeStamp := s.getCurrentTime()
 
 	// 如果当前时间戳与上次时间戳不同 重置时钟序列
-	if timeStamp != s.lastTimeStamp {
+	if timeStamp != s.lastTimeStamp { // workID不重置
 		s.sequenceID = 0
 		s.sequence = 0
-		s.workerID = 0
 		s.lastTimeStamp = timeStamp
 	} else if s.sequence < maxSequence { // 先增加序列号
 		s.sequence++
