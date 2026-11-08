@@ -316,7 +316,8 @@ func (cr *CommentRepository) FirstLoadTopComment(ctx context.Context,
 }
 
 // OpenComment 展开评论 根据顶层评论ID得到全部评论
-func (cr *CommentRepository) OpenComment(ctx context.Context, commentID string) ([]model.CommentNode, error) {
+func (cr *CommentRepository) OpenComment(ctx context.Context,
+	commentID int64) ([]model.CommentNode, error) {
 	// 校验顶层评论的有效性
 	var top model.TopCommentNode
 	if err := cr.db.WithContext(ctx).

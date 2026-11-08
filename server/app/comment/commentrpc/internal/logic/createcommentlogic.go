@@ -19,9 +19,12 @@ type (
 	}
 
 	createCommentResponse interface {
-		SuccessResponse(resp *commentrpc.Response, msg string) (*commentrpc.Response, error)
-		FailResponse(resp *commentrpc.Response, msg string, status int32, code int64) (*commentrpc.Response, error)
-		FailResponseWithErr(resp *commentrpc.Response, err error) (*commentrpc.Response, error)
+		SuccessCommentResponse(resp *commentrpc.CommentResponse,
+			commentID int64) (*commentrpc.CommentResponse, error)
+		FailCommentResponse(resp *commentrpc.CommentResponse,
+			msg string, status int32, code int64) (*commentrpc.CommentResponse, error)
+		FailCommentResponseWithErr(resp *commentrpc.CommentResponse,
+			err error) (*commentrpc.CommentResponse, error)
 	}
 
 	createCommentRepository interface {
@@ -63,13 +66,13 @@ func NewCreateCommentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Cre
 }
 
 // 发表评论
-func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*commentrpc.Response, error) {
+func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*commentrpc.CommentResponse, error) {
 	// todo: add your logic here and delete this line
-	resp := new(commentrpc.Response)
+	resp := new(commentrpc.CommentResponse)
 	// 身份校验
 	id := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if id == "" {
-		return l.commentResponse.FailResponse(resp, "信息校验失败！", errcode.Unauthorized, errcode.Failed)
+		return l.commentResponse.FailCommentResponse(resp, "信息校验失败！", errcode.Unauthorized, errcode.Failed)
 	}
 
 	// 参数校验
@@ -80,7 +83,7 @@ func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*comm
 		Content:   in.Content,
 	})
 	if err != nil {
-		return l.commentResponse.FailResponseWithErr(resp, err)
+		return l.commentResponse.FailCommentResponseWithErr(resp, err)
 	}
 
 	// 生成雪花ID作为评论的唯一ID
@@ -95,7 +98,7 @@ func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*comm
 		Address:   commentReq.Address,
 	})
 	if err != nil {
-		return l.commentResponse.FailResponse(resp, "系统繁忙，评论失败！", errcode.InternalError, errcode.Failed)
+		return l.commentResponse.FailCommentResponse(resp, "系统繁忙，评论失败！", errcode.InternalError, errcode.Failed)
 	}
 
 	// 评论发布后 删除缓存 日志记录
@@ -105,5 +108,5 @@ func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*comm
 		err = l.commentCache.DelTreeComment(l.ctx, rootID)
 	}
 
-	return l.commentResponse.SuccessResponse(resp, "评论成功！")
+	return l.commentResponse.SuccessCommentResponse(resp, commentID)
 }

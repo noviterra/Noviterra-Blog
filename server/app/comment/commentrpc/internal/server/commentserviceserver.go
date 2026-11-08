@@ -48,7 +48,7 @@ func (s *CommentServiceServer) GetTopComment(ctx context.Context, in *commentrpc
 }
 
 // 得到某个评论的全部子评论
-func (s *CommentServiceServer) GetTreeComment(ctx context.Context, in *commentrpc.GetTreeCommentRequest) (*commentrpc.GetTopCommentResponse, error) {
+func (s *CommentServiceServer) GetTreeComment(ctx context.Context, in *commentrpc.GetTreeCommentRequest) (*commentrpc.GetTreeCommentResponse, error) {
 	l := logic.NewGetTreeCommentLogic(ctx, s.svcCtx)
 	return l.GetTreeComment(in)
 }

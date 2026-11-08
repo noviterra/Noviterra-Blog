@@ -23,6 +23,7 @@ type ServiceContext struct {
 	CommentResponse         *response.CommentResponse
 	CtxData                 *ctxdata.CtxData
 	CommentValidate         *validate.CommentValidate
+	ArticleValidate         *validate.ArticleValidate
 	Snowfake                *snowflake.SnowFlake
 	DataDeduplication       *common.DataDeduplication
 	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
@@ -44,6 +45,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		CtxData:                 tool.ctxdata,
 		CommentResponse:         tool.commentResponse,
 		CommentValidate:         tool.commentValidate,
+		ArticleValidate:         tool.articleValidate,
 		Snowfake:                tool.snowfake,
 		DataDeduplication:       tool.dataDeduplication,
 		ServiceTokenInterceptor: aspect.serviceTokenInterceptor,
@@ -104,6 +106,7 @@ type toolCollection struct {
 	ctxdata           *ctxdata.CtxData
 	commentValidate   *validate.CommentValidate
 	commonUtils       *common.CommonUtils
+	articleValidate   *validate.ArticleValidate
 	snowfake          *snowflake.SnowFlake
 	typeConversion    *common.TypesConversion
 	dataDeduplication *common.DataDeduplication
@@ -131,6 +134,7 @@ func initTool() toolCollection {
 		snowfake:          sf,
 		typeConversion:    typeConversion,
 		dataDeduplication: dataDeduplication,
+		articleValidate:   articleValidate,
 	}
 }
 

@@ -18,7 +18,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var configFile = flag.String("f", "etc/commentrpc.yaml", "the config file")
+var configFile = flag.String("f", "server/app/comment/commentrpc/etc/commentrpc.yaml", "the config file")
 
 func main() {
 	flag.Parse()

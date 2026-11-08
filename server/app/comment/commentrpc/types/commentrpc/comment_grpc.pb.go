@@ -39,7 +39,7 @@ type CommentServiceClient interface {
 	// 得到某个位置的全部顶层评论
 	GetTopComment(ctx context.Context, in *GetTopCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error)
 	// 得到某个评论的全部子评论
-	GetTreeComment(ctx context.Context, in *GetTreeCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error)
+	GetTreeComment(ctx context.Context, in *GetTreeCommentRequest, opts ...grpc.CallOption) (*GetTreeCommentResponse, error)
 }
 
 type commentServiceClient struct {
@@ -90,9 +90,9 @@ func (c *commentServiceClient) GetTopComment(ctx context.Context, in *GetTopComm
 	return out, nil
 }
 
-func (c *commentServiceClient) GetTreeComment(ctx context.Context, in *GetTreeCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error) {
+func (c *commentServiceClient) GetTreeComment(ctx context.Context, in *GetTreeCommentRequest, opts ...grpc.CallOption) (*GetTreeCommentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetTopCommentResponse)
+	out := new(GetTreeCommentResponse)
 	err := c.cc.Invoke(ctx, CommentService_GetTreeComment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ type CommentServiceServer interface {
 	// 得到某个位置的全部顶层评论
 	GetTopComment(context.Context, *GetTopCommentRequest) (*GetTopCommentResponse, error)
 	// 得到某个评论的全部子评论
-	GetTreeComment(context.Context, *GetTreeCommentRequest) (*GetTopCommentResponse, error)
+	GetTreeComment(context.Context, *GetTreeCommentRequest) (*GetTreeCommentResponse, error)
 	mustEmbedUnimplementedCommentServiceServer()
 }
 
@@ -136,7 +136,7 @@ func (UnimplementedCommentServiceServer) CreateComment(context.Context, *Comment
 func (UnimplementedCommentServiceServer) GetTopComment(context.Context, *GetTopCommentRequest) (*GetTopCommentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetTopComment not implemented")
 }
-func (UnimplementedCommentServiceServer) GetTreeComment(context.Context, *GetTreeCommentRequest) (*GetTopCommentResponse, error) {
+func (UnimplementedCommentServiceServer) GetTreeComment(context.Context, *GetTreeCommentRequest) (*GetTreeCommentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetTreeComment not implemented")
 }
 func (UnimplementedCommentServiceServer) mustEmbedUnimplementedCommentServiceServer() {}

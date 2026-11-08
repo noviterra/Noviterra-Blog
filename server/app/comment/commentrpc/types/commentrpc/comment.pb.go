@@ -729,13 +729,13 @@ const file_doc_proto_comment_proto_rawDesc = "" +
 	"\tCommentID\x18\x01 \x01(\x03R\tCommentID\"{\n" +
 	"\x16GetTreeCommentResponse\x127\n" +
 	"\bComments\x18\x01 \x03(\v2\x1b.commentrpc.TreeCommentInfoR\bComments\x12(\n" +
-	"\x04Resp\x18\x02 \x01(\v2\x14.commentrpc.ResponseR\x04Resp2\x98\x03\n" +
+	"\x04Resp\x18\x02 \x01(\v2\x14.commentrpc.ResponseR\x04Resp2\x99\x03\n" +
 	"\x0eCommentService\x12C\n" +
 	"\vLikeArticle\x12\x1e.commentrpc.LikeArticleRequest\x1a\x14.commentrpc.Response\x12I\n" +
 	"\x0eCollectArticle\x12!.commentrpc.CollectArticleRequest\x1a\x14.commentrpc.Response\x12H\n" +
 	"\rCreateComment\x12\x1a.commentrpc.CommentRequest\x1a\x1b.commentrpc.CommentResponse\x12T\n" +
-	"\rGetTopComment\x12 .commentrpc.GetTopCommentRequest\x1a!.commentrpc.GetTopCommentResponse\x12V\n" +
-	"\x0eGetTreeComment\x12!.commentrpc.GetTreeCommentRequest\x1a!.commentrpc.GetTopCommentResponseB\rZ\v/commentrpcb\x06proto3"
+	"\rGetTopComment\x12 .commentrpc.GetTopCommentRequest\x1a!.commentrpc.GetTopCommentResponse\x12W\n" +
+	"\x0eGetTreeComment\x12!.commentrpc.GetTreeCommentRequest\x1a\".commentrpc.GetTreeCommentResponseB\rZ\v/commentrpcb\x06proto3"
 
 var (
 	file_doc_proto_comment_proto_rawDescOnce sync.Once
@@ -778,7 +778,7 @@ var file_doc_proto_comment_proto_depIdxs = []int32{
 	0,  // 11: commentrpc.CommentService.CollectArticle:output_type -> commentrpc.Response
 	6,  // 12: commentrpc.CommentService.CreateComment:output_type -> commentrpc.CommentResponse
 	8,  // 13: commentrpc.CommentService.GetTopComment:output_type -> commentrpc.GetTopCommentResponse
-	8,  // 14: commentrpc.CommentService.GetTreeComment:output_type -> commentrpc.GetTopCommentResponse
+	10, // 14: commentrpc.CommentService.GetTreeComment:output_type -> commentrpc.GetTreeCommentResponse
 	10, // [10:15] is the sub-list for method output_type
 	5,  // [5:10] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name

@@ -7,11 +7,9 @@ info (
 )
 
 // 8005
-
 /*
 goctl api go -api ./doc/api/comment.api -dir ./server/app/comment/commentapi
 */
-
 @server (
 	prefix: novblog/comment
 )
@@ -96,10 +94,11 @@ type (
 	}
 	// 得到某个顶层评论的全部评论
 	GetTreeCommentRequest {
-		CommentID string `json:"comment_id" validate:"gt=10"`
+		CommentID int64 `json:"comment_id" validate:"gt=10"`
 	}
 	GetTreeCommentResponse {
 		Comments []TreeCommentInfo `json:"comments"`
 		Resp     Response          `json:"response"`
 	}
 )
+

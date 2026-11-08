@@ -42,7 +42,7 @@ type GetTopCommentResponse struct {
 }
 
 type GetTreeCommentRequest struct {
-	CommentID string `json:"comment_id" validate:"gt=10"`
+	CommentID int64 `json:"comment_id" validate:"gt=10"`
 }
 
 type GetTreeCommentResponse struct {

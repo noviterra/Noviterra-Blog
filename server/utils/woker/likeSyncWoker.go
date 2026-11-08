@@ -120,7 +120,7 @@ func (lsw *LikeSyncWoker) proccessEvents(ctx context.Context, events []model.Syn
 	}
 
 	// 每个用户点赞的文章列表
-	userLikedArticles := make(map[string][]string, len(userLikeArticleSet))
+	userLikedArticles := make(map[string][]int64, len(userLikeArticleSet))
 	for userID := range userLikeArticleSet {
 		articles, err := lsw.commentCache.GetUserLikedArticles(ctx, userID)
 		if err != nil {
@@ -140,9 +140,9 @@ func (lsw *LikeSyncWoker) proccessEvents(ctx context.Context, events []model.Syn
 	}
 
 	// 每个用户的收藏文章列表
-	userCollectArticles := make(map[string][]string, len(userCollectArticleSet))
+	userCollectArticles := make(map[string][]int64, len(userCollectArticleSet))
 	for userID := range userCollectArticleSet {
-		articles, err := lsw.commentCache.GetUserCollectArticles(ctx, userID)
+		articles, err := lsw.commentCache.GetUserCollectedArticles(ctx, userID)
 		if err != nil {
 			return fmt.Errorf("获取用户收藏文章列表失败：%w", err)
 		}
@@ -154,7 +154,7 @@ func (lsw *LikeSyncWoker) proccessEvents(ctx context.Context, events []model.Syn
 	if err != nil {
 		return fmt.Errorf("扫描浏览量key失败：%w", err)
 	}
-	var viewCount map[string]int64
+	var viewCount map[int64]int64
 	if len(viewCount) > 0 {
 		viewCount, err = lsw.commentCache.BatchGetArticleView(ctx, viewArticleIDs)
 		if err != nil {

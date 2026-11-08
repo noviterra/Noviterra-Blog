@@ -36,7 +36,7 @@ type (
 		// 得到某个位置的全部顶层评论
 		GetTopComment(ctx context.Context, in *GetTopCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error)
 		// 得到某个评论的全部子评论
-		GetTreeComment(ctx context.Context, in *GetTreeCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error)
+		GetTreeComment(ctx context.Context, in *GetTreeCommentRequest, opts ...grpc.CallOption) (*GetTreeCommentResponse, error)
 	}
 
 	defaultCommentService struct {
@@ -75,7 +75,7 @@ func (m *defaultCommentService) GetTopComment(ctx context.Context, in *GetTopCom
 }
 
 // 得到某个评论的全部子评论
-func (m *defaultCommentService) GetTreeComment(ctx context.Context, in *GetTreeCommentRequest, opts ...grpc.CallOption) (*GetTopCommentResponse, error) {
+func (m *defaultCommentService) GetTreeComment(ctx context.Context, in *GetTreeCommentRequest, opts ...grpc.CallOption) (*GetTreeCommentResponse, error) {
 	client := commentrpc.NewCommentServiceClient(m.cli.Conn())
 	return client.GetTreeComment(ctx, in, opts...)
 }

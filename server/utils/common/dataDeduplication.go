@@ -9,21 +9,30 @@ func NewDataDeduplication() *DataDeduplication {
 	return &DataDeduplication{}
 }
 
-func (dd *DataDeduplication) GetUserIDListsFromTopComment(commentList []model.TopCommentNode) []string {
-	if len(commentList) == 0 {
+// go泛型 泛型函数不能绑定在结构体之下
+func dedupSpeakerIDs[T any](list []T, getID func(T) string) []string {
+	if len(list) == 0 {
 		return []string{}
 	}
-
-	hasSpeakerIDs := make(map[string]struct{}, len(commentList))
-	speakerIDs := make([]string, 0, len(commentList))
-	for _, comment := range commentList {
-		id := comment.SpeakerID
-		if _, ok := hasSpeakerIDs[id]; ok {
+	seen := make(map[string]struct{}, len(list))
+	out := make([]string, 0, len(list))
+	for _, item := range list {
+		id := getID(item)
+		if _, ok := seen[id]; ok {
 			continue
 		}
-		hasSpeakerIDs[id] = struct{}{}
-		speakerIDs = append(speakerIDs, id)
+		seen[id] = struct{}{}
+		out = append(out, id)
 	}
+	return out
+}
 
-	return speakerIDs
+// GetUserIDListsFromTopComment 从顶层评论去重提取 SpeakerIDs
+func (dd *DataDeduplication) GetUserIDListsFromTopComment(commentList []model.TopCommentNode) []string {
+	return dedupSpeakerIDs(commentList, func(c model.TopCommentNode) string { return c.SpeakerID })
+}
+
+// GetUserIDListsFromTreeComment 从子评论数据中去重提取 SpeakerIDs
+func (dd *DataDeduplication) GetUserIDListsFromTreeComment(commentList []model.CommentNode) []string {
+	return dedupSpeakerIDs(commentList, func(c model.CommentNode) string { return c.SpeakerID })
 }

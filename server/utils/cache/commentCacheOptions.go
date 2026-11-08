@@ -427,19 +427,19 @@ func (cc *CommentCache) SetTreeComment(ctx context.Context,
 
 // GetTreeComment 得到某课评论树
 func (cc *CommentCache) GetTreeComment(ctx context.Context,
-	rootID int64) ([]model.CommentNode, error) {
+	rootID int64) ([]model.CommentNode, bool, error) {
 	data, err := cc.rdb.Get(ctx, treeCommentKey(rootID)).Bytes()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return nil, nil
+			return nil, false, nil
 		}
-		return nil, err
+		return nil, false, err
 	}
 	var result []model.CommentNode
 	if err := json.Unmarshal(data, &result); err != nil {
-		return nil, fmt.Errorf("反序列化评论树失败：%w", err)
+		return nil, false, fmt.Errorf("反序列化评论树失败：%w", err)
 	}
-	return result, nil
+	return result, true, nil
 }
 
 // DelTreeComment 删除某棵评论树
