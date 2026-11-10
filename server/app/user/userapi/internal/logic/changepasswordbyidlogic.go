@@ -15,17 +15,18 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type changePasswordByIDUserModel interface {
-	ChangeSelfPasswordByID(ctx context.Context, in *userrpc.ChangePasswordRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
-}
-
-type changePasswordByIDCtxData interface {
-	GetUserIDFromContext(ctx context.Context) string
-}
-
-type changePasswordByIDServiceTokenIntercptor interface {
-	GetServiceTokenInConf() string
-}
+type (
+	changePasswordByIDUserModel interface {
+		ChangeSelfPasswordByID(ctx context.Context, in *userrpc.ChangePasswordRequest,
+			opts ...grpc.CallOption) (*userrpc.Response, error)
+	}
+	changePasswordByIDCtxData interface {
+		GetUserIDFromContext(ctx context.Context) string
+	}
+	changePasswordByIDServiceTokenIntercptor interface {
+		GetServiceTokenInConf() string
+	}
+)
 
 type ChangePasswordByIDLogic struct {
 	ctx                     context.Context

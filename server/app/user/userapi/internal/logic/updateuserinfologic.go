@@ -15,17 +15,17 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type updateUserInfoUserModel interface {
-	UpdateSelfInfo(ctx context.Context, in *userrpc.UpdateUserInfoRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
-}
-
-type updateUserInfoCtxData interface {
-	GetUserIDFromContext(ctx context.Context) string
-}
-
-type updateUserServiceTokenInterceptor interface {
-	GetServiceTokenInConf() string
-}
+type (
+	updateUserInfoUserModel interface {
+		UpdateSelfInfo(ctx context.Context, in *userrpc.UpdateUserInfoRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
+	}
+	updateUserInfoCtxData interface {
+		GetUserIDFromContext(ctx context.Context) string
+	}
+	updateUserServiceTokenInterceptor interface {
+		GetServiceTokenInConf() string
+	}
+)
 
 type UpdateUserInfoLogic struct {
 	ctx                     context.Context

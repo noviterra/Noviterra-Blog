@@ -2,13 +2,11 @@ package errcode
 
 import "net/http"
 
-/*
-通用的状态码
-*/
+// RequestSuccess
 // ====================================== Status ================================================
+// 请求完成
 const (
 	RequestSuccess = http.StatusOK // 200
-	ServerError    = http.StatusInternalServerError
 )
 
 // 客户端错误
@@ -40,8 +38,17 @@ const (
 
 /*
 用户通用状态码
-格式：1000--
+格式：100--
 */
+const (
+	GetUserInfoFail              = 1001
+	ValidateUserInfoFail         = 1002
+	GetVerificationCodeFail      = 1003
+	ValidateVerificationCodeFail = 1004
+	ValidateUserRequestParamFail = 1005
+	InterCallToolFail            = 1006
+	UserOperationOutOfBounds     = 1007
+)
 
 /*
 文章通用状态码

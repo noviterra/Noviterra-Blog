@@ -7,6 +7,42 @@ info (
 )
 
 // 8003
+/*
+goctl api go -api ./doc/api/user.api -dir ./server/app/user/userapi
+*/
+
+// 需要鉴权的
+@server (
+	prefix: novblog/user
+)
+service usersService {
+	@doc "通过账号密码认证修改密码"
+	@handler changePasswordByID
+	post /changepassword/id (ChangePasswordByIDRequest) returns (Response)
+
+	@doc "通过邮箱辅助认证修改个人密码"
+	@handler changePasswordByEmail
+	post /changepassword/email (ChangePasswordByEmailRequest) returns (Response)
+
+	@doc "得到个人信息"
+	@handler getUserInfo
+	get /info returns (UserInfoResponse)
+
+	@doc "批量获取用户信息"
+	@handler batchGetUserInfo
+	get /batchinfo (BatchUserInfoRequest) returns (BatchUserInfoResponse)
+
+	@doc "封禁用户"
+	@handler blacklistUser
+	post /blackusers (BlacklistUserRequest) returns (Response)
+
+	@doc "解封用户"
+	@handler unblacklistUser
+	post /unblackusers (UnblacklistUserRequest) returns (Response)
+
+	@handler updateUserInfo
+	post /updateinfo (UpdateUserInfoRequest) returns (Response)
+}
 
 type (
 	// 对于响应 除特殊情况外进行统一封装
@@ -72,37 +108,4 @@ type (
 	}
 )
 
-// 需要鉴权的
-@server (
-	prefix: novblog/user
-)
-service usersService {
-	@doc "通过账号密码认证修改密码"
-	@handler changePasswordByID
-	post /changepassword/id (ChangePasswordByIDRequest) returns (Response)
-
-	@doc "通过邮箱辅助认证修改个人密码"
-	@handler changePasswordByEmail
-	post /changepassword/email (ChangePasswordByEmailRequest) returns (Response)
-
-	@doc "得到个人信息"
-	@handler getUserInfo
-	get /info returns (UserInfoResponse)
-
-	@doc "批量获取用户信息"
-	@handler batchGetUserInfo
-	get /batchinfo (BatchUserInfoRequest) returns (BatchUserInfoResponse)
-
-	@doc "封禁用户"
-	@handler blacklistUser
-	post /blackusers (BlacklistUserRequest) returns (Response)
-
-	@doc "解封用户"
-	@handler unblacklistUser
-	post /unblackusers (UnblacklistUserRequest) returns (Response)
-
-	@handler updateUserInfo
-	post /updateinfo (UpdateUserInfoRequest) returns (Response)
-}
-
-// goctl api go -api ./doc/api/user.api -dir ./server/app/user/userapi
+goctl api go -api ./doc/api/user.api -dir ./server/app/user/userapi

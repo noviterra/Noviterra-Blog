@@ -2,11 +2,24 @@ syntax = "v1"
 
 info (
 	title:  "Noviterra站点支撑服务"
-	desc:   "管理Noviterra的非核心服务，如友链、归档、订阅等"
+	desc:   "管理Noviterra的非核心服务，如友链、订阅等"
 	author: "Noviterra"
 )
 
 // 8006
+/*
+goctl api go -api ./doc/api/site.api -dir ./server/app/site/siteapi
+*/
+
+// 需登录：校验登录状态
+@server (
+	prefix: /novblog/site
+)
+service SiteService {
+	@doc "友链申请"
+	@handler ApplyFriendLink
+	post /friendlink/apply (FriendLinkRequest) returns (Response)
+}
 
 type (
 	Response {
@@ -36,15 +49,3 @@ type (
 		Resp        Response     `json:"response"`
 	}
 )
-
-// 需登录：校验登录状态
-@server (
-	prefix: /novblog/site
-)
-service SiteService {
-	@doc "友链申请"
-	@handler ApplyFriendLink
-	post /friendlink/apply (FriendLinkRequest) returns (Response)
-}
-
-// goctl api go -api ./doc/api/site.api -dir ./server/app/site/siteapi

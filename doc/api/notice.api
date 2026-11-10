@@ -7,6 +7,32 @@ info (
 )
 
 // 8002
+/*
+goctl api go -api ./doc/api/notice.api -dir ./server/app/notice/noticeapi
+*/
+
+@server (
+	prefix: novblog/notice
+)
+service NoticeService {
+	@doc "发布公告"
+	@handler PublishNotice
+	post /message/publish (PublishStationNoticeRequest) returns (Response)
+}
+
+@server (
+	prefix: novblog/notice
+)
+service NoticeService {
+	@doc "得到公告"
+	@handler GetNotice
+	get /message/list returns (GetNoticeResponse)
+
+	@doc "发送辅助身份验证的邮箱验证码"
+	@handler SendVerificationCode
+	post /email/verificationcode (SendVerificationCodeRequest) returns (Response)
+}
+
 type (
 	Response {
 		Status  int    `json:"status"`
@@ -36,27 +62,3 @@ type (
 		Resp    Response `json:"response"`
 	}
 )
-
-@server (
-	prefix: novblog/notice
-)
-service NoticeService {
-	@doc "发布公告"
-	@handler PublishNotice
-	post /message/publish (PublishStationNoticeRequest) returns (Response)
-}
-
-@server (
-	prefix: novblog/notice
-)
-service NoticeService {
-	@doc "得到公告"
-	@handler GetNotice
-	get /message/list returns (GetNoticeResponse)
-
-	@doc "发送辅助身份验证的邮箱验证码"
-	@handler SendVerificationCode
-	post /email/verificationcode (SendVerificationCodeRequest) returns (Response)
-}
-
-// goctl api go -api ./doc/api/notice.api -dir ./server/app/notice/noticeapi

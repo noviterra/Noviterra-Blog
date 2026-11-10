@@ -15,18 +15,19 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type batchGetUserInfoCtxData interface {
-	GetUserRoleFromContext(ctx context.Context) int
-	GetUserIDFromContext(ctx context.Context) string
-}
-
-type batchGetUserInfoUserModel interface {
-	GetMoreUsersInfo(ctx context.Context, in *userrpc.GetMoreUsersInfoRequest, opts ...grpc.CallOption) (*userrpc.GetMoreUsersInfoResponse, error)
-}
-
-type batchGetUserInfoServiceTokenInterceptor interface {
-	GetServiceTokenInConf() string
-}
+type (
+	batchGetUserInfoCtxData interface {
+		GetUserRoleFromContext(ctx context.Context) int
+		GetUserIDFromContext(ctx context.Context) string
+	}
+	batchGetUserInfoUserModel interface {
+		GetMoreUsersInfo(ctx context.Context, in *userrpc.GetMoreUsersInfoRequest,
+			opts ...grpc.CallOption) (*userrpc.GetMoreUsersInfoResponse, error)
+	}
+	batchGetUserInfoServiceTokenInterceptor interface {
+		GetServiceTokenInConf() string
+	}
+)
 
 type BatchGetUserInfoLogic struct {
 	ctx                     context.Context

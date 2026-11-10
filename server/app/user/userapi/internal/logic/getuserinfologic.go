@@ -14,18 +14,20 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type getUserInfoCtxData interface {
-	GetUserIDFromContext(ctx context.Context) string
-}
+type (
+	getUserInfoCtxData interface {
+		GetUserIDFromContext(ctx context.Context) string
+	}
+	getUserInfoUserModel interface {
+		GetSelfInfo(ctx context.Context, in *userrpc.GetUserInfoRequest,
+			opts ...grpc.CallOption) (*userrpc.UserInfoResponse, error)
+	}
+	getUserInfoServiceTokenInterceptor interface {
+		GetServiceTokenInConf() string
+		GetSkipTokenInConf() string
+	}
+)
 
-type getUserInfoUserModel interface {
-	GetSelfInfo(ctx context.Context, in *userrpc.GetUserInfoRequest, opts ...grpc.CallOption) (*userrpc.UserInfoResponse, error)
-}
-
-type getUserInfoServiceTokenInterceptor interface {
-	GetServiceTokenInConf() string
-	GetSkipTokenInConf() string
-}
 type GetUserInfoLogic struct {
 	ctx                     context.Context
 	userModel               getUserInfoUserModel

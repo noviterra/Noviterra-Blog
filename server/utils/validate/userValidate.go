@@ -7,11 +7,23 @@ import (
 	"unicode/utf8"
 )
 
-type UserValidate struct {
+type userIdentityValidate interface {
+	ValidateUserID(userID string) (string, error)
+	ValidatePasswordFormat(password string) (string, error)
+	ValidateVerificationCode(verificationCode string) (string, error)
+	ValidateEmail(email string) (string, error)
+	ValidateDoublePassword(newPassword,
+		oldPassword string) (string, string, error)
 }
 
-func NewUserValidate() *UserValidate {
-	return &UserValidate{}
+type UserValidate struct {
+	userIdentityValidate
+}
+
+func NewUserValidate(identityValidate userIdentityValidate) *UserValidate {
+	return &UserValidate{
+		identityValidate,
+	}
 }
 
 const (
@@ -31,8 +43,6 @@ var (
 	errInformationEmpty         = errors.New("个人简介为空！")
 	errInformationLengthInvalid = errors.New("个人简介长度不符合！")
 	errGenderInvalid            = errors.New("用户性别设置异常！")
-	errUserIDEmpty              = errors.New("用户ID为空！")
-	errUserIDLengthInvalid      = errors.New("用户ID长度不符合！")
 )
 
 type InputValidateUserInfo struct {
@@ -71,6 +81,101 @@ func (uv *UserValidate) ValidateUserInfo(in *InputValidateUserInfo) (*OutputVali
 		Name:             name,
 		Gender:           gender,
 		SelfIntroduction: selfIntroduction,
+	}, nil
+}
+
+type InputChangePwdByEmail struct {
+	ID               string
+	Email            string
+	VerificationCode string
+	NewPassword      string
+}
+
+type OutputChangePwdByEmail struct {
+	ID               string
+	Email            string
+	VerificationCode string
+	NewPassword      string
+}
+
+func (uv *UserValidate) ValidateChangePwdByEmail(in InputChangePwdByEmail) (OutputChangePwdByEmail, error) {
+	id, err := uv.ValidateUserID(in.ID)
+	if err != nil {
+		return OutputChangePwdByEmail{}, err
+	}
+	email, err := uv.ValidateEmail(in.Email)
+	if err != nil {
+		return OutputChangePwdByEmail{}, err
+	}
+	verificationCode, err := uv.ValidateVerificationCode(in.VerificationCode)
+	if err != nil {
+		return OutputChangePwdByEmail{}, err
+	}
+	newPassword, err := uv.ValidatePasswordFormat(in.NewPassword)
+	if err != nil {
+		return OutputChangePwdByEmail{}, err
+	}
+
+	return OutputChangePwdByEmail{
+		ID:               id,
+		Email:            email,
+		VerificationCode: verificationCode,
+		NewPassword:      newPassword,
+	}, nil
+}
+
+type InputChangePwdByID struct {
+	ID          string
+	NewPassword string
+	OldPassword string
+}
+
+type OutputChangePwdByID struct {
+	ID          string
+	NewPassword string
+	OldPassword string
+}
+
+func (uv *UserValidate) ValidateChangePwdByID(in InputChangePwdByID) (OutputChangePwdByID, error) {
+	id, err := uv.ValidateUserID(in.ID)
+	if err != nil {
+		return OutputChangePwdByID{}, err
+	}
+	newPassword, oldPassword, err := uv.ValidateDoublePassword(in.NewPassword, in.OldPassword)
+	if err != nil {
+		return OutputChangePwdByID{}, err
+	}
+
+	return OutputChangePwdByID{
+		ID:          id,
+		NewPassword: newPassword,
+		OldPassword: oldPassword,
+	}, nil
+}
+
+type InputBlackUser struct {
+	ID         string
+	OperatorID string
+}
+
+type OutputBlackUser struct {
+	ID         string
+	OperatorID string
+}
+
+func (uv *UserValidate) ValidateBlackUser(in InputBlackUser) (OutputBlackUser, error) {
+	id, err := uv.ValidateUserID(in.ID)
+	if err != nil {
+		return OutputBlackUser{}, err
+	}
+	operator, err := uv.ValidateUserID(in.OperatorID)
+	if err != nil {
+		return OutputBlackUser{}, err
+	}
+
+	return OutputBlackUser{
+		ID:         id,
+		OperatorID: operator,
 	}, nil
 }
 

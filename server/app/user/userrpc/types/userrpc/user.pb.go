@@ -26,6 +26,7 @@ type Response struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=Message,proto3" json:"Message,omitempty"`
 	Code          int64                  `protobuf:"varint,2,opt,name=Code,proto3" json:"Code,omitempty"`
+	Status        int32                  `protobuf:"varint,3,opt,name=Status,proto3" json:"Status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -70,6 +71,13 @@ func (x *Response) GetMessage() string {
 func (x *Response) GetCode() int64 {
 	if x != nil {
 		return x.Code
+	}
+	return 0
+}
+
+func (x *Response) GetStatus() int32 {
+	if x != nil {
+		return x.Status
 	}
 	return 0
 }
@@ -718,10 +726,11 @@ var File_doc_proto_user_proto protoreflect.FileDescriptor
 
 const file_doc_proto_user_proto_rawDesc = "" +
 	"\n" +
-	"\x14doc/proto/user.proto\x12\auserrpc\"8\n" +
+	"\x14doc/proto/user.proto\x12\auserrpc\"P\n" +
 	"\bResponse\x12\x18\n" +
 	"\aMessage\x18\x01 \x01(\tR\aMessage\x12\x12\n" +
-	"\x04Code\x18\x02 \x01(\x03R\x04Code\"\x88\x02\n" +
+	"\x04Code\x18\x02 \x01(\x03R\x04Code\x12\x16\n" +
+	"\x06Status\x18\x03 \x01(\x05R\x06Status\"\x88\x02\n" +
 	"\bUserInfo\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\tR\x02ID\x12\x12\n" +
 	"\x04Role\x18\x02 \x01(\x03R\x04Role\x12\x1a\n" +

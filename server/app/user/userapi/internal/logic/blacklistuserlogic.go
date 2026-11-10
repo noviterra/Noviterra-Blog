@@ -15,18 +15,20 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type blackListUserModel interface {
-	BlackUser(ctx context.Context, in *userrpc.BlackUserRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
-}
+type (
+	blackListUserModel interface {
+		BlackUser(ctx context.Context, in *userrpc.BlackUserRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
+	}
 
-type blackListUserCtxData interface {
-	GetUserIDFromContext(ctx context.Context) string
-	GetUserRoleFromContext(ctx context.Context) int
-}
+	blackListUserCtxData interface {
+		GetUserIDFromContext(ctx context.Context) string
+		GetUserRoleFromContext(ctx context.Context) int
+	}
 
-type blackListUserServiceTokenInterceptor interface {
-	GetServiceTokenInConf() string
-}
+	blackListUserServiceTokenInterceptor interface {
+		GetServiceTokenInConf() string
+	}
+)
 
 type BlacklistUserLogic struct {
 	ctx                     context.Context

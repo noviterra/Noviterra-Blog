@@ -7,6 +7,62 @@ info (
 )
 
 // 8004
+/*
+goctl api go -api ./doc/api/article.api -dir ./server/app/article/articleapi
+*/
+
+// 需要鉴权中间件的
+@server (
+	prefix: novblog/article
+)
+service articleService {
+	@doc "发布文章"
+	@handler PublishArticle
+	post /publish (PublishArticleRequest) returns (Response)
+
+	@doc "删除文章"
+	@handler DeleteArticle
+	post /delete (DeleteArticleRequest) returns (Response)
+
+	@doc "修改文章"
+	@handler UpdateArticle
+	post /update/article (UpdateArticleRequest) returns (Response)
+
+	@doc "修改文章封面"
+	@handler UpdateArticleCover
+	post /update/cover (UpdateArticleCoverRequest) returns (UpdateArticleCoverResponse)
+}
+
+// 不需要鉴权中间件的
+@server (
+	prefix: novblog/article
+)
+service articleService {
+	@doc "获取文章列表"
+	@handler GetArticleList
+	get /list (GetArticleListRequest) returns (GetArticleListResponse)
+
+	@doc "获取文章详情"
+	@handler GetArticleDetail
+	get /:article (GetArticleDetailRequest) returns (GetArticleDetailResponse)
+
+	@doc "搜索文章"
+	@handler SearchArticle
+	post /search (SearchArticleRequest) returns (SearchArticleResponse)
+
+	@doc "归档 时间轴展示博客与"
+	@handler GetArchive
+	get /archive returns (GetArchiveResponse)
+
+	@doc "查看用户点赞或收藏文章列表"
+	@handler GetUserLikeCollectArticleList
+	get /list/like (GetUserLikeCollectListRequest) returns (GetArticleListResponse)
+
+	@doc "查看用户发布文章列表"
+	@handler GetUsersArticleList
+	get /list/publish (GetUsersArticleListRequest) returns (GetArticleListResponse)
+}
+
 type (
 	// api层统一响应体 请求状态承载体 需要特殊响应（需要包含数据）的将其嵌入到结构体中
 	Response {
@@ -122,59 +178,3 @@ type (
 		PageSize int    `json:"page_size" validate:"required,min=5,max=15"`
 	}
 )
-
-// 需要鉴权中间件的
-@server (
-	prefix: novblog/article
-)
-service articleService {
-	@doc "发布文章"
-	@handler PublishArticle
-	post /publish (PublishArticleRequest) returns (Response)
-
-	@doc "删除文章"
-	@handler DeleteArticle
-	post /delete (DeleteArticleRequest) returns (Response)
-
-	@doc "修改文章"
-	@handler UpdateArticle
-	post /update/article (UpdateArticleRequest) returns (Response)
-
-	@doc "修改文章封面"
-	@handler UpdateArticleCover
-	post /update/cover (UpdateArticleCoverRequest) returns (UpdateArticleCoverResponse)
-}
-
-// 不需要鉴权中间件的
-@server (
-	prefix: novblog/article
-)
-service articleService {
-	@doc "获取文章列表"
-	@handler GetArticleList
-	get /list (GetArticleListRequest) returns (GetArticleListResponse)
-
-	@doc "获取文章详情"
-	@handler GetArticleDetail
-	get /:article (GetArticleDetailRequest) returns (GetArticleDetailResponse)
-
-	@doc "搜索文章"
-	@handler SearchArticle
-	post /search (SearchArticleRequest) returns (SearchArticleResponse)
-
-	@doc "归档 时间轴展示博客与"
-	@handler GetArchive
-	get /archive returns (GetArchiveResponse)
-
-	@doc "查看用户点赞或收藏文章列表"
-	@handler GetUserLikeCollectArticleList
-	get /list/like (GetUserLikeCollectListRequest) returns (GetArticleListResponse)
-
-	@doc "查看用户发布文章列表"
-	@handler GetUsersArticleList
-	get /list/publish (GetUsersArticleListRequest) returns (GetArticleListResponse)
-}
-
-/*
-goctl api go -api ./doc/api/article.api -dir ./server/app/article/articleapi
-*/

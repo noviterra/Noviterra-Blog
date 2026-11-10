@@ -3,6 +3,20 @@ package noticerpc;
 option go_package = "/noticerpc";
 
 // 9002
+/*
+goctl rpc protoc ./doc/proto/notice.proto --go_out=./server/app/notice/noticerpc/types --go-grpc_out=./server/app/notice/noticerpc/types --zrpc_out=./server/app/notice/noticerpc
+*/
+
+service NoticeService {
+  // 发布公告
+  rpc PublishNotice(PublishNoticeRequest) returns (Response);
+  // 展示公告
+  rpc GetNotice(GetNoticeRequest) returns (GetNoticeResponse);
+  // 身份验证需要的邮箱验证码验证
+  rpc SendVerificationCode(SendVerificationCodeRequest) returns (Response);
+  // 发送友链申请进度邮件
+  rpc SendApplyResult(SendApplyResultRequest) returns (Response);
+}
 
 message Response {
   string Message = 1;
@@ -44,16 +58,3 @@ message SendApplyResultRequest {
   string Process = 2;  // 即申请进度 类似发送邮箱验证码中的Type
   string Link = 3;
 }
-
-service NoticeService {
-  // 发布公告
-  rpc PublishNotice(PublishNoticeRequest) returns (Response);
-  // 展示公告
-  rpc GetNotice(GetNoticeRequest) returns (GetNoticeResponse);
-  // 身份验证需要的邮箱验证码验证
-  rpc SendVerificationCode(SendVerificationCodeRequest) returns (Response);
-  // 发送友链申请进度邮件
-  rpc SendApplyResult(SendApplyResultRequest) returns (Response);
-}
-
-// goctl rpc protoc ./doc/proto/notice.proto --go_out=./server/app/notice/noticerpc/types --go-grpc_out=./server/app/notice/noticerpc/types --zrpc_out=./server/app/notice/noticerpc

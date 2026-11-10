@@ -7,6 +7,29 @@ info (
 )
 
 // 8001
+/*
+goctl api go -api ./doc/api/identity.api -dir ./server/app/identity/identityapi
+*/
+
+@server (
+	prefix: novblog/identity
+)
+service identityService {
+	@handler register
+	post /register (RegisterRequest) returns (Response)
+
+	@handler loginByID
+	post /login/id (LoginByIDRequest) returns (LoginResponse)
+
+	@handler loginByEmail
+	post /login/email (LoginByEmailRequest) returns (LoginResponse)
+
+	@handler forgetPassword
+	post /forgetpassword (ForgetPasswordRequest) returns (Response)
+
+	@handler refreshAccessToken
+	post /server/refreshaccesstoken (RefreshAccessTokenRequest) returns (RefreshAccessTokenResponse)
+}
 
 type (
 	// 统一响应体
@@ -61,24 +84,3 @@ type (
 	}
 )
 
-@server (
-	prefix: novblog/identity
-)
-service identityService {
-	@handler register
-	post /register (RegisterRequest) returns (Response)
-
-	@handler loginByID
-	post /login/id (LoginByIDRequest) returns (LoginResponse)
-
-	@handler loginByEmail
-	post /login/email (LoginByEmailRequest) returns (LoginResponse)
-
-	@handler forgetPassword
-	post /forgetpassword (ForgetPasswordRequest) returns (Response)
-
-	@handler refreshAccessToken
-	post /server/refreshaccesstoken (RefreshAccessTokenRequest) returns (RefreshAccessTokenResponse)
-}
-
-// goctl api go -api ./doc/api/identity.api -dir ./server/app/identity/identityapi

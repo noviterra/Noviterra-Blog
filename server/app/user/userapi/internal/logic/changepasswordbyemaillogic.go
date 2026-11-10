@@ -15,17 +15,18 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type changPasswordByEmailUserModel interface {
-	ChangeSelfPasswordByEmail(ctx context.Context, resp *userrpc.ChangePasswordByEmailRequest, opts ...grpc.CallOption) (*userrpc.Response, error)
-}
-
-type changePasswordByEmailCtxData interface {
-	GetUserIDFromContext(ctx context.Context) string
-}
-
-type changePasswordByEmailServiceTokenInterceptor interface {
-	GetServiceTokenInConf() string
-}
+type (
+	changPasswordByEmailUserModel interface {
+		ChangeSelfPasswordByEmail(ctx context.Context, resp *userrpc.ChangePasswordByEmailRequest,
+			opts ...grpc.CallOption) (*userrpc.Response, error)
+	}
+	changePasswordByEmailCtxData interface {
+		GetUserIDFromContext(ctx context.Context) string
+	}
+	changePasswordByEmailServiceTokenInterceptor interface {
+		GetServiceTokenInConf() string
+	}
+)
 
 type ChangePasswordByEmailLogic struct {
 	ctx                     context.Context

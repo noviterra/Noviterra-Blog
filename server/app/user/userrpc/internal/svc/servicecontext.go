@@ -5,6 +5,7 @@ import (
 	"Noviterra/server/utils/bcryptinfo"
 	"Noviterra/server/utils/cache"
 	"Noviterra/server/utils/common"
+	"Noviterra/server/utils/ctxdata"
 	"Noviterra/server/utils/email"
 	"Noviterra/server/utils/jwtauth"
 	"Noviterra/server/utils/repo"
@@ -26,6 +27,7 @@ type ServiceContext struct {
 	UserRepository     *repo.UserRepository
 	IdentityRepository *repo.IdentityRepository
 	UserValidate       *validate.UserValidate
+	Ctxdata            *ctxdata.CtxData
 	NoticeCache        *cache.NoticeCache
 	Authentication     *jwtauth.Authentication
 }
@@ -45,6 +47,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		UserResponse:       tool.UserResponse,
 		IdentityValidate:   tool.identityValidate,
 		UserValidate:       tool.userValidate,
+		Ctxdata:            tool.ctxdata,
 		UserCache:          store.userCache,
 		UserRepository:     store.userRepository,
 		IdentityRepository: store.identityRepository,
@@ -62,6 +65,7 @@ type toolCollection struct {
 	UserResponse     *response.UserResponse
 	identityValidate *validate.IdentityValidate
 	userValidate     *validate.UserValidate
+	ctxdata          *ctxdata.CtxData
 }
 
 func initTool(c config.Config) toolCollection {
@@ -89,7 +93,9 @@ func initTool(c config.Config) toolCollection {
 
 	// 校验器
 	identityValidate := validate.NewIdentityValidate()
-	userValidate := validate.NewUserValidate()
+	userValidate := validate.NewUserValidate(identityValidate)
+
+	cd := ctxdata.NewCtxData()
 
 	return toolCollection{
 		logger:           logger,
@@ -99,6 +105,7 @@ func initTool(c config.Config) toolCollection {
 		UserResponse:     userResponse,
 		identityValidate: identityValidate,
 		userValidate:     userValidate,
+		ctxdata:          cd,
 	}
 }
 

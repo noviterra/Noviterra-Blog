@@ -3,11 +3,33 @@ package userrpc;
 option go_package = "/userrpc";
 
 // 9003
+/*
+goctl rpc protoc ./doc/proto/user.proto --go_out=./server/app/user/userrpc/types --go-grpc_out=./server/app/user/userrpc/types --zrpc_out=./server/app/user/userrpc
+*/
+
+// 服务接口
+service UserService {
+    // 获取个人信息
+    rpc GetSelfInfo(GetUserInfoRequest) returns(UserInfoResponse);
+    // 更新个人信息
+    rpc UpdateSelfInfo(UpdateUserInfoRequest) returns(Response);
+    // 通过账号密码认证进行密码修改
+    rpc ChangeSelfPasswordByID(ChangePasswordRequest) returns(Response);
+    // 通过邮箱验证修改密码
+    rpc ChangeSelfPasswordByEmail(ChangePasswordByEmailRequest) returns(Response);
+    // 管理员对用户操作 拉黑用户
+    rpc BlackUser(BlackUserRequest) returns(Response);
+    // 解封用户
+    rpc UnBlackUser(UnBlackUserRequest) returns(Response);
+    // 管理员批量获取用户信息
+    rpc GetMoreUsersInfo(GetMoreUsersInfoRequest) returns(GetMoreUsersInfoResponse);
+}
 
 // 基本响应体
 message Response {
     string Message = 1;
     int64 Code = 2;
+    int32 Status = 3;
 }
 
 message UserInfo {
@@ -79,23 +101,3 @@ message UnBlackUserRequest {
     string ID = 1;
     string Operator = 2;
 }
-
-// 服务接口
-service UserService {
-    // 获取个人信息
-    rpc GetSelfInfo(GetUserInfoRequest) returns(UserInfoResponse);
-    // 更新个人信息
-    rpc UpdateSelfInfo(UpdateUserInfoRequest) returns(Response);
-    // 通过账号密码认证进行密码修改
-    rpc ChangeSelfPasswordByID(ChangePasswordRequest) returns(Response);
-    // 通过邮箱验证修改密码
-    rpc ChangeSelfPasswordByEmail(ChangePasswordByEmailRequest) returns(Response);
-    // 管理员对用户操作 拉黑用户
-    rpc BlackUser(BlackUserRequest) returns(Response);
-    // 解封用户 
-    rpc UnBlackUser(UnBlackUserRequest) returns(Response);
-    // 管理员批量获取用户信息
-    rpc GetMoreUsersInfo(GetMoreUsersInfoRequest) returns(GetMoreUsersInfoResponse);
-}
-
-// goctl rpc protoc ./doc/proto/user.proto --go_out=./server/app/user/userrpc/types --go-grpc_out=./server/app/user/userrpc/types --zrpc_out=./server/app/user/userrpc

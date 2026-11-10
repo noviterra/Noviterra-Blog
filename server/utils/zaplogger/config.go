@@ -83,5 +83,6 @@ func generateLogger() *zap.Logger {
 		core,
 		zap.WrapCore(warpSampler),
 		zap.AddCaller(),
+		zap.AddCallerSkip(1), // 跳过封装 caller显示业务调用位置
 	)
 }

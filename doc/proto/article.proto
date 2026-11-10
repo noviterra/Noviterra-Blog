@@ -3,6 +3,32 @@ package articlerpc;
 option go_package = "/articlerpc";
 
 // 9004
+/*
+goctl rpc protoc ./doc/proto/article.proto --go_out=./server/app/article/articlerpc/types --go-grpc_out=./server/app/article/articlerpc/types --zrpc_out=./server/app/article/articlerpc
+*/
+
+service ArticleService {
+    // 发布文章
+    rpc PublishArticle(PublishArticleRequest) returns (PublishArticleResponse);
+    // 删除文章
+    rpc DeleteArticle(DeleteArticleRequest) returns (Response);
+    // 修改文章
+    rpc UpdateArticle(UpdateArticleRequest) returns (Response);
+    // 修改文章封面
+    rpc UpdateArticleCover(UpdateArticleCoverRequest) returns (UpdateArticleCoverResponse);
+    // 查询文章列表
+    rpc GetArticleList(GetArticleListRequest) returns (GetArticleListResponse);
+    // 搜索文章
+    rpc SearchArticle(SearchArticleRequest) returns (SearchArticleResponse);
+    // 查询文章详细信息
+    rpc GetArticleDetail(GetArticleDetailRequest) returns (GetArticleDetailResponse);
+    // 得到文章归档
+    rpc GetArchive(GetArchiveRequest) returns (GetArchiveResponse);
+    // 得到用户发布的全部文章列表
+    rpc GetUserArticleList(GetUserArticleListRequest) returns (GetArticleListResponse);
+    // 得到用户点赞或收藏的全部文章列表
+    rpc GetUserLikeArticleList(GetUserLikeCollectArticleListRequest) returns (GetArticleListResponse);
+}
 
 // 统一响应封装 封装请求执行状态code和message 需要附带数据将其嵌入结构体中
 message Response {
@@ -138,29 +164,3 @@ message GetUserLikeCollectArticleListRequest {
     int32 PageSize = 3;
     string Field = 4;
 }
-
-service ArticleService {
-    // 发布文章
-    rpc PublishArticle(PublishArticleRequest) returns (PublishArticleResponse);
-    // 删除文章
-    rpc DeleteArticle(DeleteArticleRequest) returns (Response);
-    // 修改文章
-    rpc UpdateArticle(UpdateArticleRequest) returns (Response);
-    // 修改文章封面
-    rpc UpdateArticleCover(UpdateArticleCoverRequest) returns (UpdateArticleCoverResponse);
-    // 查询文章列表
-    rpc GetArticleList(GetArticleListRequest) returns (GetArticleListResponse);
-    // 搜索文章
-    rpc SearchArticle(SearchArticleRequest) returns (SearchArticleResponse);
-    // 查询文章详细信息
-    rpc GetArticleDetail(GetArticleDetailRequest) returns (GetArticleDetailResponse);
-    // 得到文章归档
-    rpc GetArchive(GetArchiveRequest) returns (GetArchiveResponse);
-    // 得到用户发布的全部文章列表
-    rpc GetUserArticleList(GetUserArticleListRequest) returns (GetArticleListResponse);
-    // 得到用户点赞或收藏的全部文章列表
-    rpc GetUserLikeArticleList(GetUserLikeCollectArticleListRequest) returns (GetArticleListResponse);
-}
-/*
-goctl rpc protoc ./doc/proto/article.proto --go_out=./server/app/article/articlerpc/types --go-grpc_out=./server/app/article/articlerpc/types --zrpc_out=./server/app/article/articlerpc
-*/
