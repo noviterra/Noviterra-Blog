@@ -48,7 +48,7 @@ type BlackUserLogic struct {
 	userValidate       blackUserValidate
 }
 
-func NewLogic(ctx context.Context, svcCtx *svc.ServiceContext) *BlackUserLogic {
+func NewBlackUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *BlackUserLogic {
 	return &BlackUserLogic{
 		ctx:                ctx,
 		identityRepository: svcCtx.IdentityRepository,
