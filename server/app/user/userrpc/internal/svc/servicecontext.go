@@ -15,8 +15,7 @@ import (
 )
 
 type ServiceContext struct {
-	Config config.Config
-
+	Config             config.Config
 	Logger             *zaplogger.Logger
 	EmailSender        *email.EmailSender
 	CommonUtils        *common.CommonUtils
@@ -27,6 +26,7 @@ type ServiceContext struct {
 	UserRepository     *repo.UserRepository
 	IdentityRepository *repo.IdentityRepository
 	UserValidate       *validate.UserValidate
+	ArticleValidate    *validate.ArticleValidate
 	Ctxdata            *ctxdata.CtxData
 	NoticeCache        *cache.NoticeCache
 	Authentication     *jwtauth.Authentication
@@ -48,6 +48,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		IdentityValidate:   tool.identityValidate,
 		UserValidate:       tool.userValidate,
 		Ctxdata:            tool.ctxdata,
+		ArticleValidate:    tool.articleValidate,
 		UserCache:          store.userCache,
 		UserRepository:     store.userRepository,
 		IdentityRepository: store.identityRepository,
@@ -66,6 +67,7 @@ type toolCollection struct {
 	identityValidate *validate.IdentityValidate
 	userValidate     *validate.UserValidate
 	ctxdata          *ctxdata.CtxData
+	articleValidate  *validate.ArticleValidate
 }
 
 func initTool(c config.Config) toolCollection {
@@ -94,6 +96,7 @@ func initTool(c config.Config) toolCollection {
 	// 校验器
 	identityValidate := validate.NewIdentityValidate()
 	userValidate := validate.NewUserValidate(identityValidate)
+	articleValidate := validate.NewArticleValidate(identityValidate)
 
 	cd := ctxdata.NewCtxData()
 
@@ -106,6 +109,7 @@ func initTool(c config.Config) toolCollection {
 		identityValidate: identityValidate,
 		userValidate:     userValidate,
 		ctxdata:          cd,
+		articleValidate:  articleValidate,
 	}
 }
 

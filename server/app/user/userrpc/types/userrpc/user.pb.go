@@ -514,8 +514,8 @@ func (x *UpdateUserInfoRequest) GetSelfIntroduction() string {
 // 批量获取用户信息
 type GetMoreUsersInfoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Size          int64                  `protobuf:"varint,1,opt,name=size,proto3" json:"size,omitempty"`
-	Page          int64                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	Size          int32                  `protobuf:"varint,1,opt,name=size,proto3" json:"size,omitempty"`
+	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -550,14 +550,14 @@ func (*GetMoreUsersInfoRequest) Descriptor() ([]byte, []int) {
 	return file_doc_proto_user_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *GetMoreUsersInfoRequest) GetSize() int64 {
+func (x *GetMoreUsersInfoRequest) GetSize() int32 {
 	if x != nil {
 		return x.Size
 	}
 	return 0
 }
 
-func (x *GetMoreUsersInfoRequest) GetPage() int64 {
+func (x *GetMoreUsersInfoRequest) GetPage() int32 {
 	if x != nil {
 		return x.Page
 	}
@@ -765,8 +765,8 @@ const file_doc_proto_user_proto_rawDesc = "" +
 	"\x06Gender\x18\x05 \x01(\x03R\x06Gender\x12*\n" +
 	"\x10SelfIntroduction\x18\x06 \x01(\tR\x10SelfIntroduction\"A\n" +
 	"\x17GetMoreUsersInfoRequest\x12\x12\n" +
-	"\x04size\x18\x01 \x01(\x03R\x04size\x12\x12\n" +
-	"\x04page\x18\x02 \x01(\x03R\x04page\"r\n" +
+	"\x04size\x18\x01 \x01(\x05R\x04size\x12\x12\n" +
+	"\x04page\x18\x02 \x01(\x05R\x04page\"r\n" +
 	"\x18GetMoreUsersInfoResponse\x12/\n" +
 	"\tUsersInfo\x18\x01 \x03(\v2\x11.userrpc.UserInfoR\tUsersInfo\x12%\n" +
 	"\x04Resp\x18\x02 \x01(\v2\x11.userrpc.ResponseR\x04Resp\">\n" +

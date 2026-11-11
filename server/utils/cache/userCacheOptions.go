@@ -2,7 +2,6 @@ package cache
 
 import (
 	"Noviterra/server/app/model"
-	"Noviterra/server/app/user/userrpc/types/userrpc"
 	"Noviterra/server/utils/common"
 	"context"
 	"fmt"
@@ -12,15 +11,23 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type UserCache struct {
-	rdb         *redis.Client
-	commonUtils *common.CommonUtils
+type cacheTypeConversion interface {
+	StringConversionTime(data string) (time.Time, error)
 }
 
-func NewUserCache(redisConfig RedisConfig, commonUtils *common.CommonUtils) *UserCache {
+type UserCache struct {
+	rdb            *redis.Client
+	commonUtils    *common.CommonUtils
+	typeConversion cacheTypeConversion
+}
+
+func NewUserCache(redisConfig RedisConfig,
+	commonUtils *common.CommonUtils,
+	typeConversion cacheTypeConversion) *UserCache {
 	return &UserCache{
-		rdb:         NewRDB(redisConfig),
-		commonUtils: commonUtils,
+		rdb:            NewRDB(redisConfig),
+		commonUtils:    commonUtils,
+		typeConversion: typeConversion,
 	}
 }
 
@@ -52,7 +59,7 @@ func (uc *UserCache) HSetUserInfo(ctx context.Context, userInfo *model.UserInfo)
 }
 
 // 在缓存中查询用户信息
-func (uc *UserCache) HGetUserInfo(ctx context.Context, id string) (*userrpc.UserInfo, error) {
+func (uc *UserCache) HGetUserInfo(ctx context.Context, id string) (*model.UserInfo, error) {
 	key := fmt.Sprintf("%s:%s", id, "info")
 	vs, err := uc.rdb.HGetAll(ctx, key).Result()
 	if err != nil {
@@ -64,11 +71,11 @@ func (uc *UserCache) HGetUserInfo(ctx context.Context, id string) (*userrpc.User
 		return nil, nil
 	}
 
-	userInfo := new(userrpc.UserInfo)
+	userInfo := new(model.UserInfo)
 
 	userInfo.ID = vs["id"]
 	userInfo.Email = vs["email"]
-	userInfo.UserName = vs["name"]
+	userInfo.Name = vs["name"]
 	userInfo.Avatar = vs["avatar"]
 	userInfo.SelfIntroduction = vs["selfIntroduction"]
 
@@ -80,20 +87,26 @@ func (uc *UserCache) HGetUserInfo(ctx context.Context, id string) (*userrpc.User
 	if err != nil {
 		return nil, fmt.Errorf("性别字段解析失败：%v", err)
 	}
-	userInfo.Age = age
-	userInfo.Gender = gender
+	userInfo.Age = int(age)
+	userInfo.Gender = int(gender)
 
 	// string转int64类型
-	createdTs, err := uc.commonUtils.ToInt64(vs["createdAt"])
+	createdTs, err := uc.typeConversion.StringConversionTime(vs["createdAt"])
 	if err != nil {
 		return nil, fmt.Errorf("账号注册时间字段解析失败：%v", err)
 	}
-	updatedAt, err := uc.commonUtils.ToInt64(vs["updatedAt"])
+	updatedAt, err := uc.typeConversion.StringConversionTime(vs["updatedAt"])
 	if err != nil {
 		return nil, fmt.Errorf("账号更新时间字段解析失败：%v", err)
 	}
-	userInfo.CreateAt = createdTs
+	userInfo.CreatedAt = createdTs
 	userInfo.UpdatedAt = updatedAt
 
 	return userInfo, nil
+}
+
+// DelUserInfo 删除用户在缓存中的数据
+func (uc *UserCache) DelUserInfo(ctx context.Context, id string) error {
+	key := fmt.Sprintf("%s:%s", id, "info")
+	return uc.rdb.Del(ctx, key).Err()
 }

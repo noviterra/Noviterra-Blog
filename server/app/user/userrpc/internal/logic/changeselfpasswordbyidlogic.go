@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"Noviterra/server/utils/validate"
 	"context"
 
 	"Noviterra/server/app/model"
@@ -23,8 +24,8 @@ type (
 		CheckPasswords(password, hashPassword string) (bool, error)
 		HashPassword(password string) (string, error)
 	}
-	changePwdByIDIdentityValidate interface {
-		ValidatePasswordFormat(password string) (string, error)
+	changePwdByIDUserValidate interface {
+		ValidateChangePwdByID(in validate.InputChangePwdByID) (validate.OutputChangePwdByID, error)
 	}
 	changePwdByIDUserResponse interface {
 		FailResponse(resp *userrpc.Response,
@@ -38,6 +39,9 @@ type (
 		Info(msg string, fields ...zap.Field)
 		Error(msg string, fields ...zap.Field)
 	}
+	changePwdByIDCtxData interface {
+		GetUserIDFromContext(ctx context.Context) string
+	}
 )
 
 type ChangeSelfPasswordByIDLogic struct {
@@ -45,9 +49,10 @@ type ChangeSelfPasswordByIDLogic struct {
 	userRepository     changePwdByIDUserRepository
 	identityRepository changePwdByIDIdentityRepository
 	crypt              changePwdByIDCrypt
-	identityValidate   changePwdByIDIdentityValidate
+	userValidate       changePwdByIDUserValidate
 	userResponse       changePwdByIDUserResponse
 	logger             changePwdByIDLogger
+	ctxdata            changePwdByIDCtxData
 }
 
 func NewChangeSelfPasswordByIDLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ChangeSelfPasswordByIDLogic {
@@ -56,14 +61,44 @@ func NewChangeSelfPasswordByIDLogic(ctx context.Context, svcCtx *svc.ServiceCont
 		identityRepository: svcCtx.IdentityRepository,
 		userRepository:     svcCtx.UserRepository,
 		crypt:              svcCtx.Crypt,
-		identityValidate:   svcCtx.IdentityValidate,
+		userValidate:       svcCtx.UserValidate,
 		userResponse:       svcCtx.UserResponse,
 		logger:             svcCtx.Logger,
+		ctxdata:            svcCtx.Ctxdata,
 	}
 }
 
 func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangePasswordRequest) (*userrpc.Response, error) {
 	resp := new(userrpc.Response)
+	id := l.ctxdata.GetUserIDFromContext(l.ctx)
+	if id == "" {
+		l.logger.Error("上下文获取用户ID失败")
+		return l.userResponse.FailResponse(resp, "用户信息校验失败！",
+			errcode.Unauthorized, errcode.GetUserInfoFail)
+	}
+
+	// 参数校验
+	i := validate.InputChangePwdByID{
+		ID:          in.ID,
+		NewPassword: in.NewPassword,
+		OldPassword: in.OldPassword,
+	}
+	param, err := l.userValidate.ValidateChangePwdByID(i)
+	if err != nil {
+		l.logger.Error("请求参数校验未通过！",
+			zap.Strings("user-info", []string{id}),
+			zap.Any("validate", i),
+			zap.Error(err),
+		)
+		return l.userResponse.FailResponse(resp, "服务失败："+err.Error(),
+			errcode.InvalidParam, errcode.ValidateUserRequestParamFail)
+	}
+
+	if param.ID != id {
+		l.logger.Error("上下文存储的用户ID与传参的用户ID不同")
+		return l.userResponse.FailResponse(resp, "用户信息校验失败！",
+			errcode.Forbidden, errcode.ValidateUserInfoFail)
+	}
 
 	// 根据用户ID返回Password 为空则表示账号不存在
 	hashPwd, err := l.userRepository.GetUserPassword(in.ID)
@@ -83,7 +118,8 @@ func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangeP
 			errcode.NotFound, errcode.GetUserInfoFail)
 	}
 
-	samePwd, err := l.crypt.CheckPasswords(in.OldPassword, hashPwd)
+	// 校验密码输入是否正确
+	samePwd, err := l.crypt.CheckPasswords(param.OldPassword, hashPwd)
 	if err != nil {
 		l.logger.Error("密码校验失败：原始密码校验操作失败",
 			zap.Strings("user-info", []string{in.ID}),
@@ -100,18 +136,8 @@ func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangeP
 			errcode.InvalidParam, errcode.ValidateUserInfoFail)
 	}
 
-	password, err := l.identityValidate.ValidatePasswordFormat(in.NewPassword)
-	if err != nil {
-		l.logger.Error("校验新密码格式失败",
-			zap.Strings("user-info", []string{in.ID}),
-			zap.Error(err),
-		)
-		return l.userResponse.FailResponse(resp, "服务失败："+err.Error(),
-			errcode.InvalidParam, errcode.ValidateUserRequestParamFail)
-	}
-
 	// 密码加密
-	hashPwd1, err := l.crypt.HashPassword(password)
+	hashPwd1, err := l.crypt.HashPassword(param.NewPassword)
 	if err != nil {
 		l.logger.Error("密码加密失败",
 			zap.Strings("user-info", []string{in.ID}),
@@ -122,7 +148,7 @@ func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangeP
 	}
 
 	err = l.identityRepository.UpdateUsersAccount(l.ctx, model.UserAccount{
-		ID:       in.ID,
+		ID:       param.ID,
 		Password: hashPwd1,
 	})
 	if err != nil {

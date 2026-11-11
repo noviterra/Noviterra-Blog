@@ -91,6 +91,8 @@ func (l *BlackUserLogic) BlackUser(in *userrpc.BlackUserRequest) (*userrpc.Respo
 				param.OperatorID, operatorID,
 			}),
 		)
+		return l.userResponse.FailResponse(resp, "信息校验失败！",
+			errcode.Forbidden, errcode.UserOperationOutOfBounds)
 	}
 
 	// 校验操作者ID与用户ID的有效性

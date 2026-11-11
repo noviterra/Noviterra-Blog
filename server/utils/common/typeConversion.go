@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type TypesConversion struct {
@@ -39,4 +40,13 @@ func (tc *TypesConversion) StringConversionInt64(data string) (int64, error) {
 		return 0, errors.New("字符串为空，无法抓转换！")
 	}
 	return strconv.ParseInt(d, 10, 64)
+}
+
+// StringConversionTime string -> time.Time
+func (tc *TypesConversion) StringConversionTime(data string) (time.Time, error) {
+	t, err := time.Parse("2006-01-02 15:04:05", data)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return t, nil
 }

@@ -43,7 +43,10 @@ func (ur *UserRepository) GetAllUsersInfo(size, page int) ([]model.UserInfo, err
 	var userList []model.UserInfo
 
 	// 分页查询
-	err := ur.db.Offset((page - 1) * size).Limit(size).Find(&userList).Error
+	err := ur.db.
+		Offset((page - 1) * size).
+		Limit(size).
+		Find(&userList).Error
 	if err != nil {
 		return nil, err
 	}

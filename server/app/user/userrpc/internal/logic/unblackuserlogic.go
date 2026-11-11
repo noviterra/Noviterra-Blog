@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"Noviterra/server/utils/validate"
 	"context"
 
 	"Noviterra/server/app/model"
@@ -30,6 +31,12 @@ type (
 		Info(msg string, fields ...zap.Field)
 		Error(msg string, fields ...zap.Field)
 	}
+	unBlackUserCtxData interface {
+		GetUserIDFromContext(ctx context.Context) string
+	}
+	unBlackUserValidate interface {
+		ValidateBlackUser(in validate.InputBlackUser) (validate.OutputBlackUser, error)
+	}
 )
 
 type UnBlackUserLogic struct {
@@ -37,6 +44,8 @@ type UnBlackUserLogic struct {
 	identityRepository unBlackUserIdentityRepository
 	userResponse       unBlackUserResponse
 	logger             unBlackUserLogger
+	ctxdata            unBlackUserCtxData
+	userValidate       unBlackUserValidate
 }
 
 func NewUnBlackUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UnBlackUserLogic {
@@ -45,13 +54,46 @@ func NewUnBlackUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UnBla
 		identityRepository: svcCtx.IdentityRepository,
 		userResponse:       svcCtx.UserResponse,
 		logger:             svcCtx.Logger,
+		ctxdata:            svcCtx.Ctxdata,
+		userValidate:       svcCtx.UserValidate,
 	}
 }
 
 func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc.Response, error) {
 	resp := new(userrpc.Response)
 
-	operatorRole, err := l.identityRepository.GetUserRole(l.ctx, in.Operator)
+	operatorID := l.ctxdata.GetUserIDFromContext(l.ctx)
+	if operatorID == "" {
+		l.logger.Error("上下文获取操作用户ID失败")
+		return l.userResponse.FailResponse(resp, "身份校验失败！",
+			errcode.InvalidParam, errcode.ValidateUserInfoFail)
+	}
+
+	// 参数校验
+	i := validate.InputBlackUser{
+		ID:         in.ID,
+		OperatorID: in.Operator,
+	}
+	param, err := l.userValidate.ValidateBlackUser(i)
+	if err != nil {
+		l.logger.Error("校验InputBlack参数失败",
+			zap.Any("validate", i),
+			zap.Error(err),
+		)
+		return l.userResponse.FailResponse(resp, "服务失败："+err.Error(),
+			errcode.InvalidParam, errcode.ValidateUserRequestParamFail)
+	}
+	if param.OperatorID != operatorID {
+		l.logger.Error("上下文读取到的操作者ID与实际传参操作者ID不同",
+			zap.Strings("param-operatorID||ctxdata-operatorID", []string{
+				param.OperatorID, operatorID,
+			}),
+		)
+		return l.userResponse.FailResponse(resp, "信息校验失败！",
+			errcode.Forbidden, errcode.UserOperationOutOfBounds)
+	}
+
+	operatorRole, err := l.identityRepository.GetUserRole(l.ctx, param.OperatorID)
 	if err != nil {
 		l.logger.Error("数据库操作失败：根据操作者ID查询用户身份权限等级失败",
 			zap.String("operator-info", in.Operator),
@@ -60,12 +102,21 @@ func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
 			errcode.InternalError, errcode.InterCallToolFail)
 	}
-	if operatorRole != 1 {
+	if operatorRole < 2 {
 		l.logger.Error("操作者权限不足",
 			zap.String("operator-info", in.Operator),
 			zap.Int("operator-role", operatorRole),
 		)
 		return l.userResponse.FailResponse(resp, "操作者权限不足！",
+			errcode.Forbidden, errcode.UserOperationOutOfBounds)
+	}
+
+	// 不能对自己操作
+	if param.ID == operatorID {
+		l.logger.Error("操作者预对自己账号进行操作",
+			zap.String("operator-info", operatorID),
+		)
+		return l.userResponse.FailResponse(resp, "不能对自己账号操作！",
 			errcode.Forbidden, errcode.UserOperationOutOfBounds)
 	}
 
@@ -87,7 +138,6 @@ func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc
 	}
 
 	// 修改数据库字段
-	// todo： q1 解封字段无法更新
 	err = l.identityRepository.UpdateUsersAccount(l.ctx, model.UserAccount{
 		ID:     in.ID,
 		Status: 0,

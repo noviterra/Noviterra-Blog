@@ -1,6 +1,7 @@
 package response
 
 import (
+	"Noviterra/server/app/model"
 	"Noviterra/server/app/user/userrpc/types/userrpc"
 	"Noviterra/server/utils/errcode"
 )
@@ -50,12 +51,25 @@ func (ur *UserResponse) SuccessResponse(resp *userrpc.Response,
 
 // SuccessGetMoreUsersInfoResponse 封装GetMoreUsersInfoResponse
 func (ur *UserResponse) SuccessGetMoreUsersInfoResponse(resp *userrpc.GetMoreUsersInfoResponse,
-	msg string, usersInfo []*userrpc.UserInfo) (*userrpc.GetMoreUsersInfoResponse, error) {
+	msg string, usersInfo []model.UserInfo) (*userrpc.GetMoreUsersInfoResponse, error) {
 	if resp == nil {
 		resp = new(userrpc.GetMoreUsersInfoResponse)
 	}
 
-	resp.UsersInfo = usersInfo
+	for _, userInfo := range usersInfo {
+		resp.UsersInfo = append(resp.UsersInfo, &userrpc.UserInfo{
+			ID:               userInfo.ID,
+			Role:             int64(userInfo.Role),
+			UserName:         userInfo.Name,
+			Email:            userInfo.Email,
+			Avatar:           userInfo.Avatar,
+			Age:              int64(userInfo.Age),
+			Gender:           int64(userInfo.Gender),
+			SelfIntroduction: userInfo.SelfIntroduction,
+			CreateAt:         userInfo.CreatedAt.Unix(),
+			UpdatedAt:        userInfo.UpdatedAt.Unix(),
+		})
+	}
 	resp.Resp = &userrpc.Response{
 		Message: msg,
 		Code:    errcode.Success,
@@ -94,12 +108,23 @@ func (ur *UserResponse) FailGetMoreUsersInfoResponseWithErr(resp *userrpc.GetMor
 
 // SuccessGetSelfInfoResponse 封装UserInfoResponse
 func (ur *UserResponse) SuccessGetSelfInfoResponse(resp *userrpc.UserInfoResponse,
-	msg string, data *userrpc.UserInfo) (*userrpc.UserInfoResponse, error) {
+	msg string, data *model.UserInfo) (*userrpc.UserInfoResponse, error) {
 	if resp == nil {
 		resp = new(userrpc.UserInfoResponse)
 	}
 
-	resp.Data = data
+	resp.Data = &userrpc.UserInfo{
+		ID:               data.ID,
+		Role:             int64(data.Role),
+		UserName:         data.Name,
+		Email:            data.Email,
+		Avatar:           data.Avatar,
+		Age:              int64(data.Age),
+		Gender:           int64(data.Gender),
+		SelfIntroduction: data.SelfIntroduction,
+		CreateAt:         data.CreatedAt.Unix(),
+		UpdatedAt:        data.UpdatedAt.Unix(),
+	}
 	resp.Resp = &userrpc.Response{
 		Message: msg,
 		Code:    errcode.Success,
