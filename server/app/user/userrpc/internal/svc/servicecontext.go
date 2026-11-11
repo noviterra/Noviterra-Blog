@@ -68,12 +68,13 @@ type toolCollection struct {
 	userValidate     *validate.UserValidate
 	ctxdata          *ctxdata.CtxData
 	articleValidate  *validate.ArticleValidate
+	typeConversion   *common.TypesConversion
 }
 
 func initTool(c config.Config) toolCollection {
+	typeConversion := common.NewTypesConversion()
 	// zap日志
 	logger := zaplogger.NewLogger()
-
 	// 邮件发送器
 	emailConfig := email.EmailConfig{
 		Host:     c.Smtp.Host,
@@ -83,16 +84,12 @@ func initTool(c config.Config) toolCollection {
 		From:     c.Smtp.From,
 	}
 	emailSender := email.NewEmailSender(emailConfig)
-
 	// 普通工具包 如随机数生产等
 	commonUtils := common.NewCommonUtils()
-
 	// 加密工具
 	crypt := bcryptinfo.NewCrypt()
-
 	// 用户统一响应
 	userResponse := response.NewUserResponse()
-
 	// 校验器
 	identityValidate := validate.NewIdentityValidate()
 	userValidate := validate.NewUserValidate(identityValidate)
@@ -110,6 +107,7 @@ func initTool(c config.Config) toolCollection {
 		userValidate:     userValidate,
 		ctxdata:          cd,
 		articleValidate:  articleValidate,
+		typeConversion:   typeConversion,
 	}
 }
 
@@ -142,7 +140,7 @@ func initStore(c config.Config, tool toolCollection) storeCollection {
 	identityRepo := repo.NewIdentityRespository(repoConfig, "identity")
 
 	// 用户缓存 认证缓存
-	userCache := cache.NewUserCache(cacheConfig, tool.commonUtils)
+	userCache := cache.NewUserCache(cacheConfig, tool.commonUtils, tool.typeConversion)
 	noticeCache := cache.NewNoticeCache(cacheConfig)
 
 	return storeCollection{
