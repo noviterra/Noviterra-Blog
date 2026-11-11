@@ -72,8 +72,8 @@ func (l *BatchGetUserInfoLogic) BatchGetUserInfo(req *types.BatchUserInfoRequest
 	)
 
 	rep, err := l.userModel.GetMoreUsersInfo(ctx, &userrpc.GetMoreUsersInfoRequest{
-		Size: int64(req.Size),
-		Page: int64(req.Page),
+		Size: int32(req.Size),
+		Page: int32(req.Page),
 	})
 	if err != nil {
 		return l.failBatchUserInfoResponseWithErr(resp, err, errcode.InvalidParam, errcode.Failed)

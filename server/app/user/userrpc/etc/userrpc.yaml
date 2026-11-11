@@ -29,3 +29,7 @@ JWT:
   AccessExpire: 7200
   RefreshSecret: PewqShEK5jH9gF4dS2aOkh7SlU0yT4rLkOwasX5cV9bN3mK0
   RefreshExpire:  604800
+
+Interceptor:
+  ServiceToken: NdsowVhIlsaTea241EgsRadsawAds4dS2aOkahk6ose
+  SkipToken: GswdkYwebvDAdfeLKwe31Yqfds4KaqOecMd123cSq

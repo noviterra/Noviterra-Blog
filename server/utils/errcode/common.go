@@ -52,10 +52,23 @@ const (
 
 /*
 文章通用状态码
-格式：2000--
+格式：200--
 */
 const (
-	BadPageData = 200001
+	GetArticleInfoFail              = 2001
+	GetArticleListFail              = 2002
+	ValidateArticleIDFail           = 2003
+	ValidateArticleRequestParamFail = 2004
+	ValidateArticleCoverFail        = 2005
+	GetArticleArchiveFail           = 2006
+	GetArticleCacheFail             = 2007
+	PublishArticleFail              = 2008
+	UpdateArticleFail               = 2009
+	DeleteArticleFail               = 2010
+	SearchArticleFail               = 2011
+	UpdateArticleCoverFail          = 2012
+	ArticleNotFound                 = 2013
+	ArticleOperationOutOfBounds     = 2014
 )
 
 /*

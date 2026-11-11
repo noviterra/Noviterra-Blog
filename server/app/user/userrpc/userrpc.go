@@ -38,6 +38,11 @@ func main() {
 	})
 	defer s.Stop()
 
+	s.AddUnaryInterceptors(ctx.ServiceTokenInterceptor.ServiceTokenInterceptor(
+		c.Interceptor.ServiceToken,
+		c.Interceptor.SkipToken),
+	)
+
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
 	s.Start()
 }

@@ -71,29 +71,43 @@ func (l *GetArticleDetailLogic) GetArticleDetail(in *articlerpc.GetArticleDetail
 	// 参数校验
 	articleID, err := l.articleValidate.ValidateSnowID(in.ArticleID)
 	if err != nil {
-		l.logger.Error("article/getArticleDetail：请求文章ID校验失败", zap.Int64("ArticleID", in.ArticleID), zap.String("ERROR", err.Error()))
+		l.logger.Error("校验文章ID参数失败",
+			zap.Int64("article-id", in.ArticleID),
+			zap.Error(err),
+		)
 		return l.articleResponse.FailGetArticleDetailResponseWithErr(resp, err)
 	}
 	if articleID == 0 {
-		l.logger.Error("article/getArticleDetail：请求文章ID校验未通过", zap.Int64("ArticleID", in.ArticleID))
-		return l.articleResponse.FailGetArticleDetailResponse(resp, "文章不存在", errcode.NotFound, errcode.Failed)
+		l.logger.Error("校验文章ID失败：文章ID为空",
+			zap.Int64("article-id", in.ArticleID),
+		)
+		return l.articleResponse.FailGetArticleDetailResponse(resp, "文章不存在",
+			errcode.NotFound, errcode.ValidateArticleIDFail)
 	}
 	// 布隆过滤器 -> 缓存 -> 仓库
 	isExistArticle := l.bloomFilter.IsExistArticle(in.ArticleID)
 	if !isExistArticle { // 为false则表示一定不存在 true表示可能存在需要进一步校验
-		l.logger.Error("article/getArticleDetail：访问的ID在布隆过滤器中不存在，已过滤", zap.Int64("ArticleID", in.ArticleID))
-		return l.articleResponse.FailGetArticleDetailResponse(resp, "文章不存在", errcode.NotFound, errcode.Failed)
+		l.logger.Error("布隆过滤器校验失败：文章不存在",
+			zap.Int64("article-id", articleID),
+		)
+		return l.articleResponse.FailGetArticleDetailResponse(resp, "文章不存在",
+			errcode.NotFound, errcode.ArticleNotFound)
 	}
 
 	// 缓存
 	articleCache, err := l.articleCache.HGetArticle(l.ctx, in.ArticleID)
 	if err != nil {
-		l.logger.Error("article/getArticleDetail：缓存根据文章ID查询哈希表中的数据失败", zap.Int64("ArticleID", in.ArticleID), zap.String("ERROR", err.Error()))
-		return l.articleResponse.FailGetArticleDetailResponse(resp, "缓存操作异常", errcode.ServerError, errcode.Failed)
+		l.logger.Error("缓存操作失败：根据文章ID查询文章缓存失败",
+			zap.Int64("article-id", articleID),
+			zap.Error(err),
+		)
+		return l.articleResponse.FailGetArticleDetailResponse(resp, "缓存操作异常",
+			errcode.InternalError, errcode.GetArticleCacheFail)
 	}
 	if articleCache != nil { // 缓存命中
-		l.logger.Info("article/getArticleDetail：缓存命中成功，返回缓存中的数据",
-			zap.Int64("ArticleID", in.ArticleID))
+		l.logger.Info("文章缓存命中",
+			zap.Int64("article-id", articleID),
+		)
 		return l.articleResponse.SuccessGetArticleDetailResponse(resp, "文章加载成功！", articleCache)
 	}
 
@@ -101,14 +115,23 @@ func (l *GetArticleDetailLogic) GetArticleDetail(in *articlerpc.GetArticleDetail
 	// 数据库
 	articleInfo, err := l.articleRepository.GetArticleDetail(l.ctx, in.ArticleID)
 	if err != nil {
-		l.logger.Error("article/getArticleDetail：数据库根据文章ID查询文章失败", zap.Int64("Article", in.ArticleID), zap.String("ERROR", err.Error()))
-		return l.articleResponse.FailGetArticleDetailResponse(resp, "数据库操作失败！", errcode.ServerError, errcode.Failed)
+		l.logger.Error("数据库操作失败：根据文章ID查询文章详情失败",
+			zap.Int64("article-id", articleID),
+			zap.Error(err),
+		)
+		return l.articleResponse.FailGetArticleDetailResponse(resp, "数据库操作失败！",
+			errcode.InternalError, errcode.GetArticleInfoFail)
 	}
 	if articleInfo == nil {
-		l.logger.Error("article/getArticleDetail：用户请求的文章在数据库中不存在，但经过布隆过滤器、缓存", zap.Int64("Article", in.ArticleID))
-		return l.articleResponse.FailGetArticleDetailResponse(resp, "访问的文章不存在或已被删除！", errcode.NotFound, errcode.Failed)
+		l.logger.Error("数据库查询到的文章信息为空，文章不存在",
+			zap.Int64("article-id", articleID),
+		)
+		return l.articleResponse.FailGetArticleDetailResponse(resp, "访问的文章不存在或已被删除！",
+			errcode.NotFound, errcode.ArticleNotFound)
 	}
-	l.logger.Info("article/getArticleDetail：最终在数据库中查询到了文章", zap.Int64("ArticleID", in.ArticleID))
+	l.logger.Info("数据库查询文章详情成功",
+		zap.Int64("article-id", articleID),
+	)
 
 	return l.articleResponse.SuccessGetArticleDetailResponse(resp, "文章加载成功！", articleInfo)
 }

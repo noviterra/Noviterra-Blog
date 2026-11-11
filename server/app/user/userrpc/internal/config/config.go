@@ -4,7 +4,6 @@ import "github.com/zeromicro/go-zero/zrpc"
 
 type Config struct {
 	zrpc.RpcServerConf
-
 	Smtp struct {
 		Host     string
 		Port     int
@@ -12,13 +11,11 @@ type Config struct {
 		Password string
 		From     string
 	}
-
 	Cache struct {
 		Addr     string
 		Password string
 		DB       int
 	}
-
 	Repo struct {
 		UserName string
 		Password string
@@ -26,11 +23,14 @@ type Config struct {
 		Port     int
 		DBName   string
 	}
-
 	JWT struct {
 		AccessSecret  string
 		AccessExpire  int64
 		RefreshSecret string
 		RefreshExpire int64
+	}
+	Interceptor struct {
+		ServiceToken string
+		SkipToken    string
 	}
 }

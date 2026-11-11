@@ -1,6 +1,7 @@
 package svc
 
 import (
+	"Noviterra/server/app/internal/interceptor"
 	"Noviterra/server/app/user/userrpc/internal/config"
 	"Noviterra/server/utils/bcryptinfo"
 	"Noviterra/server/utils/cache"
@@ -15,45 +16,47 @@ import (
 )
 
 type ServiceContext struct {
-	Config             config.Config
-	Logger             *zaplogger.Logger
-	EmailSender        *email.EmailSender
-	CommonUtils        *common.CommonUtils
-	Crypt              *bcryptinfo.Crypt
-	UserResponse       *response.UserResponse
-	IdentityValidate   *validate.IdentityValidate
-	UserCache          *cache.UserCache
-	UserRepository     *repo.UserRepository
-	IdentityRepository *repo.IdentityRepository
-	UserValidate       *validate.UserValidate
-	ArticleValidate    *validate.ArticleValidate
-	Ctxdata            *ctxdata.CtxData
-	NoticeCache        *cache.NoticeCache
-	Authentication     *jwtauth.Authentication
+	Config                  config.Config
+	Logger                  *zaplogger.Logger
+	EmailSender             *email.EmailSender
+	CommonUtils             *common.CommonUtils
+	Crypt                   *bcryptinfo.Crypt
+	UserResponse            *response.UserResponse
+	IdentityValidate        *validate.IdentityValidate
+	UserCache               *cache.UserCache
+	UserRepository          *repo.UserRepository
+	IdentityRepository      *repo.IdentityRepository
+	UserValidate            *validate.UserValidate
+	ArticleValidate         *validate.ArticleValidate
+	Ctxdata                 *ctxdata.CtxData
+	NoticeCache             *cache.NoticeCache
+	Authentication          *jwtauth.Authentication
+	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	tool := initTool(c)
-	aspect := initAspect(c)
+	aspect := initAspect(c, tool)
 	store := initStore(c, tool)
 
 	return &ServiceContext{
 		Config: c,
 
-		Logger:             tool.logger,
-		EmailSender:        tool.emailSender,
-		CommonUtils:        tool.commonUtils,
-		Crypt:              tool.crypt,
-		UserResponse:       tool.UserResponse,
-		IdentityValidate:   tool.identityValidate,
-		UserValidate:       tool.userValidate,
-		Ctxdata:            tool.ctxdata,
-		ArticleValidate:    tool.articleValidate,
-		UserCache:          store.userCache,
-		UserRepository:     store.userRepository,
-		IdentityRepository: store.identityRepository,
-		NoticeCache:        store.noticeCache,
-		Authentication:     aspect.Authentication,
+		Logger:                  tool.logger,
+		EmailSender:             tool.emailSender,
+		CommonUtils:             tool.commonUtils,
+		Crypt:                   tool.crypt,
+		UserResponse:            tool.UserResponse,
+		IdentityValidate:        tool.identityValidate,
+		UserValidate:            tool.userValidate,
+		Ctxdata:                 tool.ctxdata,
+		ArticleValidate:         tool.articleValidate,
+		UserCache:               store.userCache,
+		UserRepository:          store.userRepository,
+		IdentityRepository:      store.identityRepository,
+		NoticeCache:             store.noticeCache,
+		Authentication:          aspect.Authentication,
+		ServiceTokenInterceptor: aspect.ServiceTokenInterceptor,
 	}
 }
 
@@ -153,10 +156,11 @@ func initStore(c config.Config, tool toolCollection) storeCollection {
 
 // 切面类 请求拦截
 type aspectCollection struct {
-	Authentication *jwtauth.Authentication
+	Authentication          *jwtauth.Authentication
+	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 }
 
-func initAspect(c config.Config) aspectCollection {
+func initAspect(c config.Config, tool toolCollection) aspectCollection {
 	// JWT配置
 	authenticationConfig := jwtauth.AuthenticationConfig{
 		AccessSecret:  c.JWT.AccessSecret,
@@ -164,9 +168,16 @@ func initAspect(c config.Config) aspectCollection {
 		RefreshSecret: c.JWT.RefreshSecret,
 		RefreshExpire: c.JWT.RefreshExpire,
 	}
-	authMiddleware := jwtauth.NewAuthentication(authenticationConfig)
+	serviceTokenInterceptorConfig := interceptor.ServiceTokenConfig{
+		SecretToken: c.Interceptor.ServiceToken,
+		SkipToken:   c.Interceptor.SkipToken,
+	}
+
+	authentication := jwtauth.NewAuthentication(authenticationConfig)
+	serviceTokenInterceptor := interceptor.NewServiceTokenInterceptor(tool.ctxdata, serviceTokenInterceptorConfig)
 
 	return aspectCollection{
-		Authentication: authMiddleware,
+		Authentication:          authentication,
+		ServiceTokenInterceptor: serviceTokenInterceptor,
 	}
 }

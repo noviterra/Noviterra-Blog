@@ -4,7 +4,6 @@ import (
 	"Noviterra/server/app/model"
 	"Noviterra/server/utils/errcode"
 	"context"
-	"time"
 
 	"Noviterra/server/app/article/articlerpc/internal/svc"
 	"Noviterra/server/app/article/articlerpc/types/articlerpc"
@@ -18,16 +17,13 @@ type (
 		Error(msg string, fields ...zap.Field)
 		Warn(msg string, fields ...zap.Field)
 	}
-
 	updateArticleRepository interface {
 		GetPublisherIDByArticleID(ctx context.Context, articleID int64) (string, error)
 		UpdateArticleInfo(ctx context.Context, articleID int64, article *model.UpdateArticle) (bool, error)
 	}
-
 	updateArticleCtxData interface {
 		GetUserIDFromContext(ctx context.Context) string
 	}
-
 	updateArticleIdentityRepository interface {
 		GetUserRole(ctx context.Context, userID string) (int, error)
 	}
@@ -70,50 +66,68 @@ func (l *UpdateArticleLogic) UpdateArticle(in *articlerpc.UpdateArticleRequest) 
 	// 用户信息校验
 	updaterID := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if updaterID == "" {
-		l.logger.Error("article/updatearticle：上下文获取用户ID为空")
-		return l.articleResponse.FailResponse(resp, "用户信息异常！", errcode.Unauthorized, errcode.Failed)
+		l.logger.Error("上下文获取操作用户ID失败")
+		return l.articleResponse.FailResponse(resp, "用户信息异常！",
+			errcode.Unauthorized, errcode.GetUserInfoFail)
 	}
 
 	// 校验文章ID
 	articleID, err := l.articleValidate.ValidateSnowID(in.ArticleID)
 	if err != nil {
-		l.logger.Error("article/updatearticle：请求中的文章ID格式有误",
-			zap.Int64("ArticleID", in.ArticleID), zap.String("ERROR", err.Error()))
+		l.logger.Error("校验文章ID参数失败",
+			zap.Int64("article-id", in.ArticleID),
+			zap.Error(err),
+		)
 		return l.articleResponse.FailResponseWithErr(resp, err)
 	}
 	if articleID == 0 {
-		l.logger.Error("article/updatearticle：请求中的文章ID格式有误",
-			zap.Int64("ArticleID", in.ArticleID))
-		return l.articleResponse.FailResponse(resp, "请求的文章不存在或已经删除！", errcode.NotFound, errcode.Failed)
+		l.logger.Error("校验文章ID失败：文章ID为空",
+			zap.Int64("article-id", in.ArticleID),
+		)
+		return l.articleResponse.FailResponse(resp, "请求的文章不存在或已经删除！",
+			errcode.NotFound, errcode.ValidateArticleIDFail)
 	}
 
 	// 获取用户权限
 	updaterRole, err := l.identityRepository.GetUserRole(l.ctx, updaterID)
 	if updaterRole < 1 {
-		l.logger.Error("article/updatearticle：普通用户访问修改文章操作",
-			zap.String("UpdaterID", updaterID), zap.Int("UpdaterRole", updaterRole))
-		return l.articleResponse.FailResponse(resp, "用户信息异常！", errcode.Forbidden, errcode.Failed)
+		l.logger.Error("操作者权限不足或查询用户身份权限等级失败",
+			zap.Int64("article-id", articleID),
+			zap.String("updater-info", updaterID),
+			zap.Int("updater-role", updaterRole),
+			zap.Error(err),
+		)
+		return l.articleResponse.FailResponse(resp, "用户信息异常！",
+			errcode.Forbidden, errcode.ArticleOperationOutOfBounds)
 	}
 
 	// 根据文章ID得到发布者ID
 	publisherID, err := l.articleRepository.GetPublisherIDByArticleID(l.ctx, in.ArticleID)
 	if err != nil {
-		l.logger.Error("article/updatearticle：数据库根据文章ID查询发布者ID失败",
-			zap.Int64("ArticleID", in.ArticleID), zap.String("ERROR", err.Error()))
-		return l.articleResponse.FailResponse(resp, "数据库操作失败！", errcode.ServerError, errcode.Failed)
+		l.logger.Error("数据库操作失败：根据文章ID查询发布者ID失败",
+			zap.Int64("article-id", articleID),
+			zap.Error(err),
+		)
+		return l.articleResponse.FailResponse(resp, "数据库操作失败！",
+			errcode.InternalError, errcode.GetArticleInfoFail)
 	}
 	if publisherID == "" {
-		l.logger.Error("article/updatearticle：数据库根据文章ID查询的发布者ID为空",
-			zap.Int64("ArticleID", in.ArticleID), zap.String("PublisherID", publisherID))
-		return l.articleResponse.FailResponse(resp, "需要更新的文章不存在！", errcode.NotFound, errcode.Failed)
+		l.logger.Error("根据文章ID查询到的发布者ID为空",
+			zap.Int64("article-id", articleID),
+		)
+		return l.articleResponse.FailResponse(resp, "需要更新的文章不存在！",
+			errcode.NotFound, errcode.ArticleNotFound)
 	}
 
 	// 更新者与发布者需要是同一个
 	if updaterID != publisherID {
-		l.logger.Error("article/updatearticle：非发布者预更新此文章，已拦截",
-			zap.Int64("ArticleID", in.ArticleID),
-			zap.String("UpdaterID", updaterID), zap.String("PublisherID", publisherID))
-		return l.articleResponse.FailResponse(resp, "无法修改非本人发布的文章！", errcode.Forbidden, errcode.Failed)
+		l.logger.Error("非文章发布者尝试修改文章，操作被拦截",
+			zap.Int64("article-id", articleID),
+			zap.String("updater-info", updaterID),
+			zap.String("publisher-info", publisherID),
+		)
+		return l.articleResponse.FailResponse(resp, "无法修改非本人发布的文章！",
+			errcode.Forbidden, errcode.ArticleOperationOutOfBounds)
 	}
 
 	// 更新操作
@@ -124,15 +138,25 @@ func (l *UpdateArticleLogic) UpdateArticle(in *articlerpc.UpdateArticleRequest) 
 		Tags:        in.Tags,
 	})
 	if err != nil {
-		l.logger.Error("article/updatearticle：数据库更新文章字段失败",
-			zap.Int64("ArticleID", in.ArticleID), zap.String("ERROR", err.Error()))
-		return l.articleResponse.FailResponse(resp, "数据库异常！", errcode.ServerError, errcode.Failed)
+		l.logger.Error("数据库操作失败：更新文章信息失败",
+			zap.Int64("article-id", articleID),
+			zap.String("updater-info", updaterID),
+			zap.Error(err),
+		)
+		return l.articleResponse.FailResponse(resp, "数据库异常！",
+			errcode.InternalError, errcode.UpdateArticleFail)
 	}
 	if !updateOPOK {
-		l.logger.Warn("article/updatearticle：数据库更新文章字段未更新有效数据，更新数据条数为0")
+		l.logger.Error("数据库更新文章信息影响行数为0，更新未生效",
+			zap.Int64("article-id", articleID),
+			zap.String("updater-info", updaterID),
+		)
 	}
 
-	l.logger.Info("article/updatearticle：更新文章操作完成",
-		zap.Int64("ArticleID", in.ArticleID), zap.Time("UpdatedAt", time.Now()))
+	l.logger.Info("更新文章信息成功",
+		zap.Int64("article-id", articleID),
+		zap.String("updater-info", updaterID),
+		zap.Int("updater-role", updaterRole),
+	)
 	return l.articleResponse.SuccessResponse(resp, "更新文章操作完成！")
 }
