@@ -67,7 +67,7 @@ func (l *BlackUserLogic) BlackUser(in *userrpc.BlackUserRequest) (*userrpc.Respo
 	if operatorID == "" {
 		l.logger.Error("上下文获取操作用户ID失败")
 		return l.userResponse.FailResponse(resp, "身份校验失败！",
-			errcode.InvalidParam, errcode.ValidateUserInfoFail)
+			errcode.InvalidParam, errcode.GetContextUserIDFail)
 	}
 
 	// 参数校验
@@ -103,7 +103,7 @@ func (l *BlackUserLogic) BlackUser(in *userrpc.BlackUserRequest) (*userrpc.Respo
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.GetUserRoleFail)
 	}
 	if operatorRole < 2 {
 		l.logger.Error("操作者权限不足",
@@ -111,7 +111,7 @@ func (l *BlackUserLogic) BlackUser(in *userrpc.BlackUserRequest) (*userrpc.Respo
 			zap.Int("operator-role", operatorRole),
 		)
 		return l.userResponse.FailResponse(resp, "权限不足！",
-			errcode.Forbidden, errcode.UserOperationOutOfBounds)
+			errcode.Forbidden, errcode.UserRoleInsufficient)
 	}
 
 	// 不能对自己操作
@@ -120,7 +120,7 @@ func (l *BlackUserLogic) BlackUser(in *userrpc.BlackUserRequest) (*userrpc.Respo
 			zap.String("operator-info", operatorID),
 		)
 		return l.userResponse.FailResponse(resp, "不能对自己账号操作！",
-			errcode.Forbidden, errcode.UserOperationOutOfBounds)
+			errcode.Forbidden, errcode.UserSelfOperationForbidden)
 	}
 
 	idExist, err := l.identityRepository.CheckIDExists(l.ctx, param.ID)
@@ -130,14 +130,14 @@ func (l *BlackUserLogic) BlackUser(in *userrpc.BlackUserRequest) (*userrpc.Respo
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.Failed)
+			errcode.InternalError, errcode.GetUserInfoFail)
 	}
 	if !idExist {
 		l.logger.Error("要被封禁的用户账号不存在",
 			zap.String("black-user-id", param.ID),
 		)
 		return l.userResponse.FailResponse(resp, "要封禁的账号不存在！",
-			errcode.InternalError, errcode.Failed)
+			errcode.InternalError, errcode.UserNotFound)
 	}
 
 	// 同等级不能封禁
@@ -148,7 +148,7 @@ func (l *BlackUserLogic) BlackUser(in *userrpc.BlackUserRequest) (*userrpc.Respo
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.GetUserRoleFail)
 	}
 	if blackUserRole >= operatorRole {
 		l.logger.Error("要封禁的用户权限与操作者权限相同",
@@ -172,7 +172,7 @@ func (l *BlackUserLogic) BlackUser(in *userrpc.BlackUserRequest) (*userrpc.Respo
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "用户账号封禁失败！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.BlackUserFail)
 	}
 
 	l.logger.Info("封禁用户成功",

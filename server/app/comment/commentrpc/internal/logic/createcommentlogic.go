@@ -1,12 +1,15 @@
 package logic
 
 import (
+	"context"
+
 	"Noviterra/server/app/comment/commentrpc/internal/svc"
 	"Noviterra/server/app/comment/commentrpc/types/commentrpc"
 	"Noviterra/server/app/model"
 	"Noviterra/server/utils/errcode"
 	"Noviterra/server/utils/validate"
-	"context"
+
+	"go.uber.org/zap"
 )
 
 type (
@@ -41,6 +44,11 @@ type (
 		DelTopComment(ctx context.Context,
 			address int64) error
 	}
+
+	createCommentLogger interface {
+		Info(msg string, fields ...zap.Field)
+		Error(msg string, fields ...zap.Field)
+	}
 )
 
 type CreateCommentLogic struct {
@@ -51,6 +59,7 @@ type CreateCommentLogic struct {
 	commentRepository createCommentRepository
 	snowflake         createCommentSnowFlake
 	commentCache      createCommentCache
+	logger            createCommentLogger
 }
 
 func NewCreateCommentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CreateCommentLogic {
@@ -62,6 +71,7 @@ func NewCreateCommentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Cre
 		commentRepository: svcCtx.CommentRepository,
 		snowflake:         svcCtx.Snowfake,
 		commentCache:      svcCtx.CommentCache,
+		logger:            svcCtx.Logger,
 	}
 }
 
@@ -72,7 +82,9 @@ func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*comm
 	// 身份校验
 	id := l.ctxdata.GetUserIDFromContext(l.ctx)
 	if id == "" {
-		return l.commentResponse.FailCommentResponse(resp, "信息校验失败！", errcode.Unauthorized, errcode.Failed)
+		l.logger.Error("上下文获取操作用户ID失败")
+		return l.commentResponse.FailCommentResponse(resp, "信息校验失败！",
+			errcode.Unauthorized, errcode.CommentUserInfoInvalid)
 	}
 
 	// 参数校验
@@ -83,6 +95,13 @@ func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*comm
 		Content:   in.Content,
 	})
 	if err != nil {
+		l.logger.Error("校验发表评论参数失败",
+			zap.String("user-info", id),
+			zap.Int64("address", in.Address),
+			zap.Int64("parent-id", in.ParentID),
+			zap.String("speaker-id", in.SpeakerID),
+			zap.Error(err),
+		)
 		return l.commentResponse.FailCommentResponseWithErr(resp, err)
 	}
 
@@ -98,7 +117,15 @@ func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*comm
 		Address:   commentReq.Address,
 	})
 	if err != nil {
-		return l.commentResponse.FailCommentResponse(resp, "系统繁忙，评论失败！", errcode.InternalError, errcode.Failed)
+		l.logger.Error("数据库操作失败：发表评论失败",
+			zap.String("user-info", id),
+			zap.Int64("comment-id", commentID),
+			zap.Int64("address", commentReq.Address),
+			zap.String("speaker-id", commentReq.SpeakerID),
+			zap.Error(err),
+		)
+		return l.commentResponse.FailCommentResponse(resp, "系统繁忙，评论失败！",
+			errcode.InternalError, errcode.CreateCommentFail)
 	}
 
 	// 评论发布后 删除缓存 日志记录
@@ -107,6 +134,20 @@ func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*comm
 	} else { // 子级评论 将所在的评论树缓存删除
 		err = l.commentCache.DelTreeComment(l.ctx, rootID)
 	}
+	if err != nil {
+		l.logger.Error("缓存操作失败：删除评论缓存失败",
+			zap.String("user-info", id),
+			zap.Int64("comment-id", commentID),
+			zap.Int64("root-id", rootID),
+			zap.Int64("address", commentReq.Address),
+			zap.Error(err),
+		)
+	}
 
+	l.logger.Info("用户发表评论成功",
+		zap.String("user-info", id),
+		zap.Int64("comment-id", commentID),
+		zap.Int64("address", commentReq.Address),
+	)
 	return l.commentResponse.SuccessCommentResponse(resp, commentID)
 }

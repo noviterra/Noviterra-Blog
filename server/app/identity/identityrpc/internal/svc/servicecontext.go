@@ -10,6 +10,7 @@ import (
 	"Noviterra/server/utils/repo"
 	"Noviterra/server/utils/response"
 	"Noviterra/server/utils/validate"
+	"Noviterra/server/utils/zaplogger"
 )
 
 type ServiceContext struct {
@@ -22,6 +23,7 @@ type ServiceContext struct {
 	IdentityValidate        *validate.IdentityValidate
 	IdentityResponse        *response.IdentityResponse
 	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
+	Logger                  *zaplogger.Logger
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -39,6 +41,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		NoticeCache:             store.noticeCache,
 		IdentityRepository:      store.identityRepository,
 		ServiceTokenInterceptor: aspect.serviceTokenInterceptor,
+		Logger:                  tool.logger,
 	}
 }
 
@@ -48,6 +51,7 @@ type toolCollection struct {
 	identityResponse *response.IdentityResponse
 	ctxdata          *ctxdata.CtxData
 	identityValidate *validate.IdentityValidate
+	logger           *zaplogger.Logger
 }
 
 func initTool(c config.Config) toolCollection {
@@ -69,6 +73,8 @@ func initTool(c config.Config) toolCollection {
 	cd := ctxdata.NewCtxData()
 	// 校验器
 	identityValidate := validate.NewIdentityValidate()
+	// 日志
+	logger := zaplogger.NewLogger()
 
 	return toolCollection{
 		crypt:            crypt,
@@ -76,6 +82,7 @@ func initTool(c config.Config) toolCollection {
 		identityResponse: identityResponse,
 		ctxdata:          cd,
 		identityValidate: identityValidate,
+		logger:           logger,
 	}
 }
 

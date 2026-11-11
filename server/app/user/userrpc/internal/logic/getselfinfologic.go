@@ -70,7 +70,7 @@ func (l *GetSelfInfoLogic) GetSelfInfo(in *userrpc.GetUserInfoRequest) (*userrpc
 	if id == "" {
 		l.logger.Error("上下文获取操作用户ID失败")
 		return l.userResponse.FailGetSelfInfoResponse(resp, "登陆后解锁完整功能！",
-			errcode.Unauthorized, errcode.GetUserInfoFail)
+			errcode.Unauthorized, errcode.GetContextUserIDFail)
 	}
 
 	// 参数校验
@@ -92,7 +92,7 @@ func (l *GetSelfInfoLogic) GetSelfInfo(in *userrpc.GetUserInfoRequest) (*userrpc
 			zap.Error(err),
 		)
 		return l.userResponse.FailGetSelfInfoResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.GetUserCacheFail)
 	}
 	// 缓存命中
 	if cacheUser != nil {
@@ -118,7 +118,7 @@ func (l *GetSelfInfoLogic) GetSelfInfo(in *userrpc.GetUserInfoRequest) (*userrpc
 			zap.Strings("user-info", []string{userID}),
 		)
 		return l.userResponse.FailGetSelfInfoResponse(resp, "无账号相关信息，请联系管理员！",
-			errcode.NotFound, errcode.GetUserInfoFail)
+			errcode.NotFound, errcode.UserNotFound)
 	}
 
 	// 将用户信息写入缓存中

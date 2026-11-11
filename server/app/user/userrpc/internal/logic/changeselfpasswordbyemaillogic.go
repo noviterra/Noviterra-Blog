@@ -74,7 +74,7 @@ func (l *ChangeSelfPasswordByEmailLogic) ChangeSelfPasswordByEmail(in *userrpc.C
 	if id == "" {
 		l.logger.Error("从上下文中获取用户信息失败")
 		return l.userResponse.FailResponse(resp, "信息校验失败！",
-			errcode.Unauthorized, errcode.GetUserInfoFail)
+			errcode.Unauthorized, errcode.GetContextUserIDFail)
 	}
 
 	// 参数校验
@@ -97,7 +97,7 @@ func (l *ChangeSelfPasswordByEmailLogic) ChangeSelfPasswordByEmail(in *userrpc.C
 		l.logger.Error("请求发起者ID与被操作ID不同",
 			zap.Strings("user-id||operator-id", []string{id, param.ID}))
 		return l.userResponse.FailResponse(resp, "信息校验失败！",
-			errcode.Forbidden, errcode.ValidateUserInfoFail)
+			errcode.Forbidden, errcode.UserOperationOutOfBounds)
 	}
 
 	// 根据用户ID得到邮箱
@@ -114,7 +114,7 @@ func (l *ChangeSelfPasswordByEmailLogic) ChangeSelfPasswordByEmail(in *userrpc.C
 			zap.Strings("user-info", []string{id, userEmail}),
 			zap.String("param-email", param.Email))
 		return l.userResponse.FailResponse(resp, "信息校验失败！",
-			errcode.Forbidden, errcode.ValidateUserInfoFail)
+			errcode.Forbidden, errcode.UserEmailMismatch)
 	}
 
 	// 验证码的获取与校验
@@ -132,7 +132,7 @@ func (l *ChangeSelfPasswordByEmailLogic) ChangeSelfPasswordByEmail(in *userrpc.C
 			zap.Strings("user-info", []string{id, userEmail}),
 		)
 		return l.userResponse.FailResponse(resp, "验证码不存在，请检查邮箱是否正确！",
-			errcode.InvalidParam, errcode.GetVerificationCodeFail)
+			errcode.InvalidParam, errcode.VerificationCodeNotFound)
 	}
 	if realVerificationCode != param.VerificationCode {
 		l.logger.Error("输入验证码与邮件发送验证码不同",
@@ -151,7 +151,7 @@ func (l *ChangeSelfPasswordByEmailLogic) ChangeSelfPasswordByEmail(in *userrpc.C
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.HashPasswordFail)
 	}
 
 	// 更新数据库
@@ -165,7 +165,7 @@ func (l *ChangeSelfPasswordByEmailLogic) ChangeSelfPasswordByEmail(in *userrpc.C
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.UserUpdatePasswordFail)
 	}
 
 	l.logger.Info("用户通过邮箱辅助账号密码修改成功",

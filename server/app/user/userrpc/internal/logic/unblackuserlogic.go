@@ -66,7 +66,7 @@ func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc
 	if operatorID == "" {
 		l.logger.Error("上下文获取操作用户ID失败")
 		return l.userResponse.FailResponse(resp, "身份校验失败！",
-			errcode.InvalidParam, errcode.ValidateUserInfoFail)
+			errcode.InvalidParam, errcode.GetContextUserIDFail)
 	}
 
 	// 参数校验
@@ -100,7 +100,7 @@ func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.GetUserRoleFail)
 	}
 	if operatorRole < 2 {
 		l.logger.Error("操作者权限不足",
@@ -108,7 +108,7 @@ func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc
 			zap.Int("operator-role", operatorRole),
 		)
 		return l.userResponse.FailResponse(resp, "操作者权限不足！",
-			errcode.Forbidden, errcode.UserOperationOutOfBounds)
+			errcode.Forbidden, errcode.UserRoleInsufficient)
 	}
 
 	// 不能对自己操作
@@ -117,7 +117,7 @@ func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc
 			zap.String("operator-info", operatorID),
 		)
 		return l.userResponse.FailResponse(resp, "不能对自己账号操作！",
-			errcode.Forbidden, errcode.UserOperationOutOfBounds)
+			errcode.Forbidden, errcode.UserSelfOperationForbidden)
 	}
 
 	idExist, err := l.identityRepository.CheckIDExists(l.ctx, in.ID)
@@ -127,14 +127,14 @@ func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.Failed)
+			errcode.InternalError, errcode.GetUserInfoFail)
 	}
 	if !idExist {
 		l.logger.Error("要被解封的用户账号不存在",
 			zap.String("unblack-user-id", in.ID),
 		)
 		return l.userResponse.FailResponse(resp, "要解封的用户ID不存在！",
-			errcode.InternalError, errcode.Failed)
+			errcode.InternalError, errcode.UserNotFound)
 	}
 
 	// 修改数据库字段
@@ -148,7 +148,7 @@ func (l *UnBlackUserLogic) UnBlackUser(in *userrpc.UnBlackUserRequest) (*userrpc
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "用户账号解封失败！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.UnBlackUserFail)
 	}
 
 	l.logger.Info("解封用户成功",

@@ -48,6 +48,23 @@ const (
 	ValidateUserRequestParamFail = 1005
 	InterCallToolFail            = 1006
 	UserOperationOutOfBounds     = 1007
+	GetContextUserIDFail         = 1008
+	UserNotFound                 = 1009
+	UserRoleInsufficient         = 1010
+	UserSelfOperationForbidden   = 1011
+	GetUserRoleFail              = 1012
+	UpdateUserInfoFail           = 1013
+	UserUpdatePasswordFail       = 1014
+	HashPasswordFail             = 1015
+	CheckPasswordFail            = 1016
+	UserPasswordIncorrect        = 1017
+	BlackUserFail                = 1018
+	UnBlackUserFail              = 1019
+	UserInfoEmpty                = 1020
+	UserEmailMismatch            = 1021
+	VerificationCodeNotFound     = 1022
+	GetUserCacheFail             = 1023
+	GetUserListFail              = 1024
 )
 
 /*
@@ -73,8 +90,51 @@ const (
 
 /*
 认证模块服务状态码
-格式：3000--
+格式：300--
 */
 const (
-	PasswordInvalidFormat = 30001
+	PasswordInvalidFormat        = 3001
+	PasswordNotMatch             = 3002
+	AccountNotFound              = 3003
+	AccountExists                = 3004
+	EmailNotFound                = 3005
+	EmailExists                  = 3006
+	EmailMismatch                = 3007
+	VerificationCodeExpired      = 3008
+	VerificationCodeInvalid      = 3009
+	GetAuthVerificationCodeFail  = 3010
+	GetAuthInfoFail              = 3011
+	GenerateTokenFail            = 3012
+	SaveTokenFail                = 3013
+	RefreshTokenInvalid          = 3014
+	PasswordIncorrect            = 3015
+	PasswordHashFail             = 3016
+	PasswordCheckFail            = 3017
+	RegisterFail                 = 3018
+	UpdatePasswordFail           = 3019
+	IdentityOperationOutOfBounds = 3020
+)
+
+/*
+互动模块服务状态码
+格式：400--
+*/
+const (
+	CommentUserInfoInvalid     = 4001
+	CommentActionInvalid       = 4002
+	CollectArticleFail         = 4003
+	ArticleAlreadyCollected    = 4004
+	UncollectArticleFail       = 4005
+	ArticleNotCollected        = 4006
+	CreateCommentFail          = 4007
+	GetTopCommentCacheFail     = 4008
+	GetTopCommentFail          = 4009
+	GetTopCommentUserInfoFail  = 4010
+	GetTreeCommentCacheFail    = 4011
+	GetTreeCommentFail         = 4012
+	GetTreeCommentUserInfoFail = 4013
+	LikeArticleFail            = 4014
+	ArticleAlreadyLiked        = 4015
+	UnlikeArticleFail          = 4016
+	ArticleNotLiked            = 4017
 )

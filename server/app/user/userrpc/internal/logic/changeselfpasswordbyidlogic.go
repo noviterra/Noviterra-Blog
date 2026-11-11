@@ -74,7 +74,7 @@ func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangeP
 	if id == "" {
 		l.logger.Error("上下文获取用户ID失败")
 		return l.userResponse.FailResponse(resp, "用户信息校验失败！",
-			errcode.Unauthorized, errcode.GetUserInfoFail)
+			errcode.Unauthorized, errcode.GetContextUserIDFail)
 	}
 
 	// 参数校验
@@ -97,7 +97,7 @@ func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangeP
 	if param.ID != id {
 		l.logger.Error("上下文存储的用户ID与传参的用户ID不同")
 		return l.userResponse.FailResponse(resp, "用户信息校验失败！",
-			errcode.Forbidden, errcode.ValidateUserInfoFail)
+			errcode.Forbidden, errcode.UserOperationOutOfBounds)
 	}
 
 	// 根据用户ID返回Password 为空则表示账号不存在
@@ -115,7 +115,7 @@ func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangeP
 			zap.Strings("user-info", []string{in.ID}),
 		)
 		return l.userResponse.FailResponse(resp, "用户ID不存在！",
-			errcode.NotFound, errcode.GetUserInfoFail)
+			errcode.NotFound, errcode.UserNotFound)
 	}
 
 	// 校验密码输入是否正确
@@ -126,14 +126,14 @@ func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangeP
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.CheckPasswordFail)
 	}
 	if !samePwd {
 		l.logger.Error("原始密码输入错误",
 			zap.Strings("user-info", []string{in.ID}),
 		)
 		return l.userResponse.FailResponse(resp, "原始密码输入错误！",
-			errcode.InvalidParam, errcode.ValidateUserInfoFail)
+			errcode.InvalidParam, errcode.UserPasswordIncorrect)
 	}
 
 	// 密码加密
@@ -144,7 +144,7 @@ func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangeP
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.HashPasswordFail)
 	}
 
 	err = l.identityRepository.UpdateUsersAccount(l.ctx, model.UserAccount{
@@ -157,7 +157,7 @@ func (l *ChangeSelfPasswordByIDLogic) ChangeSelfPasswordByID(in *userrpc.ChangeP
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.UserUpdatePasswordFail)
 	}
 
 	l.logger.Info("用户通过ID校验修改账号密码成功",

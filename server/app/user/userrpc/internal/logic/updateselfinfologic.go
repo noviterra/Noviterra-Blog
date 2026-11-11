@@ -78,7 +78,7 @@ func (l *UpdateSelfInfoLogic) UpdateSelfInfo(in *userrpc.UpdateUserInfoRequest) 
 	if id == "" {
 		l.logger.Error("上下文获取操作用户ID失败")
 		return l.userResponse.FailResponse(resp, "身份校验失败！",
-			errcode.Unauthorized, errcode.GetUserInfoFail)
+			errcode.Unauthorized, errcode.GetContextUserIDFail)
 	}
 
 	// 参数校验
@@ -96,7 +96,7 @@ func (l *UpdateSelfInfoLogic) UpdateSelfInfo(in *userrpc.UpdateUserInfoRequest) 
 			zap.Strings("user-id||operator-id", []string{id, userID}),
 		)
 		return l.userResponse.FailResponse(resp, "信息校验失败！",
-			errcode.Forbidden, errcode.ValidateUserInfoFail)
+			errcode.Forbidden, errcode.UserOperationOutOfBounds)
 	}
 
 	validateInput := &validate.InputValidateUserInfo{
@@ -124,14 +124,14 @@ func (l *UpdateSelfInfoLogic) UpdateSelfInfo(in *userrpc.UpdateUserInfoRequest) 
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.GetUserInfoFail)
 	}
 	if !idExist {
 		l.logger.Error("用户账号不存在",
 			zap.Strings("user-info", []string{userID}),
 		)
 		return l.userResponse.FailResponse(resp, "用户账号不存在！",
-			errcode.NotFound, errcode.GetUserInfoFail)
+			errcode.NotFound, errcode.UserNotFound)
 	}
 
 	// 更新用户数据
@@ -149,7 +149,7 @@ func (l *UpdateSelfInfoLogic) UpdateSelfInfo(in *userrpc.UpdateUserInfoRequest) 
 			zap.Error(err),
 		)
 		return l.userResponse.FailResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.UpdateUserInfoFail)
 	}
 
 	// 删除缓存

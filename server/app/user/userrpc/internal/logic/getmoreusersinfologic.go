@@ -67,7 +67,7 @@ func (l *GetMoreUsersInfoLogic) GetMoreUsersInfo(in *userrpc.GetMoreUsersInfoReq
 	if id == "" {
 		l.logger.Error("上下文获取操作用户ID失败")
 		return l.userResponse.FailGetMoreUsersInfoResponse(resp, "身份校验失败！",
-			errcode.InvalidParam, errcode.ValidateUserInfoFail)
+			errcode.InvalidParam, errcode.GetContextUserIDFail)
 	}
 
 	// 校验用户身份权限 >=2 被允许操作
@@ -78,7 +78,7 @@ func (l *GetMoreUsersInfoLogic) GetMoreUsersInfo(in *userrpc.GetMoreUsersInfoReq
 			zap.Error(err),
 		)
 		return l.userResponse.FailGetMoreUsersInfoResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.GetUserRoleFail)
 	}
 	if userRole < 2 {
 		l.logger.Error("用户权限不足，无法进行批量获取用户信息操作",
@@ -86,7 +86,7 @@ func (l *GetMoreUsersInfoLogic) GetMoreUsersInfo(in *userrpc.GetMoreUsersInfoReq
 			zap.Int("user-role", userRole),
 		)
 		return l.userResponse.FailGetMoreUsersInfoResponse(resp, "权限不足！",
-			errcode.Forbidden, errcode.UserOperationOutOfBounds)
+			errcode.Forbidden, errcode.UserRoleInsufficient)
 	}
 
 	// 参数校验
@@ -111,7 +111,7 @@ func (l *GetMoreUsersInfoLogic) GetMoreUsersInfo(in *userrpc.GetMoreUsersInfoReq
 			zap.Error(err),
 		)
 		return l.userResponse.FailGetMoreUsersInfoResponse(resp, "系统繁忙，请稍后再试！",
-			errcode.InternalError, errcode.InterCallToolFail)
+			errcode.InternalError, errcode.GetUserListFail)
 	}
 	if len(userList) == 0 {
 		l.logger.Error("分页获取的用户信息为空",
@@ -119,7 +119,7 @@ func (l *GetMoreUsersInfoLogic) GetMoreUsersInfo(in *userrpc.GetMoreUsersInfoReq
 			zap.Int("page", page),
 		)
 		return l.userResponse.FailGetMoreUsersInfoResponse(resp, "用户信息为空，换一页试试！",
-			errcode.NotFound, errcode.GetUserInfoFail)
+			errcode.NotFound, errcode.UserInfoEmpty)
 	}
 
 	l.logger.Info("分页获取用户信息成功",

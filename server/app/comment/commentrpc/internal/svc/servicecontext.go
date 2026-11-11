@@ -11,6 +11,7 @@ import (
 	"Noviterra/server/utils/snowflake"
 	"Noviterra/server/utils/validate"
 	"Noviterra/server/utils/woker"
+	"Noviterra/server/utils/zaplogger"
 	"context"
 	"fmt"
 )
@@ -28,6 +29,7 @@ type ServiceContext struct {
 	DataDeduplication       *common.DataDeduplication
 	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 	CommentWoker            *woker.LikeSyncWoker
+	Logger                  *zaplogger.Logger
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -50,6 +52,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		DataDeduplication:       tool.dataDeduplication,
 		ServiceTokenInterceptor: aspect.serviceTokenInterceptor,
 		CommentWoker:            woke.commentWoker,
+		Logger:                  tool.logger,
 	}
 }
 
@@ -110,6 +113,7 @@ type toolCollection struct {
 	snowfake          *snowflake.SnowFlake
 	typeConversion    *common.TypesConversion
 	dataDeduplication *common.DataDeduplication
+	logger            *zaplogger.Logger
 }
 
 func initTool() toolCollection {
@@ -121,6 +125,7 @@ func initTool() toolCollection {
 	commentValidate := validate.NewCommentValidate(articleValidate, articleValidate)
 	typeConversion := common.NewTypesConversion()
 	dataDeduplication := common.NewDataDeduplication()
+	logger := zaplogger.NewLogger()
 	sf, err := snowflake.NewSnowFlake(1)
 	if err != nil {
 		panic(fmt.Errorf("雪花ID生成器初始化失败！%w", err))
@@ -135,6 +140,7 @@ func initTool() toolCollection {
 		typeConversion:    typeConversion,
 		dataDeduplication: dataDeduplication,
 		articleValidate:   articleValidate,
+		logger:            logger,
 	}
 }
 
