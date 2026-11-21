@@ -4,6 +4,8 @@ info (
 	title:  "Noviterra通知服务"
 	desc:   "管理Noviterra的全部通知模块，包括但不限于邮件通知、站内信息通知等等"
 	author: "Noviterra"
+	email: "anyonego86@163.com"
+	version: "v1"
 )
 
 // 8002

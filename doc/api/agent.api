@@ -1,0 +1,50 @@
+syntax = "v1"
+
+info (
+	title:   "noviterra站点助手"
+	desc:    "开发noviterra站点助手，包含知识库检索、模型调用等"
+	author:  "noviterra"
+	email:   "anyonego86@163.com"
+	version: "v1"
+)
+
+// 8007
+/*
+goctl api go -api ./doc/api/agent.api -dir ./server/app/agent/agentapi
+*/
+@server (
+	prefix: /novblog/agent
+)
+service StationAgent {
+	@doc "配置站点助手"
+	@handler DeployAgent
+	post /deploy (DeployAgentRequest) returns (Response)
+
+	@doc "发起一次请求"
+	@handler Chat
+	post /chat (ChatRequest) returns (ChatResponse)
+}
+
+type (
+	Response {
+		Status  int    `json:"status"`
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	}
+	DeployAgentRequest {
+		APIKey   string `json:"api_key" validate:"required"`
+		BaseURL  string `json:"base_url" validate:"required"`
+		Model    string `json:"model" validate:"required"`
+		Provider string `json:"provider" validate:"required"`
+	}
+	ChatRequest {
+		SessionID int64  `json:"session_id" required:"omitempty"`
+		Query     string `json:"query" validate:"required"`
+		User      string `json:"user"`
+	}
+	ChatResponse {
+		Content string   `json:"content"`
+		Resp    Response `json:"response"`
+	}
+)
+

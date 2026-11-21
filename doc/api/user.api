@@ -4,6 +4,8 @@ info (
 	title:  "Noviterra用户信息服务"
 	desc:   "管理Noviterra的全部用户信息模块，包括但不限于获取用户信息、修改信息等等"
 	author: "Noviterra"
+	email: "anyonego86@163.com"
+	version: "v1"
 )
 
 // 8003
@@ -107,5 +109,3 @@ type (
 		SelfIntroduction string `json:"self_introduction" validate:"omitempty,max=200"`
 	}
 )
-
-goctl api go -api ./doc/api/user.api -dir ./server/app/user/userapi

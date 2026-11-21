@@ -4,6 +4,8 @@ info (
 	title:  "Noviterra站点支撑服务"
 	desc:   "管理Noviterra的非核心服务，如友链、订阅等"
 	author: "Noviterra"
+	email: "anyonego86@163.com"
+	version: "v1"
 )
 
 // 8006

@@ -1,0 +1,39 @@
+syntax = "proto3";
+package agentrpc;
+option go_package = "/agentrpc";
+
+// 9007
+/*
+goctl rpc protoc ./doc/proto/agent.proto --go_out=./server/app/agent/agentrpc/types --go-grpc_out=./server/app/agent/agentrpc/types --zrpc_out=./server/app/agent/agentrpc
+*/
+
+service AgentService {
+  // 对话
+  rpc Chat(ChatRequest) returns (ChatResponse);
+  // 配置对话助手
+  rpc Deploy(DeployAgentRequest) returns (Response);
+}
+
+message Response {
+  int32 Status = 1;
+  int64  Code = 2;
+  string Message = 3;
+}
+
+message ChatRequest {
+  int64 SessionID = 1;
+  string Query = 2;
+  string User = 3;
+}
+
+message ChatResponse {
+  string Content = 1;
+  Response Resp = 2;
+}
+
+message DeployAgentRequest {
+  string BaseURL  = 1;
+  string APIKey = 2;
+  string Model = 3;
+  string Provider = 4;
+}

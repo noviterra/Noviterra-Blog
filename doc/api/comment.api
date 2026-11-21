@@ -4,6 +4,8 @@ info (
 	title:  "Noviterra互动服务"
 	desc:   "管理Noviterra博客的全部互动服务，包括但不限于用户点赞、收藏文章、评论回复、获取他人或个人点赞列表等"
 	author: "Noviterra"
+	email: "anyonego86@163.com"
+	version: "v1"
 )
 
 // 8005

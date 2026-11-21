@@ -4,6 +4,8 @@ info (
 	title:  "noviterra博客文章相关接口"
 	desc:   "noviterra博客文章管理模块article，负责文章的全部内容：CRUD、点赞、收藏、浏览、搜索等等"
 	author: "noviterra"
+	email: "anyonego86@163.com"
+	version: "v1"
 )
 
 // 8004

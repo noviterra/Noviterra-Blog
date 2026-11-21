@@ -4,6 +4,8 @@ info (
 	title:  "Noviterra用户认证服务"
 	desc:   "管理Noviterra博客的全部认证服务，如注册、登录、忘记密码、邮箱操作、Token刷新等等"
 	author: "Noviterra"
+	email: "anyonego86@163.com"
+	version: "v1"
 )
 
 // 8001
