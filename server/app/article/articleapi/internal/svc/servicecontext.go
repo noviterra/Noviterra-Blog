@@ -7,8 +7,10 @@ import (
 	"Noviterra/server/app/article/articleapi/internal/config"
 	"Noviterra/server/app/article/articlerpc/articleservice"
 	"Noviterra/server/app/internal/interceptor"
+	"Noviterra/server/app/internal/middleware"
 	"Noviterra/server/utils/common"
 	"Noviterra/server/utils/ctxdata"
+	"Noviterra/server/utils/jwtauth"
 	"Noviterra/server/utils/repo"
 	"Noviterra/server/utils/validate"
 
@@ -20,6 +22,7 @@ type ServiceContext struct {
 	ArticleModel            articleservice.ArticleService
 	CommonUtils             *common.CommonUtils
 	CtxData                 *ctxdata.CtxData
+	AuthMiddleware          *middleware.AuthMiddleware
 	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 	ArticleValidate         *validate.ArticleValidate
 }
@@ -27,7 +30,8 @@ type ServiceContext struct {
 func NewServiceContext(c config.Config) *ServiceContext {
 	tool := initTool()
 	rpc := initRPC(c)
-	aspect := initAspect(c, tool)
+	store := initStore(c)
+	aspect := initAspect(c, tool, store)
 
 	return &ServiceContext{
 		Config:                  c,
@@ -35,6 +39,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		ServiceTokenInterceptor: aspect.ServiceTokenInterceptor,
 		CommonUtils:             tool.CommonUtils,
 		CtxData:                 tool.ctxdata,
+		AuthMiddleware:          aspect.AuthMiddleware,
 		ArticleValidate:         tool.articleValidate,
 	}
 }
@@ -102,20 +107,28 @@ func initStore(c config.Config) storeCollection {
 
 // 请求拦截类
 type aspectCollection struct {
+	AuthMiddleware          *middleware.AuthMiddleware
 	ServiceTokenInterceptor *interceptor.ServiceTokenInterceptor
 }
 
-func initAspect(c config.Config, tool toolCollection) aspectCollection {
-	// JWT配置
-
-	// 拦截器配置
+func initAspect(c config.Config, tool toolCollection, store storeCollection) aspectCollection {
 	interceptorConfig := interceptor.ServiceTokenConfig{
 		SecretToken: c.Interceptor.ServiceToken,
 		SkipToken:   c.Interceptor.SkipToken,
 	}
-	it := interceptor.NewServiceTokenInterceptor(tool.ctxdata, interceptorConfig)
+	jwtConfig := jwtauth.AuthenticationConfig{
+		AccessSecret:  c.JWT.AccessSecret,
+		AccessExpire:  c.JWT.AccessExpire,
+		RefreshSecret: c.JWT.RefreshSecret,
+		RefreshExpire: c.JWT.RefreshExpire,
+	}
+	jwtAuth := jwtauth.NewAuthentication(jwtConfig)
+
+	serviceTokenInterceptor := interceptor.NewServiceTokenInterceptor(tool.ctxdata, interceptorConfig)
+	authMiddleware := middleware.NewAuthMiddleware(jwtAuth, store.identityRepository, tool.ctxdata)
 
 	return aspectCollection{
-		ServiceTokenInterceptor: it,
+		AuthMiddleware:          authMiddleware,
+		ServiceTokenInterceptor: serviceTokenInterceptor,
 	}
 }

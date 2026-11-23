@@ -12,6 +12,7 @@ import (
 	"Noviterra/server/utils/snowflake"
 	"Noviterra/server/utils/validate"
 	"Noviterra/server/utils/zaplogger"
+	"context"
 	"fmt"
 )
 
@@ -140,6 +141,13 @@ func initStore(c config.Config, tool toolCollection) storeCollection {
 	userRepo := repo.NewUserRepository(repositoryConfig, "user")
 	identityRepo := repo.NewIdentityRespository(repositoryConfig, "identity")
 	articleRepo := repo.NewArticleRepository(repositoryConfig, "article")
+	articleIDs, err := articleRepo.GetAllArticleIDs(context.Background())
+	if err != nil {
+		panic(fmt.Errorf("文章布隆过滤器预热失败：%w", err))
+	}
+	for _, articleID := range articleIDs {
+		tool.articleBloomFilter.AddArticle(articleID)
+	}
 
 	articleCache := cache.NewArticleCache(cacheConfig, tool.typeConversion)
 	commentCache := cache.NewCommentCache(cacheConfig, tool.typeConversion)

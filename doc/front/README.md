@@ -1,235 +1,190 @@
-# Noviterra 前端说明文档
+# Noviterra 前端
 
-Noviterra 前端是一套基于 **Nuxt 3（单框架）** 的模块化应用，对接项目内 go-zero 用户微服务，覆盖主页、文章、友链、关于、认证、个人设置与后台管理。本文档说明依赖安装、一键启动、各地址（路由 / 接口）对应内容、模块划分，以及「请求到数据刷新」的对应关系，便于维护与新增模块。
+基于 Nuxt 3、Vue 3 与 TypeScript 的 Noviterra 前端。界面按访问角色和操作范围划分：访客使用公开站点，登录用户使用账号空间，管理员与超级管理员使用管理后台。
 
-> 权限边界：本工程只包含前端代码与本文档。后端（`server/`）只读，前端不修改、不新增任何后端文件。
+## 启动
 
----
+环境要求：Node.js 20+，后端服务已启动。
 
-## 1. 技术栈
-
-| 类别 | 选型 | 说明 |
-| --- | --- | --- |
-| 框架 | Nuxt 3（Vue 3，SSR） | 单框架，文件路由、组合式 API |
-| 语言 | TypeScript | 全量类型，接口类型见 `utils/apiTypes.ts` |
-| 样式 | 原生 CSS + 设计令牌 | cascade layers，不使用 Tailwind / UI 组件库 |
-| 字体 | Geist Variable / Geist Mono Variable（自托管） | 中文回退系统字体，`font-display: swap` |
-| 图标 | Phosphor（`@phosphor-icons/vue`） | 统一经 `BaseIcon` 调用，不手写 SVG |
-| 状态 | 组合式函数 + 本地存储 | Token 持久化，无额外状态库 |
-
-设计基调：编辑感博客 + 轻后台。低饱和翡翠绿单色强调、冷调中性色、1px 边框、克制阴影、明暗双主题；动效仅滚动揭示与路由过渡，不使用视差、跑马灯与滚动监听。
-
----
-
-## 2. 目录结构（模块划分）
-
-前端代码全部位于项目根下 `front/`：
-
-```text
-front/
-├─ app.vue                 # 根组件：布局 + 页面 + Toast
-├─ app.config.ts           # 站点配置：名称、导航、博主、社交、页脚
-├─ nuxt.config.ts          # Nuxt 配置：主题首帧脚本、全局样式、apiBase、过渡
-├─ assets/css/             # 设计系统样式
-│  ├─ tokens.css           # 设计令牌（明/暗主题：颜色、字号、间距、圆角、阴影）
-│  ├─ base.css             # 基础重置与排版
-│  ├─ layout.css           # 页头、页脚、容器、栅格
-│  ├─ components.css       # 按钮、表单、徽章、卡片、弹窗、表格等
-│  ├─ markdown.css         # .prose 正文排版
-│  ├─ chrome.css           # 后台框架样式
-│  ├─ pages.css            # 各页面专属样式
-│  └─ main.css             # 入口，依次引入以上文件
-├─ utils/
-│  ├─ apiTypes.ts          # 后端请求/响应/用户类型
-│  ├─ constants.ts         # ENDPOINTS、枚举文案、分页约束、存储键
-│  └─ content/             # 本地内容适配层（未来接口替换接缝）
-│     ├─ posts.ts          # 文章本地数据
-│     └─ friends.ts        # 友链本地数据
-├─ composables/            # 组合式函数（自动导入）
-│  ├─ useApi.ts            # HTTP 收口：信封归一化、Token 注入、过期刷新
-│  ├─ useAuth.ts           # 鉴权收口：登录/注册/改密/资料、会话
-│  ├─ useTokenStore.ts     # access/refresh Token 存储
-│  ├─ useToast.ts          # 全局轻提示
-│  ├─ useTheme.ts          # 明暗主题
-│  ├─ useCountdown.ts      # 验证码冷却
-│  ├─ usePagination.ts     # 分页状态
-│  ├─ useFormat.ts         # 日期、性别、角色、阅读时长格式化
-│  ├─ usePosts.ts          # 文章数据访问（内容接口唯一接缝）
-│  └─ useFriends.ts        # 友链数据访问
-├─ plugins/
-│  ├─ auth.client.ts       # 客户端启动：主题同步 + 会话恢复
-│  └─ directives.ts        # v-reveal 滚动揭示指令（IntersectionObserver）
-├─ middleware/
-│  ├─ auth.ts              # 需登录
-│  └─ admin.ts             # 需管理员
-├─ layouts/
-│  ├─ default.vue          # 站点默认布局（页头 + 页脚）
-│  ├─ bare.vue             # 认证页极简布局
-│  └─ admin.vue            # 后台布局（侧栏 + 移动抽屉）
-├─ components/
-│  ├─ common/               # 通用元件
-│  ├─ layout/               # 页头、页脚、主题切换
-│  ├─ home/                 # 主页模块（列表行、置顶卡）
-│  ├─ article/              # 文章模块（正文渲染、目录）
-│  ├─ friends/              # 友链模块（友链卡片）
-│  └─ admin/                # 后台模块（用户表格）
-├─ pages/                  # 文件路由（见第 4 节）
-├─ public/favicon.svg
-└─ error.vue               # 全局错误页（404 等）
-```
-
-模块约定：每个业务模块自带 `components/<模块>/` 与对应 `pages/`，跨模块通用件放 `components/common/`。新增模块时新增一个组件目录与一个页面目录即可，不影响既有模块。
-
----
-
-## 3. 安装与启动
-
-### 3.1 环境要求
-
-- Node.js 18 及以上（开发环境使用 Node 22）
-- npm（也可用 pnpm，命令等价）
-
-### 3.2 安装依赖
-
-```bash
+```powershell
 cd front
 npm install
-```
-
-`postinstall` 会自动执行 `nuxt prepare` 生成类型。
-
-### 3.3 一键启动（开发）
-
-```bash
 npm run dev
 ```
 
-启动后前端默认运行在 **http://localhost:3000**。
+默认地址：`http://localhost:3000`。开发代理把 `/novblog/*` 转发到本机微服务：
 
-后端用户服务默认运行在 **http://localhost:8888**，接口前缀 `/novblog/user`，并已开启 CORS（`*`），前端可直接跨域调用。请先启动后端服务再进行登录、注册等操作。
+| 服务 | 端口 |
+| --- | --- |
+| identity | 8001 |
+| notice | 8002 |
+| user | 8003 |
+| article | 8004 |
+| comment | 8005 |
+| site | 8006 |
+| agent | 8007 |
 
-### 3.4 生产构建与预览
+如果后端不在本机，可在启动前设置：
 
-```bash
-npm run build      # 构建
-npm run preview    # 本地预览构建产物
-npm run generate   # 生成静态站点（内容接口稳定后可选）
+```powershell
+$env:NUXT_PUBLIC_API_BASE="http://后端地址:端口"
+npm run dev
 ```
 
----
+生产构建：
 
-## 4. 前端地址（路由）对应内容
-
-| 路由 | 页面 | 布局 / 权限 | 说明 |
-| --- | --- | --- | --- |
-| `/` | 主页 | default | 置顶精选、最新文章、主题入口 |
-| `/posts` | 文章列表 | default | 支持 `?topic=主题` 与搜索筛选 |
-| `/posts/:slug` | 文章详情 | default | 正文、目录、上一篇/下一篇；不存在返回 404 |
-| `/friends` | 友链 | default | 按标签筛选的友链卡片 |
-| `/about` | 关于 | default | 博主简介、技术栈、时间线、联系方式 |
-| `/auth/login` | 登录 | bare | 支持账号密码 / 邮箱验证码；`?redirect=目标`、`?prefill=ID` |
-| `/auth/register` | 注册 | bare | 邮箱验证码注册 |
-| `/auth/forgot` | 找回密码 | bare | 邮箱验证后重置密码 |
-| `/settings` | 个人设置 | default，需登录 | 更新资料、修改密码 |
-| `/admin` | 控制台 | admin，需管理员 | 概览统计、最近用户、快捷入口 |
-| `/admin/users` | 用户管理 | admin，需管理员 | 分页用户列表、拉黑 / 解封 |
-| `/admin/posts` | 文章管理 | admin，需管理员 | 内容接口占位，结构已预留 |
-
----
-
-## 5. 后端接口对接
-
-### 5.1 基础地址
-
-- 默认 `apiBase`：`http://localhost:8888/novblog/user`
-- 配置位置：`nuxt.config.ts` 的 `runtimeConfig.public.apiBase`
-- 可用环境变量覆盖：
-
-```bash
-# Windows PowerShell
-$env:NUXT_PUBLIC_API_BASE="http://你的后端地址/novblog/user"; npm run dev
-# Linux / macOS
-NUXT_PUBLIC_API_BASE="http://你的后端地址/novblog/user" npm run dev
+```powershell
+npm run build
+npm run preview
 ```
 
-### 5.2 响应约定
+## 角色与页面
 
-- 业务响应 HTTP 状态恒为 `200`，成败看业务信封 `code`：`0` 成功、`1` 失败。
-- 信封字段历史上存在 `response` / `Resp` 两种命名，`useApi` 已统一兼容。
-- 鉴权中间件失败（无 Token、格式错、解析失败、账号封禁）返回非 2xx，`useApi` 据此触发 Token 刷新或清理会话。
-- 鉴权请求统一携带请求头：`Authorization: Bearer <accessToken>`。
+### 公开站点
 
-### 5.3 接口清单
-
-base = `apiBase`。
-
-| 方法 | 路径 | 鉴权 | 说明 |
-| --- | --- | --- | --- |
-| POST | `/register` | 否 | 注册：`id`(6-10)、`password`(6-20)、`email`、`verification_code`(6)、`verif_password` |
-| POST | `/login/id` | 否 | 账号密码登录，返回 access / refresh Token |
-| POST | `/login/email` | 否 | 邮箱 + 验证码登录 |
-| POST | `/server/verificationcode` | 否 | 发送验证码，`type`：`register` / `login` / `change_password` / `forget_password` |
-| POST | `/forgetpassword` | 否 | 找回密码：`id`、`email`、`verification_code`、`new_password`、`verif_password` |
-| POST | `/server/refreshaccesstoken` | 否 | 用 refreshToken 换取新的 access / refresh Token |
-| GET | `/info` | 是 | 当前用户信息 |
-| POST | `/updateinfo` | 是 | 更新资料：`username`(2-20)、`avatar`、`age`(0-150)、`gender`、`self_introduction`(≤200) |
-| POST | `/changepassword/id` | 是 | 旧密码改密：`old_password`、`new_password` |
-| POST | `/changepassword/email` | 是 | 邮箱改密：`email`、`verification_code`、`new_password` |
-| GET | `/batchinfo?size=&page=` | 是（管理员） | 分页用户，`size` 5-15 默认 10，`page` 默认 1，不返回总数 |
-| POST | `/blackusers` | 是（管理员） | 按 `id` 拉黑用户 |
-| POST | `/unblackusers` | 是（管理员） | 按 `id` 解封用户 |
-
-用户字段：`id`、`Role`（0 普通 / 1 超管）、`username`、`email`、`avatar`、`age`、`gender`（0 未知 / 1 男 / 2 女）、`self_introduction`。
-
-> 说明：`/batchinfo` 不返回用户封禁状态（Status）与总数。因此列表同时提供拉黑与解封操作；是否还有下一页通过「本页返回条数是否等于 size」推断。
-
----
-
-## 6. 请求到数据刷新的对应关系
-
-所有 HTTP 请求收口到 `useApi`，所有鉴权动作收口到 `useAuth`，保证刷新逻辑单一、可维护：
-
-| 触发动作 | 请求 | 成功后的数据刷新 |
+| 路由 | 功能 | 数据来源 |
 | --- | --- | --- |
-| 登录（ID / 邮箱） | `/login/id` 或 `/login/email` | 保存 Token，拉取 `/info`，再跳转 `redirect` 或首页 |
-| 注册 | `/register` | 跳转登录页并预填 ID |
-| 找回密码 | `/forgetpassword` | 跳转登录页 |
-| 更新资料 | `/updateinfo` | 重新拉取 `/info`（单一刷新点，不手动拼接本地状态） |
-| 修改密码 | `/changepassword/id` 或 `/changepassword/email` | 提示成功并清空密码表单 |
-| 拉黑 / 解封 | `/blackusers` 或 `/unblackusers` | 重新拉取当前页用户列表 |
-| 翻页 / 改每页条数 | `/batchinfo` | 用新分页参数重新拉取列表 |
-| accessToken 过期 | 自动 `/server/refreshaccesstoken` | 单飞刷新（并发 401 共享一次），随后重放原请求 |
-| refreshToken 失效 / 账号被封 | 鉴权中间件返回非 2xx | 清理会话，跳转登录页 |
+| `/` | 首页、最新文章、公告、标签与站点入口 | article、notice |
+| `/articles` | 文章广场、分页、列表/卡片视图、标签筛选 | article |
+| `/articles/:id` | 文章正文、目录、封面、点赞、收藏、评论 | article、comment |
+| `/archive` | 按年份归档；用近期文章补全可跳转的文章 ID | article |
+| `/guestbook` | 站点留言与回复 | comment |
+| `/friends` | 登录后提交友链申请 | site |
+| `/assistant` | 站点助手对话，本地保存最近消息 | agent |
+| `/about` | 站点、服务与技术栈说明 | 本地配置 |
+| `/search` | 服务端文章搜索 | article |
+| `/login` | 账号密码或邮箱验证码登录 | identity |
+| `/register` | 注册账号 | identity、notice |
+| `/forgot-password` | 邮箱验证码重设密码 | identity、notice |
 
-Token 策略：access 有效期 2 小时、refresh 有效期 7 天；刷新接口同时轮转 access 与 refresh。
+### 账号空间
 
----
+| 路由 | 功能 | 数据来源 |
+| --- | --- | --- |
+| `/me/profile` | 昵称、头像、年龄、性别、简介 | user |
+| `/me/password` | 旧密码或邮箱验证码修改密码 | user、notice |
+| `/me/library` | 当前用户点赞与收藏的文章 | article |
+| `/me/articles` | 当前用户发布的文章；管理员可进入写作页 | article |
 
-## 7. 内容适配层（本地源到真实接口）
+### 管理后台
 
-后端当前仅实现用户能力，**没有文章 / 友链等内容接口**。为不阻塞前端，内容类页面由本地内容适配层承载：
+| 路由 | 功能 | 数据来源 |
+| --- | --- | --- |
+| `/admin` | 工作台、近期内容、服务状态入口 | article、user、notice |
+| `/admin/articles` | 文章列表、筛选、预览、编辑、删除 | article |
+| `/admin/articles/new` | 富文本写作与封面生成/上传 | article |
+| `/admin/articles/:id` | 编辑文章、替换封面、删除 | article |
+| `/admin/users` | 用户分页、封禁与解封 | user |
+| `/admin/notices` | 公告列表与发布 | notice |
+| `/admin/assistant` | 助手模型配置与接口测试 | agent |
 
-- 数据位于 `utils/content/posts.ts`、`utils/content/friends.ts`。
-- 页面与组件只面对 `usePosts()` / `useFriends()` 返回的稳定数据结构，与未来 API 保持一致。
-- **切换到真实接口时，只需修改 `composables/usePosts.ts` / `useFriends.ts` 内部实现**，页面与组件无需改动。这是内容接口的唯一接缝。
-- 文章正文当前为作者自有可信 HTML，经 `ArticleContent.vue` 的 `.prose` 渲染；未来若返回 Markdown，仅在该组件内接入解析。
+`/admin/**` 与 `/me/**` 关闭 SSR，并在客户端通过 `auth`、`admin` 中间件校验会话。普通用户访问后台会回到首页；未登录用户会跳到登录页并携带 `redirect`。
 
-后台控制台中文章、评论、访问等暂无后端的模块统一标注「待接入」，不展示虚构数字。
+## 目录结构
 
----
+```text
+front/
+├─ pages/                 # 文件路由，按公开站点、账号空间、后台分组
+├─ layouts/               # default、auth、account、admin
+├─ middleware/            # auth、admin、guest
+├─ components/
+│  ├─ site/               # 页头、用户菜单、账号导航、页脚
+│  ├─ article/            # 正文、卡片、行、目录、评论
+│  ├─ editor/             # RichEditor、ArticleEditor、CoverPicker
+│  ├─ admin/              # 后台侧栏与顶栏
+│  └─ ui/                 # 按钮、图标、弹窗、封面、空状态、Toast
+├─ composables/           # API、鉴权、会话、各服务数据访问
+├─ utils/                 # 类型、常量、格式化、封面、富文本渲染
+├─ assets/css/            # 设计令牌与模块化样式
+├─ server/routes/static/  # 文章封面文件读取
+└─ public/                # favicon 与默认头像
+```
 
-## 8. 部署与同源代理建议
+## API 约定
 
-- 后端已开启 CORS，生产环境前端可直接跨域调用，也可通过反向代理（Nginx）或 Nitro 路由规则将 `/novblog` 代理到后端，实现同源访问。
-- 使用同源代理时，将 `NUXT_PUBLIC_API_BASE` 指向同源路径（例如 `/novblog/user`），由反向代理转发到后端服务。
-- 主题在首帧前由内联脚本设定（localStorage 键 `noviterra.theme`），不会出现主题闪烁。
+- 所有请求收口到 `composables/useApi.ts`，统一处理 JSON、错误信息、Bearer Token、401 单飞刷新与 8 秒超时。
+- 所有服务地址集中在 `utils/constants.ts` 的 `ENDPOINTS`。
+- 登录 Token 保存在 `nv_access`、`nv_refresh` Cookie；用户资料缓存键为 `noviterra.user`。
+- 后端统一响应可能是 `response` 或 `resp` 包装，`useApi` 同时兼容 `status`、`errcode`、`code`。
+- 管理端分页接口不返回总数；是否还有下一页通过“本页返回条数是否等于 page size”推断。
 
----
+### 服务映射
 
-## 9. 新增模块指南
+| Composable | 服务 | 主要能力 |
+| --- | --- | --- |
+| `useAuth` | identity / notice | 注册、登录、验证码、忘记密码、资料与密码修改 |
+| `useSession` | user | 当前用户、角色判断、本地缓存恢复 |
+| `useArticles` | article | 列表、详情、搜索、归档、个人文章、点赞收藏列表、发布、编辑、封面、删除 |
+| `useComments` | comment | 顶层评论、回复树、评论、点赞、收藏 |
+| `useUsers` | user | 管理员用户分页、封禁、解封 |
+| `useNotices` | notice | 公告列表与发布 |
+| `useFriends` | site | 友链申请 |
+| `useAgent` | agent | 助手配置与对话 |
 
-1. 在 `components/<新模块>/` 下放置模块专属组件。
-2. 在 `pages/` 下按文件路由新增页面，需要权限时在 `definePageMeta` 指定 `middleware`。
-3. 数据访问优先复用 `useApi`；内容类数据在对应 `useXxx` 组合式函数中收口，保持页面与数据来源解耦。
-4. 复用 `components/common/` 的表单、按钮、弹窗、分页、空状态与骨架，保持视觉与交互一致。
-5. 涉及写操作时，遵循第 6 节约定：成功后通过重新拉取数据来刷新界面，避免手动维护多份本地状态。
+## 文章封面
+
+- 发布文章和更新封面都必须使用 `multipart/form-data`。
+- 发布字段：`article_id`、`title`、`content`、`information`、`tags`（可重复）与 `cover` 文件。
+- 支持 JPG、JPEG、PNG、WebP，最大 5 MB。
+- 未选择图片时，前端生成 1200×675 的 JPEG 文字封面。
+- 后端保存为 `cover{articleID}time{unix}.{ext}`，前端通过 `/static/articlecover/{filename}` 读取。
+- Nuxt 服务端路由默认读取项目根目录的 `static/articlecover`；可用 `NOVITERRA_COVER_DIR` 覆盖。
+
+## 富文本编辑器
+
+`components/editor/RichEditor.vue` 输出经过白名单清洗的 HTML，正文在阅读页通过统一 `.prose` 样式渲染。
+
+支持：
+
+- 多级标题、正文段落、有序/无序列表、引用、分割线
+- 粗体、斜体、下划线、删除线、行内代码、高亮
+- 带语言标记的代码块与自动语法高亮、复制按钮
+- 提示块、表格、图片与图注、链接
+- 斜杠命令菜单
+- Markdown 快捷输入：`#`、`##`、`###`、`>`、`-` / `*` / `+`、`1.`、`---`、```` ``` ````
+- `Tab` / `Shift+Tab` 缩进与反缩进
+- 富文本粘贴清洗，禁止脚本、事件属性与危险协议
+
+`components/editor/ArticleEditor.vue` 负责文章元数据、草稿与发布：
+
+- 本地草稿自动保存，重新进入时提示恢复或还原
+- `Ctrl/Cmd + S` 保存
+- 标题最多 20 字，摘要最多 200 字，标签最多 5 个且每个最多 10 字，正文最多 50000 字符
+- 这些限制与后端 RPC 的实际运行校验保持一致
+
+## 后端契约注意点
+
+前端已适配当前后端的真实行为，维护时不要只依据 `.api` 类型注解：
+
+- 文章列表、用户分页和点赞收藏列表是 GET 查询参数，结构体必须保留 `form` tag。
+- 文章详情路径参数为 `path:"article"`。
+- 发布文章与更新封面是 multipart；更新封面处理器需先 `ParseMultipartForm`。
+- 文章列表与搜索响应必须映射 `article_id` 与 `created_at`，否则前端无法跳转或显示日期。
+- 文章更新接口的 `tags` 是字符串数组；后端 repository 使用 map 更新时必须显式写入 JSON 文本，不能直接传 `[]string` 给 MySQL JSON 列。
+- 评论顶层路由当前带拼写错误：`/novblog/comment/commet/top`；前端保留正确路径 fallback。
+- 站点留言使用后端约定的根地址 `3489673482`；顶层评论发送 `parent_id: 0`，API 校验应为 `gte=0`。
+- 角色值：`0` 普通用户，`1` 管理员，`2` 超级管理员。后台入口要求 `Role >= 1`；公告发布要求 `Role >= 2`。
+
+## 已知限制
+
+- `agent/chat` 与 `agent/deploy` 目前是后端脚手架，前端如实显示接口返回，不伪造模型结果。
+- 归档接口不返回文章 ID；前端仅能用近期文章列表按标题补全部分跳转，旧文章可能只能显示标题。
+- 用户批量接口不返回总数与封禁状态；后台同时提供封禁、解封操作。
+- 后端没有“当前文章是否已点赞/收藏”的查询接口；文章页按钮状态只在当前页面会话内维护。
+- 后端没有友链列表接口；`/friends` 目前只提供申请表单。
+
+## 验证命令
+
+```powershell
+cd front
+npm run build
+```
+
+后端契约改动可按需做编译检查：
+
+```powershell
+go test ./server/app/article/articleapi/... ./server/app/user/userapi/...
+```
+
+该命令只编译与运行包测试，不启动微服务。
+

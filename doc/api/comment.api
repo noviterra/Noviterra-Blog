@@ -47,7 +47,7 @@ type (
 	// 评论属性 多层回复
 	ArticleComment {
 		Address   int64  `json:"root" validate:"required,gt=10"`
-		ParentID  int64  `json:"parent_id" validate:"gt=0"` // 评论的唯一标识 评论的唯一ID
+		ParentID  int64  `json:"parent_id" validate:"gte=0"` // 评论的唯一标识 评论的唯一ID
 		SpeakerID string `json:"speaker_id" validate:"required,min=6,max=10"`
 		Content   string `json:"comment" validate:"required,min=1,max=200"`
 	}
@@ -71,12 +71,12 @@ type (
 	// 对一篇文章进行点赞或取消点赞请求
 	LikeArticleRequest {
 		ArticleID int64  `json:"article_id" validate:"gt=10"`
-		Action    string `json:"action" validate:"required,oneof=like,unlike"`
+		Action    string `json:"action" validate:"required,oneof=like unlike"`
 	}
 	// 对文章进行收藏或取消收藏操作
 	CollectArticleRequest {
 		ArticleID int64  `json:"article_id" validate:"gt=10"`
-		Action    string `json:"action" validate:"required,oneof=collect,uncollect"`
+		Action    string `json:"action" validate:"required,oneof=collect uncollect"`
 	}
 	// 对一篇博客进行评论 保存为一个会话 从而保存一系列的回复 整体实现类似树的结构
 	CommentArticleRequest {

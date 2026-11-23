@@ -128,10 +128,9 @@ func (l *CreateCommentLogic) CreateComment(in *commentrpc.CommentRequest) (*comm
 			errcode.InternalError, errcode.CreateCommentFail)
 	}
 
-	// 评论发布后 删除缓存 日志记录
-	if commentReq.ParentID == 0 { // 发布的为顶层评论 则删除顶层评论缓存
-		err = l.commentCache.DelTopComment(l.ctx, commentReq.Address)
-	} else { // 子级评论 将所在的评论树缓存删除
+	// 评论发布后删除缓存：顶层列表的回复计数与评论树都需要失效
+	err = l.commentCache.DelTopComment(l.ctx, commentReq.Address)
+	if err == nil && commentReq.ParentID != 0 {
 		err = l.commentCache.DelTreeComment(l.ctx, rootID)
 	}
 	if err != nil {

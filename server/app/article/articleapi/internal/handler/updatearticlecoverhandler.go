@@ -15,8 +15,21 @@ import (
 
 func UpdateArticleCoverHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// 先解析 multipart，让普通字段进入 r.Form，httpx.Parse 才能读取 article_id
+		if err := r.ParseMultipartForm(32 << 20); err != nil {
+			httpx.OkJsonCtx(r.Context(), w, &types.UpdateArticleCoverResponse{
+				Cover: "",
+				Resp: types.Response{
+					Status:  http.StatusBadRequest,
+					Code:    1,
+					Message: "表单解析失败：" + err.Error(),
+				},
+			})
+			return
+		}
+
 		var req types.UpdateArticleCoverRequest
-		if err := httpx.Parse(r, &req); err != nil {
+		if err := httpx.ParseForm(r, &req); err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}

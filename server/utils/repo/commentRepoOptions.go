@@ -245,7 +245,8 @@ func (cr *CommentRepository) FirstLoadTopComment(ctx context.Context,
 	var comments []model.TopCommentNode
 	err := cr.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(&model.ArticleComment{}).
-			Where("address = ? AND parent_id = ? AND status = ?",
+			Select("comment_id", "speaker_id", "content", "created_at").
+			Where("address = ? AND (parent_id = ? OR parent_id IS NULL) AND status = ?",
 				address, 0, 1).Order("created_at ASC").
 			Find(&comments).Error; err != nil {
 			return fmt.Errorf("评论加载失败：%w", err)
@@ -321,6 +322,8 @@ func (cr *CommentRepository) OpenComment(ctx context.Context,
 	// 校验顶层评论的有效性
 	var top model.TopCommentNode
 	if err := cr.db.WithContext(ctx).
+		Model(&model.ArticleComment{}).
+		Select("comment_id", "speaker_id", "content", "created_at").
 		Where("comment_id = ? AND status = ?", commentID, 1).
 		First(&top).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -332,7 +335,8 @@ func (cr *CommentRepository) OpenComment(ctx context.Context,
 	var comments []model.CommentNode
 	if err := cr.db.WithContext(ctx).
 		Model(&model.ArticleComment{}).
-		Where("root_id = ? AND status = ?", commentID, 1).
+		Select("comment_id", "parent_id", "speaker_id", "content", "created_at").
+		Where("root_id = ? AND status = ? AND parent_id IS NOT NULL", commentID, 1).
 		Order("created_at ASC, comment_id ASC").
 		Find(&comments).Error; err != nil {
 		return nil, fmt.Errorf("评论展开失败：%w", err)

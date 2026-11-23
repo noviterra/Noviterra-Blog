@@ -103,7 +103,7 @@ func (l *GetMoreUsersInfoLogic) GetMoreUsersInfo(in *userrpc.GetMoreUsersInfoReq
 	}
 
 	// 分页获取用户数据
-	userList, err := l.userRepository.GetAllUsersInfo(page, pageSize)
+	userList, err := l.userRepository.GetAllUsersInfo(pageSize, page)
 	if err != nil {
 		l.logger.Error("数据库操作失败：分页获取用户信息失败",
 			zap.Int("size", pageSize),

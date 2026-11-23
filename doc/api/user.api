@@ -91,8 +91,8 @@ type (
 	}
 	// 管理员批量获取用户信息  分页查询
 	BatchUserInfoRequest {
-		size int `json:"size" validate:"required,min=5,max=15"`
-		page int `json:"page" validate:"required,min=1"`
+		size int `form:"size" json:"size" validate:"required,min=5,max=15"`
+		page int `form:"page" json:"page" validate:"required,min=1"`
 	}
 	BatchUserInfoResponse {
 		Users []UserInfo `json:"users"`

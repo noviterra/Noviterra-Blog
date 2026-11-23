@@ -5,14 +5,14 @@ package types
 
 type ArticleComment struct {
 	Address   int64  `json:"root" validate:"required,gt=10"`
-	ParentID  int64  `json:"parent_id" validate:"gt=0"` // 评论的唯一标识 评论的唯一ID
+	ParentID  int64  `json:"parent_id" validate:"gte=0"` // 评论的唯一标识 评论的唯一ID
 	SpeakerID string `json:"speaker_id" validate:"required,min=6,max=10"`
 	Content   string `json:"comment" validate:"required,min=1,max=200"`
 }
 
 type CollectArticleRequest struct {
 	ArticleID int64  `json:"article_id" validate:"gt=10"`
-	Action    string `json:"action" validate:"required,oneof=collect,uncollect"`
+	Action    string `json:"action" validate:"required,oneof=collect uncollect"`
 }
 
 type CommentArticleRequest struct {
@@ -52,7 +52,7 @@ type GetTreeCommentResponse struct {
 
 type LikeArticleRequest struct {
 	ArticleID int64  `json:"article_id" validate:"gt=10"`
-	Action    string `json:"action" validate:"required,oneof=like,unlike"`
+	Action    string `json:"action" validate:"required,oneof=like unlike"`
 }
 
 type Response struct {

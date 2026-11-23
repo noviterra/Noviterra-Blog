@@ -65,7 +65,7 @@ func (l *DeleteArticleLogic) DeleteArticle(req *types.DeleteArticleRequest) (res
 
 	// 获取用户身份权限
 	role := l.ctxdata.GetUserRoleFromContext(l.ctx)
-	if role != 1 { // 1为管理员
+	if role < 1 { // 1管理员 2超级管理员
 		return failResponse(resp, "用户身份权限不足！", errcode.InvalidParam, errcode.Failed)
 	}
 

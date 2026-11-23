@@ -56,7 +56,7 @@ func (l *GetUserInfoLogic) GetUserInfo() (resp *types.UserInfoResponse, err erro
 	// 注入服务凭证
 	ctx := metadata.AppendToOutgoingContext(l.ctx,
 		"service-token", l.serviceTokenInterceptro.GetServiceTokenInConf(),
-		"skip-token", l.serviceTokenInterceptro.GetSkipTokenInConf(),
+		"user-id", userID,
 	)
 
 	rep, err := l.userModel.GetSelfInfo(ctx, &userrpc.GetUserInfoRequest{

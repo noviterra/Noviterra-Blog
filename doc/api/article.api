@@ -104,7 +104,7 @@ type (
 	PublishArticleRequest {
 		Title     string `form:"title" json:"title" validate:"required,min=1,max=100"`
 		Content   string `form:"content" json:"content" validate:"required,min=1"`
-		ArticleID int64  `json:"article_id" validate:"required,gt=0"`
+		ArticleID int64  `form:"article_id" json:"article_id" validate:"required,gt=0"`
 		// Cover       string   `json:"cover" validate:"required,min=1,max=20"`
 		Tags        []string `form:"tags" json:"tags" validate:"required,min=1,max=5,dive,required,min=1,max=20"`
 		Information string   `form:"information" json:"information" validate:"required,min=1,max=200"` // 作为一篇文章的总结or简短介绍
@@ -124,7 +124,7 @@ type (
 	}
 	// 改：修改文章封面
 	UpdateArticleCoverRequest {
-		ArticleID int64 `json:"article_id" validate:"required,gt=0"`
+		ArticleID int64 `form:"article_id" json:"article_id" validate:"required,gt=0"`
 	}
 	// 修改封面成功后 将封面重新渲染
 	UpdateArticleCoverResponse {
@@ -133,8 +133,8 @@ type (
 	}
 	// 查：获取文章列表
 	GetArticleListRequest {
-		Page     int `json:"page" validate:"required,min=1"`
-		PageSize int `json:"page_size" validate:"required,min=5,max=15"`
+		Page     int `form:"page" json:"page" validate:"required,min=1"`
+		PageSize int `form:"page_size" json:"page_size" validate:"required,min=5,max=15"`
 	}
 	// 文章列表响应体
 	GetArticleListResponse {
@@ -143,7 +143,7 @@ type (
 	}
 	// 查：获取文章详情
 	GetArticleDetailRequest {
-		ArticleID int64 `json:"article_id" validate:"required,gt=0"`
+		ArticleID int64 `path:"article" json:"article_id" validate:"required,gt=0"`
 	}
 	// 文章详情响应体
 	GetArticleDetailResponse {
@@ -168,15 +168,15 @@ type (
 	}
 	// 获得用户的点赞、收藏文章列表 查看个人或者他人
 	GetUserLikeCollectListRequest {
-		UserID   string `json:"user_id" validate:"required,min=1,max=100"`
-		Page     int    `json:"page" validate:"required,min=1"`
-		PageSize int    `json:"page_size" validate:"required,min=5,max=15"`
-		Fields   string `json:"fields" validate:oneof=like collect`
+		UserID   string `form:"user_id" json:"user_id" validate:"required,min=1,max=100"`
+		Page     int    `form:"page" json:"page" validate:"required,min=1"`
+		PageSize int    `form:"page_size" json:"page_size" validate:"required,min=5,max=15"`
+		Fields   string `form:"fields" json:"fields" validate:"omitempty,oneof=like collect"`
 	}
 	// 获得一个用户发布的文章列表
 	GetUsersArticleListRequest {
-		UserID   string `json:"user_id" validate:"required,min=1,max=100"`
-		Page     int    `json:"page" validate:"required,min=1"`
-		PageSize int    `json:"page_size" validate:"required,min=5,max=15"`
+		UserID   string `form:"user_id" json:"user_id" validate:"required,min=1,max=100"`
+		Page     int    `form:"page" json:"page" validate:"required,min=1"`
+		PageSize int    `form:"page_size" json:"page_size" validate:"required,min=5,max=15"`
 	}
 )

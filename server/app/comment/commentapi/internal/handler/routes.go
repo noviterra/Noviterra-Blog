@@ -12,26 +12,34 @@ import (
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
+	authRouters := []rest.Route{
+		{
+			// 对文章收藏操作
+			Method:  http.MethodPost,
+			Path:    "/article/collect",
+			Handler: CollectArticleHandler(serverCtx),
+		},
+		{
+			// 对文章点赞操作
+			Method:  http.MethodPost,
+			Path:    "/article/like",
+			Handler: LikeArticleHandler(serverCtx),
+		},
+		{
+			// 对一篇文章进行评论
+			Method:  http.MethodPost,
+			Path:    "/comment/comment",
+			Handler: CommentArticleHandler(serverCtx),
+		},
+	}
+	authRouters = rest.WithMiddleware(serverCtx.AuthMiddleware.JwtAuthMiddleware(), authRouters...)
+	server.AddRoutes(
+		authRouters,
+		rest.WithPrefix("/novblog/comment"),
+	)
+
 	server.AddRoutes(
 		[]rest.Route{
-			{
-				// 对文章收藏操作
-				Method:  http.MethodPost,
-				Path:    "/article/collect",
-				Handler: CollectArticleHandler(serverCtx),
-			},
-			{
-				// 对文章点赞操作
-				Method:  http.MethodPost,
-				Path:    "/article/like",
-				Handler: LikeArticleHandler(serverCtx),
-			},
-			{
-				// 对一篇文章进行评论
-				Method:  http.MethodPost,
-				Path:    "/comment/comment",
-				Handler: CommentArticleHandler(serverCtx),
-			},
 			{
 				// 展开某个评论
 				Method:  http.MethodPost,
@@ -39,9 +47,15 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: GetTreeCommentHandler(serverCtx),
 			},
 			{
-				// 得到一篇文章的顶层评论
+				// 得到一篇文章的顶层评论（历史路径拼写保留兼容）
 				Method:  http.MethodPost,
 				Path:    "/commet/top",
+				Handler: GetTopCommentHandler(serverCtx),
+			},
+			{
+				// 得到一篇文章的顶层评论（文档路径）
+				Method:  http.MethodPost,
+				Path:    "/comment/top",
 				Handler: GetTopCommentHandler(serverCtx),
 			},
 		},

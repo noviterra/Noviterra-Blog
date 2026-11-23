@@ -43,7 +43,7 @@ func (l *GetArchiveLogic) GetArchive() (resp *types.GetArchiveResponse, err erro
 	resp = new(types.GetArchiveResponse)
 
 	ctx := metadata.AppendToOutgoingContext(l.ctx,
-		"srevice-token", l.serviceTokenInterceptor.GetServiceTokenInConf(),
+		"service-token", l.serviceTokenInterceptor.GetServiceTokenInConf(),
 		"skip-token", l.serviceTokenInterceptor.GetSkipTokenInConf(),
 	)
 

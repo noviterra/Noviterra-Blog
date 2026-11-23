@@ -42,8 +42,9 @@ func (uc *UserCache) HSetUserInfo(ctx context.Context, userInfo *model.UserInfo)
 		"gender", userInfo.Gender,
 		"avatar", userInfo.Avatar,
 		"selfIntroduction", userInfo.SelfIntroduction,
-		"createdAt", userInfo.CreatedAt.Unix(),
-		"updatedAt", userInfo.UpdatedAt.Unix(),
+		"role", userInfo.Role,
+		"createdAt", userInfo.CreatedAt.Format("2006-01-02 15:04:05"),
+		"updatedAt", userInfo.UpdatedAt.Format("2006-01-02 15:04:05"),
 	).Err()
 	if err != nil {
 		return err
@@ -78,6 +79,12 @@ func (uc *UserCache) HGetUserInfo(ctx context.Context, id string) (*model.UserIn
 	userInfo.Name = vs["name"]
 	userInfo.Avatar = vs["avatar"]
 	userInfo.SelfIntroduction = vs["selfIntroduction"]
+
+	role, err := strconv.ParseInt(vs["role"], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("角色字段解析失败：%v", err)
+	}
+	userInfo.Role = int(role)
 
 	age, err := strconv.ParseInt(vs["age"], 10, 64)
 	if err != nil {

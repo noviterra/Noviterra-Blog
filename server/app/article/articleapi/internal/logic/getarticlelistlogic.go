@@ -99,10 +99,12 @@ func (l *GetArticleListLogic) successGetArticleListResponse(resp *types.GetArtic
 	// 文章列表内容映射
 	for _, a := range rep.Articles {
 		var elem types.ArticleList
+		elem.ArticleID = a.ArticleID
 		elem.Title = a.Title
 		elem.Cover = a.Cover
 		elem.Tags = a.Tags
 		elem.Information = a.Information
+		elem.CreatedAt = a.CreatedAt
 
 		resp.ArticlesList = append(resp.ArticlesList, elem)
 	}

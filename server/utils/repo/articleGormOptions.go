@@ -3,6 +3,7 @@ package repo
 import (
 	"Noviterra/server/app/model"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
@@ -36,6 +37,17 @@ func (ar *ArticleRepository) PublishArticle(ctx context.Context, article *model.
 	})
 }
 
+func articleInfoToList(info model.ArticleInfo) model.ArticleList {
+	return model.ArticleList{
+		ArticleID:   info.ArticleID,
+		Title:       info.Title,
+		Cover:       info.Cover,
+		Information: info.Information,
+		Tags:        info.Tags,
+		CreatedAt:   info.CreatedAt,
+	}
+}
+
 func (ar *ArticleRepository) GetArticleList(ctx context.Context, page, pageSize int) ([]model.ArticleList, int64, error) {
 	// 统计总数
 	var (
@@ -52,7 +64,8 @@ func (ar *ArticleRepository) GetArticleList(ctx context.Context, page, pageSize 
 		return list, total, nil
 	}
 
-	// 分页查询 映射到ArticleList中
+	// 先按实体查询，让 GORM 的 json serializer 正常还原 tags，再映射到列表 DTO
+	var rows []model.ArticleInfo
 	if err := ar.db.WithContext(ctx).
 		Model(&model.ArticleInfo{}).
 		Select("article_id", "title", "cover", "information", "tags", "created_at").
@@ -60,10 +73,26 @@ func (ar *ArticleRepository) GetArticleList(ctx context.Context, page, pageSize 
 		Order("created_at DESC, article_id DESC").
 		Offset((page - 1) * pageSize).
 		Limit(pageSize).
-		Scan(&list).Error; err != nil {
+		Find(&rows).Error; err != nil {
 		return nil, 0, fmt.Errorf("文章查询失败！ERROR：%s", err.Error())
 	}
+	list = make([]model.ArticleList, 0, len(rows))
+	for _, row := range rows {
+		list = append(list, articleInfoToList(row))
+	}
 	return list, total, nil
+}
+
+// GetAllArticleIDs 获取全部未删除文章ID，用于启动时预热布隆过滤器
+func (ar *ArticleRepository) GetAllArticleIDs(ctx context.Context) ([]int64, error) {
+	ids := make([]int64, 0)
+	if err := ar.db.WithContext(ctx).
+		Model(&model.ArticleInfo{}).
+		Where("is_deleted = ?", false).
+		Pluck("article_id", &ids).Error; err != nil {
+		return nil, fmt.Errorf("查询文章ID列表失败！%w", err)
+	}
+	return ids, nil
 }
 
 // GetArticleDetail 获取文章的详细信息
@@ -127,6 +156,10 @@ func (ar *ArticleRepository) DeleteArticle(ctx context.Context, articleID int64,
 
 // UpdateArticleInfo 更新文章（不含封面）
 func (ar *ArticleRepository) UpdateArticleInfo(ctx context.Context, articleID int64, article *model.UpdateArticle) (bool, error) {
+	tags, err := json.Marshal(article.Tags)
+	if err != nil {
+		return false, fmt.Errorf("文章标签序列化失败: %w", err)
+	}
 	result := ar.db.WithContext(ctx).
 		Model(&model.ArticleInfo{}).
 		Where("article_id = ? AND is_deleted = ?", articleID, 0).
@@ -134,7 +167,7 @@ func (ar *ArticleRepository) UpdateArticleInfo(ctx context.Context, articleID in
 			"title":       article.Title,
 			"information": article.Information,
 			"content":     article.Content,
-			"tags":        article.Tags,
+			"tags":        string(tags),
 		})
 	if err := result.Error; err != nil {
 		return false, err
@@ -165,8 +198,8 @@ func (ar *ArticleRepository) UpdateArticleCover(ctx context.Context, articleID i
 func (ar *ArticleRepository) SearchArticle(ctx context.Context, like string, page, pageSize int) ([]model.ArticleList, int64, error) {
 	base := func() *gorm.DB {
 		return ar.db.WithContext(ctx).
-			Where("(title LIKE ? ESCAPE '\\\\' OR information LIKE ? ESCAPE '\\\\' OR tags LIKE ? ESCAPE '\\\\')",
-				like, like, like)
+			Model(&model.ArticleInfo{}).
+			Where("(title LIKE ? OR information LIKE ? OR tags LIKE ?)", like, like, like)
 	}
 
 	var total int64
@@ -175,16 +208,18 @@ func (ar *ArticleRepository) SearchArticle(ctx context.Context, like string, pag
 		return nil, 0, fmt.Errorf("统计查询到的文章篇数失败！%w", err)
 	}
 
-	list := make([]model.ArticleList, 0, pageSize)
+	var rows []model.ArticleInfo
 	if err := base().
-		WithContext(ctx).
-		Model(&model.ArticleInfo{}).
 		Where("is_deleted = ?", 0).
 		Order("article_id DESC").
 		Limit(pageSize).
 		Offset((page - 1) * pageSize).
-		Find(&list).Error; err != nil {
+		Find(&rows).Error; err != nil {
 		return nil, 0, fmt.Errorf("分页查询文章列表失败！%w", err)
+	}
+	list := make([]model.ArticleList, 0, len(rows))
+	for _, row := range rows {
+		list = append(list, articleInfoToList(row))
 	}
 	return list, total, nil
 }
@@ -196,7 +231,7 @@ func (ar *ArticleRepository) GetArchiveList(ctx context.Context) ([]model.Articl
 	var publishList []model.ArticleArchive
 	if err := ar.db.WithContext(ctx).
 		Model(&model.ArticleInfo{}).
-		Select("title, ? AS `option`, UNIX_TIMESTAMP(created_at) AS `created_at`", "publish").
+		Select("title, ? AS `action`, CAST(UNIX_TIMESTAMP(created_at) AS SIGNED) AS `time`", "publish").
 		Where("is_deleted = ?", 0).
 		Scan(&publishList).Error; err != nil {
 		return nil, fmt.Errorf("查询文章发布操作失败！%w", err)
@@ -205,7 +240,7 @@ func (ar *ArticleRepository) GetArchiveList(ctx context.Context) ([]model.Articl
 	var updateList []model.ArticleArchive
 	if err := ar.db.WithContext(ctx).
 		Model(&model.ArticleInfo{}).
-		Select("title, ? AS `option`, UNIX_TIMESTAMP(updated_at)", "update").
+		Select("title, ? AS `action`, CAST(UNIX_TIMESTAMP(updated_at) AS SIGNED) AS `time`", "update").
 		Where("is_deleted = ?", 0).
 		Where("updated_at <> created_at").
 		Scan(&updateList).Error; err != nil {
@@ -262,14 +297,19 @@ func (ar *ArticleRepository) GetUserPublishArticleList(ctx context.Context, page
 			return nil
 		}
 
+		var rows []model.ArticleInfo
 		if err := tx.Model(&model.ArticleInfo{}).
 			Select([]string{"article_id", "title", "cover", "information", "tags", "created_at"}).
 			Scopes(scope).
 			Order("created_at DESC, article_id DESC").
 			Offset((page - 1) * pageSize).
 			Limit(pageSize).
-			Find(&result).Error; err != nil {
+			Find(&rows).Error; err != nil {
 			return fmt.Errorf("用户发布文章查询失败：%w", err)
+		}
+		result = make([]model.ArticleList, 0, len(rows))
+		for _, row := range rows {
+			result = append(result, articleInfoToList(row))
 		}
 		return nil
 	})
@@ -307,13 +347,18 @@ func (ar *ArticleRepository) GetArticleListByArticleID(ctx context.Context,
 			return nil
 		}
 
+		var rows []model.ArticleInfo
 		if err := tx.Scopes(scope).
 			Select([]string{"article_id", "title", "cover", "information", "tags", "created_at"}).
 			Order("created_at DESC, article_id DESC").
 			Offset((page - 1) * pageSize).
 			Limit(pageSize).
-			Find(&result).Error; err != nil {
+			Find(&rows).Error; err != nil {
 			return fmt.Errorf("查询文章列表失败：%w", err)
+		}
+		result = make([]model.ArticleList, 0, len(rows))
+		for _, row := range rows {
+			result = append(result, articleInfoToList(row))
 		}
 
 		return nil

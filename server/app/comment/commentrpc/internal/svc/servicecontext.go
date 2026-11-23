@@ -77,6 +77,9 @@ func initStore(c config.Config, tool toolCollection) storeCollection {
 	}
 
 	commentCache := cache.NewCommentCache(cacheConfig, tool.typeConversion)
+	if err := commentCache.LoadScripts(context.Background()); err != nil {
+		panic(fmt.Errorf("评论缓存Lua脚本加载失败：%w", err))
+	}
 	commentRepository := repo.NewCommentRepository(repositoryConfig, "comment", tool.commonUtils)
 	userRepository := repo.NewUserRepository(repositoryConfig, "user")
 
