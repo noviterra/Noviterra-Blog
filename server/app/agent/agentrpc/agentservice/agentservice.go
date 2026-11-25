@@ -14,16 +14,24 @@ import (
 )
 
 type (
-	ChatRequest        = agentrpc.ChatRequest
-	ChatResponse       = agentrpc.ChatResponse
-	DeployAgentRequest = agentrpc.DeployAgentRequest
-	Response           = agentrpc.Response
+	ChatRequest           = agentrpc.ChatRequest
+	ChatResponse          = agentrpc.ChatResponse
+	ChatStreamEvent       = agentrpc.ChatStreamEvent
+	DeployAgentRequest    = agentrpc.DeployAgentRequest
+	Response              = agentrpc.Response
+	Source                = agentrpc.Source
+	SyncKnowledgeRequest  = agentrpc.SyncKnowledgeRequest
+	SyncKnowledgeResponse = agentrpc.SyncKnowledgeResponse
 
 	AgentService interface {
-		// 对话
+		// 非流式对话 一次性返回 便于后台测试与兜底
 		Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatResponse, error)
+		// 流式对话 API层转SSE
+		ChatStream(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (agentrpc.AgentService_ChatStreamClient, error)
 		// 配置对话助手
 		Deploy(ctx context.Context, in *DeployAgentRequest, opts ...grpc.CallOption) (*Response, error)
+		// 重建知识库索引 切片+向量化
+		SyncKnowledge(ctx context.Context, in *SyncKnowledgeRequest, opts ...grpc.CallOption) (*SyncKnowledgeResponse, error)
 	}
 
 	defaultAgentService struct {
@@ -37,14 +45,26 @@ func NewAgentService(cli zrpc.Client) AgentService {
 	}
 }
 
-// 对话
+// 非流式对话 一次性返回 便于后台测试与兜底
 func (m *defaultAgentService) Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatResponse, error) {
 	client := agentrpc.NewAgentServiceClient(m.cli.Conn())
 	return client.Chat(ctx, in, opts...)
+}
+
+// 流式对话 API层转SSE
+func (m *defaultAgentService) ChatStream(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (agentrpc.AgentService_ChatStreamClient, error) {
+	client := agentrpc.NewAgentServiceClient(m.cli.Conn())
+	return client.ChatStream(ctx, in, opts...)
 }
 
 // 配置对话助手
 func (m *defaultAgentService) Deploy(ctx context.Context, in *DeployAgentRequest, opts ...grpc.CallOption) (*Response, error) {
 	client := agentrpc.NewAgentServiceClient(m.cli.Conn())
 	return client.Deploy(ctx, in, opts...)
+}
+
+// 重建知识库索引 切片+向量化
+func (m *defaultAgentService) SyncKnowledge(ctx context.Context, in *SyncKnowledgeRequest, opts ...grpc.CallOption) (*SyncKnowledgeResponse, error) {
+	client := agentrpc.NewAgentServiceClient(m.cli.Conn())
+	return client.SyncKnowledge(ctx, in, opts...)
 }

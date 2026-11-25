@@ -8,10 +8,22 @@ goctl rpc protoc ./doc/proto/agent.proto --go_out=./server/app/agent/agentrpc/ty
 */
 
 service AgentService {
-  // 对话
+  // 非流式对话 一次性返回 便于后台测试与兜底
   rpc Chat(ChatRequest) returns (ChatResponse);
+  // 流式对话 API层转SSE
+  rpc ChatStream(ChatRequest) returns (stream ChatStreamEvent);
   // 配置对话助手
   rpc Deploy(DeployAgentRequest) returns (Response);
+  // 重建知识库索引 切片+向量化
+  rpc SyncKnowledge(SyncKnowledgeRequest) returns (SyncKnowledgeResponse);
+}
+
+message Source {
+  int64 ArticleID = 1;
+  string Title = 2;
+  string Snippet = 3;
+  double Score = 4;
+  int32 ChunkIndex = 5;
 }
 
 message Response {
@@ -29,11 +41,38 @@ message ChatRequest {
 message ChatResponse {
   string Content = 1;
   Response Resp = 2;
+  int64 SessionID = 3;
+  repeated Source Soureces = 4;
+}
+
+// ChatStreamEvent 流式事件
+message ChatStreamEvent {
+  string Type = 1;
+  int64 SessionID = 2;
+  string MessageID = 3;
+  string Delta = 4;
+  repeated Source Sources = 5;
+  Response Resp = 6;
 }
 
 message DeployAgentRequest {
-  string BaseURL  = 1;
+  string BaseURL = 1;
   string APIKey = 2;
   string Model = 3;
   string Provider = 4;
+  string EmbeddingModel = 5;
+}
+
+message SyncKnowledgeRequest {
+  bool Full = 1;
+}
+
+message SyncKnowledgeResponse {
+  int64 ArticleCount = 1;
+  int64 ChunkCount = 2;
+  int64 EmbeddedCount = 3;
+  int64 SkippedCount = 4;
+  int64 FailedCount = 5;
+  int64 DurationMS = 6;
+  Response Resp = 7;
 }

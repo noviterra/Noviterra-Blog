@@ -19,18 +19,24 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AgentService_Chat_FullMethodName   = "/agentrpc.AgentService/Chat"
-	AgentService_Deploy_FullMethodName = "/agentrpc.AgentService/Deploy"
+	AgentService_Chat_FullMethodName          = "/agentrpc.AgentService/Chat"
+	AgentService_ChatStream_FullMethodName    = "/agentrpc.AgentService/ChatStream"
+	AgentService_Deploy_FullMethodName        = "/agentrpc.AgentService/Deploy"
+	AgentService_SyncKnowledge_FullMethodName = "/agentrpc.AgentService/SyncKnowledge"
 )
 
 // AgentServiceClient is the client API for AgentService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AgentServiceClient interface {
-	// 对话
+	// 非流式对话 一次性返回 便于后台测试与兜底
 	Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatResponse, error)
+	// 流式对话 API层转SSE
+	ChatStream(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ChatStreamEvent], error)
 	// 配置对话助手
 	Deploy(ctx context.Context, in *DeployAgentRequest, opts ...grpc.CallOption) (*Response, error)
+	// 重建知识库索引 切片+向量化
+	SyncKnowledge(ctx context.Context, in *SyncKnowledgeRequest, opts ...grpc.CallOption) (*SyncKnowledgeResponse, error)
 }
 
 type agentServiceClient struct {
@@ -51,6 +57,25 @@ func (c *agentServiceClient) Chat(ctx context.Context, in *ChatRequest, opts ...
 	return out, nil
 }
 
+func (c *agentServiceClient) ChatStream(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ChatStreamEvent], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &AgentService_ServiceDesc.Streams[0], AgentService_ChatStream_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[ChatRequest, ChatStreamEvent]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AgentService_ChatStreamClient = grpc.ServerStreamingClient[ChatStreamEvent]
+
 func (c *agentServiceClient) Deploy(ctx context.Context, in *DeployAgentRequest, opts ...grpc.CallOption) (*Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Response)
@@ -61,14 +86,28 @@ func (c *agentServiceClient) Deploy(ctx context.Context, in *DeployAgentRequest,
 	return out, nil
 }
 
+func (c *agentServiceClient) SyncKnowledge(ctx context.Context, in *SyncKnowledgeRequest, opts ...grpc.CallOption) (*SyncKnowledgeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SyncKnowledgeResponse)
+	err := c.cc.Invoke(ctx, AgentService_SyncKnowledge_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentServiceServer is the server API for AgentService service.
 // All implementations must embed UnimplementedAgentServiceServer
 // for forward compatibility.
 type AgentServiceServer interface {
-	// 对话
+	// 非流式对话 一次性返回 便于后台测试与兜底
 	Chat(context.Context, *ChatRequest) (*ChatResponse, error)
+	// 流式对话 API层转SSE
+	ChatStream(*ChatRequest, grpc.ServerStreamingServer[ChatStreamEvent]) error
 	// 配置对话助手
 	Deploy(context.Context, *DeployAgentRequest) (*Response, error)
+	// 重建知识库索引 切片+向量化
+	SyncKnowledge(context.Context, *SyncKnowledgeRequest) (*SyncKnowledgeResponse, error)
 	mustEmbedUnimplementedAgentServiceServer()
 }
 
@@ -82,8 +121,14 @@ type UnimplementedAgentServiceServer struct{}
 func (UnimplementedAgentServiceServer) Chat(context.Context, *ChatRequest) (*ChatResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Chat not implemented")
 }
+func (UnimplementedAgentServiceServer) ChatStream(*ChatRequest, grpc.ServerStreamingServer[ChatStreamEvent]) error {
+	return status.Error(codes.Unimplemented, "method ChatStream not implemented")
+}
 func (UnimplementedAgentServiceServer) Deploy(context.Context, *DeployAgentRequest) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method Deploy not implemented")
+}
+func (UnimplementedAgentServiceServer) SyncKnowledge(context.Context, *SyncKnowledgeRequest) (*SyncKnowledgeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SyncKnowledge not implemented")
 }
 func (UnimplementedAgentServiceServer) mustEmbedUnimplementedAgentServiceServer() {}
 func (UnimplementedAgentServiceServer) testEmbeddedByValue()                      {}
@@ -124,6 +169,17 @@ func _AgentService_Chat_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AgentService_ChatStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ChatRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AgentServiceServer).ChatStream(m, &grpc.GenericServerStream[ChatRequest, ChatStreamEvent]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AgentService_ChatStreamServer = grpc.ServerStreamingServer[ChatStreamEvent]
+
 func _AgentService_Deploy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeployAgentRequest)
 	if err := dec(in); err != nil {
@@ -138,6 +194,24 @@ func _AgentService_Deploy_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AgentServiceServer).Deploy(ctx, req.(*DeployAgentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AgentService_SyncKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SyncKnowledgeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServiceServer).SyncKnowledge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AgentService_SyncKnowledge_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServiceServer).SyncKnowledge(ctx, req.(*SyncKnowledgeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -157,7 +231,17 @@ var AgentService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Deploy",
 			Handler:    _AgentService_Deploy_Handler,
 		},
+		{
+			MethodName: "SyncKnowledge",
+			Handler:    _AgentService_SyncKnowledge_Handler,
+		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ChatStream",
+			Handler:       _AgentService_ChatStream_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "doc/proto/agent.proto",
 }

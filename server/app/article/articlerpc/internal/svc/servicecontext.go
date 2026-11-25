@@ -90,7 +90,7 @@ func initTool() toolCollection {
 	cd := ctxdata.NewCtxData()
 
 	// 日志写入器
-	logger := zaplogger.NewLogger()
+	logger := zaplogger.NewLogger("articlerpc")
 
 	typeConversion := common.NewTypesConversion()
 

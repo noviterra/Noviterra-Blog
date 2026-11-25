@@ -1,6 +1,7 @@
 package zaplogger
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -20,9 +21,9 @@ func jsonEncoder() zapcore.Encoder {
 }
 
 // 输出配置--文件
-func fileWriterSyncer() zapcore.WriteSyncer {
+func fileWriterSyncer(field string) zapcore.WriteSyncer {
 	lumber := &lumberjack.Logger{
-		Filename:   "D:\\GoProject\\IT\\Noviterra\\log\\log1.log",
+		Filename:   fmt.Sprintf("/log/%s.log", field),
 		MaxSize:    100,
 		MaxAge:     7,
 		MaxBackups: 5,
@@ -63,11 +64,11 @@ func warpSampler(core zapcore.Core) zapcore.Core {
 	return zapcore.NewSampler(core, time.Second, 100, 1)
 }
 
-func newCore() zapcore.Core {
+func newCore(field string) zapcore.Core {
 	level := zapcore.InfoLevel
 
 	// 组装文件、控制台输出的核心
-	fileCore := zapcore.NewCore(jsonEncoder(), warpSyncCore(fileWriterSyncer()), level)
+	fileCore := zapcore.NewCore(jsonEncoder(), warpSyncCore(fileWriterSyncer(field)), level)
 	consoleCore := zapcore.NewCore(beautifulEncoder(), warpSyncCore(consoleWriterSyncer()), level)
 
 	// 日志核心
@@ -77,8 +78,8 @@ func newCore() zapcore.Core {
 }
 
 // 生成日志实例
-func generateLogger() *zap.Logger {
-	core := newCore()
+func generateLogger(field string) *zap.Logger {
+	core := newCore(field)
 	return zap.New(
 		core,
 		zap.WrapCore(warpSampler),

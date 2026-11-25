@@ -6,9 +6,9 @@ type Logger struct {
 	logger *zap.Logger
 }
 
-func NewLogger() *Logger {
+func NewLogger(field string) *Logger {
 	return &Logger{
-		logger: generateLogger(),
+		logger: generateLogger(field),
 	}
 }
 

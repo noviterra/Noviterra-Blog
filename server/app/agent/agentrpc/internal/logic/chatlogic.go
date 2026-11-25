@@ -25,7 +25,6 @@ func NewChatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ChatLogic {
 
 // 对话
 func (l *ChatLogic) Chat(in *agentrpc.ChatRequest) (*agentrpc.ChatResponse, error) {
-	// todo: add your logic here and delete this line
 
 	return &agentrpc.ChatResponse{}, nil
 }

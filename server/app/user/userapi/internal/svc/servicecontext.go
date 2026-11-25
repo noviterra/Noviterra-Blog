@@ -60,7 +60,7 @@ type toolCollection struct {
 
 func initTool() toolCollection {
 	cd := ctxdata.NewCtxData()
-	logger := zaplogger.NewLogger()
+	logger := zaplogger.NewLogger("userapi")
 
 	return toolCollection{
 		ctxdata: cd,

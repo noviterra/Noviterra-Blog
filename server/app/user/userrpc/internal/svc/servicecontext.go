@@ -77,7 +77,7 @@ type toolCollection struct {
 func initTool(c config.Config) toolCollection {
 	typeConversion := common.NewTypesConversion()
 	// zap日志
-	logger := zaplogger.NewLogger()
+	logger := zaplogger.NewLogger("userrpc")
 	// 邮件发送器
 	emailConfig := email.EmailConfig{
 		Host:     c.Smtp.Host,

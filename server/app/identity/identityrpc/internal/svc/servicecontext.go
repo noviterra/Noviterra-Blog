@@ -74,7 +74,7 @@ func initTool(c config.Config) toolCollection {
 	// 校验器
 	identityValidate := validate.NewIdentityValidate()
 	// 日志
-	logger := zaplogger.NewLogger()
+	logger := zaplogger.NewLogger("identityrpc")
 
 	return toolCollection{
 		crypt:            crypt,

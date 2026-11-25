@@ -49,7 +49,7 @@ func initTool() toolCollection {
 	cd := ctxdata.NewCtxData()
 	siteValidate := validate.NewSiteValidate()
 	siteResponse := response.NewSiteResponse()
-	logger := zaplogger.NewLogger()
+	logger := zaplogger.NewLogger("siterpc")
 
 	return toolCollection{
 		ctxdata:      cd,

@@ -21,6 +21,82 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Source struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ArticleID     int64                  `protobuf:"varint,1,opt,name=ArticleID,proto3" json:"ArticleID,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=Title,proto3" json:"Title,omitempty"`
+	Snippet       string                 `protobuf:"bytes,3,opt,name=Snippet,proto3" json:"Snippet,omitempty"`
+	Score         float64                `protobuf:"fixed64,4,opt,name=Score,proto3" json:"Score,omitempty"`
+	ChunkIndex    int32                  `protobuf:"varint,5,opt,name=ChunkIndex,proto3" json:"ChunkIndex,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Source) Reset() {
+	*x = Source{}
+	mi := &file_doc_proto_agent_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Source) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Source) ProtoMessage() {}
+
+func (x *Source) ProtoReflect() protoreflect.Message {
+	mi := &file_doc_proto_agent_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Source.ProtoReflect.Descriptor instead.
+func (*Source) Descriptor() ([]byte, []int) {
+	return file_doc_proto_agent_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Source) GetArticleID() int64 {
+	if x != nil {
+		return x.ArticleID
+	}
+	return 0
+}
+
+func (x *Source) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *Source) GetSnippet() string {
+	if x != nil {
+		return x.Snippet
+	}
+	return ""
+}
+
+func (x *Source) GetScore() float64 {
+	if x != nil {
+		return x.Score
+	}
+	return 0
+}
+
+func (x *Source) GetChunkIndex() int32 {
+	if x != nil {
+		return x.ChunkIndex
+	}
+	return 0
+}
+
 type Response struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        int32                  `protobuf:"varint,1,opt,name=Status,proto3" json:"Status,omitempty"`
@@ -32,7 +108,7 @@ type Response struct {
 
 func (x *Response) Reset() {
 	*x = Response{}
-	mi := &file_doc_proto_agent_proto_msgTypes[0]
+	mi := &file_doc_proto_agent_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +120,7 @@ func (x *Response) String() string {
 func (*Response) ProtoMessage() {}
 
 func (x *Response) ProtoReflect() protoreflect.Message {
-	mi := &file_doc_proto_agent_proto_msgTypes[0]
+	mi := &file_doc_proto_agent_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +133,7 @@ func (x *Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Response.ProtoReflect.Descriptor instead.
 func (*Response) Descriptor() ([]byte, []int) {
-	return file_doc_proto_agent_proto_rawDescGZIP(), []int{0}
+	return file_doc_proto_agent_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Response) GetStatus() int32 {
@@ -92,7 +168,7 @@ type ChatRequest struct {
 
 func (x *ChatRequest) Reset() {
 	*x = ChatRequest{}
-	mi := &file_doc_proto_agent_proto_msgTypes[1]
+	mi := &file_doc_proto_agent_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -104,7 +180,7 @@ func (x *ChatRequest) String() string {
 func (*ChatRequest) ProtoMessage() {}
 
 func (x *ChatRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_doc_proto_agent_proto_msgTypes[1]
+	mi := &file_doc_proto_agent_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -117,7 +193,7 @@ func (x *ChatRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatRequest.ProtoReflect.Descriptor instead.
 func (*ChatRequest) Descriptor() ([]byte, []int) {
-	return file_doc_proto_agent_proto_rawDescGZIP(), []int{1}
+	return file_doc_proto_agent_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ChatRequest) GetSessionID() int64 {
@@ -145,13 +221,15 @@ type ChatResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Content       string                 `protobuf:"bytes,1,opt,name=Content,proto3" json:"Content,omitempty"`
 	Resp          *Response              `protobuf:"bytes,2,opt,name=Resp,proto3" json:"Resp,omitempty"`
+	SessionID     int64                  `protobuf:"varint,3,opt,name=SessionID,proto3" json:"SessionID,omitempty"`
+	Soureces      []*Source              `protobuf:"bytes,4,rep,name=Soureces,proto3" json:"Soureces,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ChatResponse) Reset() {
 	*x = ChatResponse{}
-	mi := &file_doc_proto_agent_proto_msgTypes[2]
+	mi := &file_doc_proto_agent_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -163,7 +241,7 @@ func (x *ChatResponse) String() string {
 func (*ChatResponse) ProtoMessage() {}
 
 func (x *ChatResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_doc_proto_agent_proto_msgTypes[2]
+	mi := &file_doc_proto_agent_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -176,7 +254,7 @@ func (x *ChatResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatResponse.ProtoReflect.Descriptor instead.
 func (*ChatResponse) Descriptor() ([]byte, []int) {
-	return file_doc_proto_agent_proto_rawDescGZIP(), []int{2}
+	return file_doc_proto_agent_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ChatResponse) GetContent() string {
@@ -193,19 +271,119 @@ func (x *ChatResponse) GetResp() *Response {
 	return nil
 }
 
-type DeployAgentRequest struct {
+func (x *ChatResponse) GetSessionID() int64 {
+	if x != nil {
+		return x.SessionID
+	}
+	return 0
+}
+
+func (x *ChatResponse) GetSoureces() []*Source {
+	if x != nil {
+		return x.Soureces
+	}
+	return nil
+}
+
+// ChatStreamEvent 流式事件
+type ChatStreamEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	BaseURL       string                 `protobuf:"bytes,1,opt,name=BaseURL,proto3" json:"BaseURL,omitempty"`
-	APIKey        string                 `protobuf:"bytes,2,opt,name=APIKey,proto3" json:"APIKey,omitempty"`
-	Model         string                 `protobuf:"bytes,3,opt,name=Model,proto3" json:"Model,omitempty"`
-	Provider      string                 `protobuf:"bytes,4,opt,name=Provider,proto3" json:"Provider,omitempty"`
+	Type          string                 `protobuf:"bytes,1,opt,name=Type,proto3" json:"Type,omitempty"`
+	SessionID     int64                  `protobuf:"varint,2,opt,name=SessionID,proto3" json:"SessionID,omitempty"`
+	MessageID     string                 `protobuf:"bytes,3,opt,name=MessageID,proto3" json:"MessageID,omitempty"`
+	Delta         string                 `protobuf:"bytes,4,opt,name=Delta,proto3" json:"Delta,omitempty"`
+	Sources       []*Source              `protobuf:"bytes,5,rep,name=Sources,proto3" json:"Sources,omitempty"`
+	Resp          *Response              `protobuf:"bytes,6,opt,name=Resp,proto3" json:"Resp,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
+func (x *ChatStreamEvent) Reset() {
+	*x = ChatStreamEvent{}
+	mi := &file_doc_proto_agent_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChatStreamEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChatStreamEvent) ProtoMessage() {}
+
+func (x *ChatStreamEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_doc_proto_agent_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChatStreamEvent.ProtoReflect.Descriptor instead.
+func (*ChatStreamEvent) Descriptor() ([]byte, []int) {
+	return file_doc_proto_agent_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ChatStreamEvent) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *ChatStreamEvent) GetSessionID() int64 {
+	if x != nil {
+		return x.SessionID
+	}
+	return 0
+}
+
+func (x *ChatStreamEvent) GetMessageID() string {
+	if x != nil {
+		return x.MessageID
+	}
+	return ""
+}
+
+func (x *ChatStreamEvent) GetDelta() string {
+	if x != nil {
+		return x.Delta
+	}
+	return ""
+}
+
+func (x *ChatStreamEvent) GetSources() []*Source {
+	if x != nil {
+		return x.Sources
+	}
+	return nil
+}
+
+func (x *ChatStreamEvent) GetResp() *Response {
+	if x != nil {
+		return x.Resp
+	}
+	return nil
+}
+
+type DeployAgentRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	BaseURL        string                 `protobuf:"bytes,1,opt,name=BaseURL,proto3" json:"BaseURL,omitempty"`
+	APIKey         string                 `protobuf:"bytes,2,opt,name=APIKey,proto3" json:"APIKey,omitempty"`
+	Model          string                 `protobuf:"bytes,3,opt,name=Model,proto3" json:"Model,omitempty"`
+	Provider       string                 `protobuf:"bytes,4,opt,name=Provider,proto3" json:"Provider,omitempty"`
+	EmbeddingModel string                 `protobuf:"bytes,5,opt,name=EmbeddingModel,proto3" json:"EmbeddingModel,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
 func (x *DeployAgentRequest) Reset() {
 	*x = DeployAgentRequest{}
-	mi := &file_doc_proto_agent_proto_msgTypes[3]
+	mi := &file_doc_proto_agent_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -217,7 +395,7 @@ func (x *DeployAgentRequest) String() string {
 func (*DeployAgentRequest) ProtoMessage() {}
 
 func (x *DeployAgentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_doc_proto_agent_proto_msgTypes[3]
+	mi := &file_doc_proto_agent_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -230,7 +408,7 @@ func (x *DeployAgentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeployAgentRequest.ProtoReflect.Descriptor instead.
 func (*DeployAgentRequest) Descriptor() ([]byte, []int) {
-	return file_doc_proto_agent_proto_rawDescGZIP(), []int{3}
+	return file_doc_proto_agent_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *DeployAgentRequest) GetBaseURL() string {
@@ -261,11 +439,162 @@ func (x *DeployAgentRequest) GetProvider() string {
 	return ""
 }
 
+func (x *DeployAgentRequest) GetEmbeddingModel() string {
+	if x != nil {
+		return x.EmbeddingModel
+	}
+	return ""
+}
+
+type SyncKnowledgeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Full          bool                   `protobuf:"varint,1,opt,name=Full,proto3" json:"Full,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SyncKnowledgeRequest) Reset() {
+	*x = SyncKnowledgeRequest{}
+	mi := &file_doc_proto_agent_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SyncKnowledgeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SyncKnowledgeRequest) ProtoMessage() {}
+
+func (x *SyncKnowledgeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_doc_proto_agent_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SyncKnowledgeRequest.ProtoReflect.Descriptor instead.
+func (*SyncKnowledgeRequest) Descriptor() ([]byte, []int) {
+	return file_doc_proto_agent_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *SyncKnowledgeRequest) GetFull() bool {
+	if x != nil {
+		return x.Full
+	}
+	return false
+}
+
+type SyncKnowledgeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ArticleCount  int64                  `protobuf:"varint,1,opt,name=ArticleCount,proto3" json:"ArticleCount,omitempty"`
+	ChunkCount    int64                  `protobuf:"varint,2,opt,name=ChunkCount,proto3" json:"ChunkCount,omitempty"`
+	EmbeddedCount int64                  `protobuf:"varint,3,opt,name=EmbeddedCount,proto3" json:"EmbeddedCount,omitempty"`
+	SkippedCount  int64                  `protobuf:"varint,4,opt,name=SkippedCount,proto3" json:"SkippedCount,omitempty"`
+	FailedCount   int64                  `protobuf:"varint,5,opt,name=FailedCount,proto3" json:"FailedCount,omitempty"`
+	DurationMS    int64                  `protobuf:"varint,6,opt,name=DurationMS,proto3" json:"DurationMS,omitempty"`
+	Resp          *Response              `protobuf:"bytes,7,opt,name=Resp,proto3" json:"Resp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SyncKnowledgeResponse) Reset() {
+	*x = SyncKnowledgeResponse{}
+	mi := &file_doc_proto_agent_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SyncKnowledgeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SyncKnowledgeResponse) ProtoMessage() {}
+
+func (x *SyncKnowledgeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_doc_proto_agent_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SyncKnowledgeResponse.ProtoReflect.Descriptor instead.
+func (*SyncKnowledgeResponse) Descriptor() ([]byte, []int) {
+	return file_doc_proto_agent_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SyncKnowledgeResponse) GetArticleCount() int64 {
+	if x != nil {
+		return x.ArticleCount
+	}
+	return 0
+}
+
+func (x *SyncKnowledgeResponse) GetChunkCount() int64 {
+	if x != nil {
+		return x.ChunkCount
+	}
+	return 0
+}
+
+func (x *SyncKnowledgeResponse) GetEmbeddedCount() int64 {
+	if x != nil {
+		return x.EmbeddedCount
+	}
+	return 0
+}
+
+func (x *SyncKnowledgeResponse) GetSkippedCount() int64 {
+	if x != nil {
+		return x.SkippedCount
+	}
+	return 0
+}
+
+func (x *SyncKnowledgeResponse) GetFailedCount() int64 {
+	if x != nil {
+		return x.FailedCount
+	}
+	return 0
+}
+
+func (x *SyncKnowledgeResponse) GetDurationMS() int64 {
+	if x != nil {
+		return x.DurationMS
+	}
+	return 0
+}
+
+func (x *SyncKnowledgeResponse) GetResp() *Response {
+	if x != nil {
+		return x.Resp
+	}
+	return nil
+}
+
 var File_doc_proto_agent_proto protoreflect.FileDescriptor
 
 const file_doc_proto_agent_proto_rawDesc = "" +
 	"\n" +
-	"\x15doc/proto/agent.proto\x12\bagentrpc\"P\n" +
+	"\x15doc/proto/agent.proto\x12\bagentrpc\"\x8c\x01\n" +
+	"\x06Source\x12\x1c\n" +
+	"\tArticleID\x18\x01 \x01(\x03R\tArticleID\x12\x14\n" +
+	"\x05Title\x18\x02 \x01(\tR\x05Title\x12\x18\n" +
+	"\aSnippet\x18\x03 \x01(\tR\aSnippet\x12\x14\n" +
+	"\x05Score\x18\x04 \x01(\x01R\x05Score\x12\x1e\n" +
+	"\n" +
+	"ChunkIndex\x18\x05 \x01(\x05R\n" +
+	"ChunkIndex\"P\n" +
 	"\bResponse\x12\x16\n" +
 	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x12\n" +
 	"\x04Code\x18\x02 \x01(\x03R\x04Code\x12\x18\n" +
@@ -273,18 +602,45 @@ const file_doc_proto_agent_proto_rawDesc = "" +
 	"\vChatRequest\x12\x1c\n" +
 	"\tSessionID\x18\x01 \x01(\x03R\tSessionID\x12\x14\n" +
 	"\x05Query\x18\x02 \x01(\tR\x05Query\x12\x12\n" +
-	"\x04User\x18\x03 \x01(\tR\x04User\"P\n" +
+	"\x04User\x18\x03 \x01(\tR\x04User\"\x9c\x01\n" +
 	"\fChatResponse\x12\x18\n" +
 	"\aContent\x18\x01 \x01(\tR\aContent\x12&\n" +
-	"\x04Resp\x18\x02 \x01(\v2\x12.agentrpc.ResponseR\x04Resp\"x\n" +
+	"\x04Resp\x18\x02 \x01(\v2\x12.agentrpc.ResponseR\x04Resp\x12\x1c\n" +
+	"\tSessionID\x18\x03 \x01(\x03R\tSessionID\x12,\n" +
+	"\bSoureces\x18\x04 \x03(\v2\x10.agentrpc.SourceR\bSoureces\"\xcb\x01\n" +
+	"\x0fChatStreamEvent\x12\x12\n" +
+	"\x04Type\x18\x01 \x01(\tR\x04Type\x12\x1c\n" +
+	"\tSessionID\x18\x02 \x01(\x03R\tSessionID\x12\x1c\n" +
+	"\tMessageID\x18\x03 \x01(\tR\tMessageID\x12\x14\n" +
+	"\x05Delta\x18\x04 \x01(\tR\x05Delta\x12*\n" +
+	"\aSources\x18\x05 \x03(\v2\x10.agentrpc.SourceR\aSources\x12&\n" +
+	"\x04Resp\x18\x06 \x01(\v2\x12.agentrpc.ResponseR\x04Resp\"\xa0\x01\n" +
 	"\x12DeployAgentRequest\x12\x18\n" +
 	"\aBaseURL\x18\x01 \x01(\tR\aBaseURL\x12\x16\n" +
 	"\x06APIKey\x18\x02 \x01(\tR\x06APIKey\x12\x14\n" +
 	"\x05Model\x18\x03 \x01(\tR\x05Model\x12\x1a\n" +
-	"\bProvider\x18\x04 \x01(\tR\bProvider2\x81\x01\n" +
+	"\bProvider\x18\x04 \x01(\tR\bProvider\x12&\n" +
+	"\x0eEmbeddingModel\x18\x05 \x01(\tR\x0eEmbeddingModel\"*\n" +
+	"\x14SyncKnowledgeRequest\x12\x12\n" +
+	"\x04Full\x18\x01 \x01(\bR\x04Full\"\x8f\x02\n" +
+	"\x15SyncKnowledgeResponse\x12\"\n" +
+	"\fArticleCount\x18\x01 \x01(\x03R\fArticleCount\x12\x1e\n" +
+	"\n" +
+	"ChunkCount\x18\x02 \x01(\x03R\n" +
+	"ChunkCount\x12$\n" +
+	"\rEmbeddedCount\x18\x03 \x01(\x03R\rEmbeddedCount\x12\"\n" +
+	"\fSkippedCount\x18\x04 \x01(\x03R\fSkippedCount\x12 \n" +
+	"\vFailedCount\x18\x05 \x01(\x03R\vFailedCount\x12\x1e\n" +
+	"\n" +
+	"DurationMS\x18\x06 \x01(\x03R\n" +
+	"DurationMS\x12&\n" +
+	"\x04Resp\x18\a \x01(\v2\x12.agentrpc.ResponseR\x04Resp2\x95\x02\n" +
 	"\fAgentService\x125\n" +
-	"\x04Chat\x12\x15.agentrpc.ChatRequest\x1a\x16.agentrpc.ChatResponse\x12:\n" +
-	"\x06Deploy\x12\x1c.agentrpc.DeployAgentRequest\x1a\x12.agentrpc.ResponseB\vZ\t/agentrpcb\x06proto3"
+	"\x04Chat\x12\x15.agentrpc.ChatRequest\x1a\x16.agentrpc.ChatResponse\x12@\n" +
+	"\n" +
+	"ChatStream\x12\x15.agentrpc.ChatRequest\x1a\x19.agentrpc.ChatStreamEvent0\x01\x12:\n" +
+	"\x06Deploy\x12\x1c.agentrpc.DeployAgentRequest\x1a\x12.agentrpc.Response\x12P\n" +
+	"\rSyncKnowledge\x12\x1e.agentrpc.SyncKnowledgeRequest\x1a\x1f.agentrpc.SyncKnowledgeResponseB\vZ\t/agentrpcb\x06proto3"
 
 var (
 	file_doc_proto_agent_proto_rawDescOnce sync.Once
@@ -298,24 +654,36 @@ func file_doc_proto_agent_proto_rawDescGZIP() []byte {
 	return file_doc_proto_agent_proto_rawDescData
 }
 
-var file_doc_proto_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_doc_proto_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_doc_proto_agent_proto_goTypes = []any{
-	(*Response)(nil),           // 0: agentrpc.Response
-	(*ChatRequest)(nil),        // 1: agentrpc.ChatRequest
-	(*ChatResponse)(nil),       // 2: agentrpc.ChatResponse
-	(*DeployAgentRequest)(nil), // 3: agentrpc.DeployAgentRequest
+	(*Source)(nil),                // 0: agentrpc.Source
+	(*Response)(nil),              // 1: agentrpc.Response
+	(*ChatRequest)(nil),           // 2: agentrpc.ChatRequest
+	(*ChatResponse)(nil),          // 3: agentrpc.ChatResponse
+	(*ChatStreamEvent)(nil),       // 4: agentrpc.ChatStreamEvent
+	(*DeployAgentRequest)(nil),    // 5: agentrpc.DeployAgentRequest
+	(*SyncKnowledgeRequest)(nil),  // 6: agentrpc.SyncKnowledgeRequest
+	(*SyncKnowledgeResponse)(nil), // 7: agentrpc.SyncKnowledgeResponse
 }
 var file_doc_proto_agent_proto_depIdxs = []int32{
-	0, // 0: agentrpc.ChatResponse.Resp:type_name -> agentrpc.Response
-	1, // 1: agentrpc.AgentService.Chat:input_type -> agentrpc.ChatRequest
-	3, // 2: agentrpc.AgentService.Deploy:input_type -> agentrpc.DeployAgentRequest
-	2, // 3: agentrpc.AgentService.Chat:output_type -> agentrpc.ChatResponse
-	0, // 4: agentrpc.AgentService.Deploy:output_type -> agentrpc.Response
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	1, // 0: agentrpc.ChatResponse.Resp:type_name -> agentrpc.Response
+	0, // 1: agentrpc.ChatResponse.Soureces:type_name -> agentrpc.Source
+	0, // 2: agentrpc.ChatStreamEvent.Sources:type_name -> agentrpc.Source
+	1, // 3: agentrpc.ChatStreamEvent.Resp:type_name -> agentrpc.Response
+	1, // 4: agentrpc.SyncKnowledgeResponse.Resp:type_name -> agentrpc.Response
+	2, // 5: agentrpc.AgentService.Chat:input_type -> agentrpc.ChatRequest
+	2, // 6: agentrpc.AgentService.ChatStream:input_type -> agentrpc.ChatRequest
+	5, // 7: agentrpc.AgentService.Deploy:input_type -> agentrpc.DeployAgentRequest
+	6, // 8: agentrpc.AgentService.SyncKnowledge:input_type -> agentrpc.SyncKnowledgeRequest
+	3, // 9: agentrpc.AgentService.Chat:output_type -> agentrpc.ChatResponse
+	4, // 10: agentrpc.AgentService.ChatStream:output_type -> agentrpc.ChatStreamEvent
+	1, // 11: agentrpc.AgentService.Deploy:output_type -> agentrpc.Response
+	7, // 12: agentrpc.AgentService.SyncKnowledge:output_type -> agentrpc.SyncKnowledgeResponse
+	9, // [9:13] is the sub-list for method output_type
+	5, // [5:9] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_doc_proto_agent_proto_init() }
@@ -329,7 +697,7 @@ func file_doc_proto_agent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_doc_proto_agent_proto_rawDesc), len(file_doc_proto_agent_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

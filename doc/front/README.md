@@ -2,6 +2,24 @@
 
 基于 Nuxt 3、Vue 3 与 TypeScript 的 Noviterra 前端。界面按访问角色和操作范围划分：访客使用公开站点，登录用户使用账号空间，管理员与超级管理员使用管理后台。
 
+## 视觉与交互
+
+界面采用编辑型博客方向：大图首屏、米白纸面、森林墨色与单一青色强调，结构接近 Linear 的克制层级，阅读区接近 Apple Notes 的安静纸面。视觉参数固定为 `DESIGN_VARIANCE: 6`、`MOTION_INTENSITY: 4`、`VISUAL_DENSITY: 3`，优先保证内容密度、可读性与低干扰动效。
+
+- 首页以全幅站点照片作为情绪入口，正文区用圆角纸面承接文章流；没有数据时不渲染空公告或空标签模块。
+- 文章广场保留列表与卡片两种视图；卡片在封面左上角显示日期章，悬停时显示阅读入口。
+- 阅读页保持单栏正文、右侧目录与低对比度元信息，代码块、提示块、表格和图片仍由统一 `.prose` 样式接管。
+- 友链页使用深绿青色本站信息卡、GitHub 与邮箱卡片；登录后才显示申请表单。
+- 所有页面共用同一套语义令牌，浅色与深色主题只切换令牌，不在组件内散落颜色值。
+
+## 背景与主题
+
+- 右上角图片按钮提供 `林间`、`纸面`、`雾蓝` 三种背景；默认使用 `林间`，即项目根目录 `static/station/default.jpg`。
+- 背景选择保存在 `localStorage` 的 `noviterra.background`，主题保存在 `noviterra.theme`。
+- 首屏内联脚本在绘制前恢复主题与背景，避免刷新闪烁；插件在 `app:mounted` 后同步 Vue 状态，保证 SSR 首次渲染与客户端一致。
+- 背景状态写入 `html[data-bg]`，主题写入 `html[data-theme]`；样式全部由 `assets/css/backgrounds.css` 与 `assets/css/tokens.css` 驱动。
+- `/station/default.jpg` 由 `server/routes/station/[...path].get.ts` 读取，默认目录为项目根目录的 `static/station`，可用 `NOVITERRA_STATION_DIR` 覆盖。
+
 ## 启动
 
 环境要求：Node.js 20+，后端服务已启动。
@@ -38,6 +56,15 @@ npm run build
 npm run preview
 ```
 
+如果开发服务器正在运行，Nuxt 会阻止第二次构建。可在当前终端临时绕过锁：
+
+```powershell
+$env:NUXT_IGNORE_LOCK="1"
+npm run build
+```
+
+构建会重新生成 `.nuxt` 并触发开发服务器重启，这是 Nuxt 的正常行为。
+
 ## 角色与页面
 
 ### 公开站点
@@ -49,7 +76,7 @@ npm run preview
 | `/articles/:id` | 文章正文、目录、封面、点赞、收藏、评论 | article、comment |
 | `/archive` | 按年份归档；用近期文章补全可跳转的文章 ID | article |
 | `/guestbook` | 站点留言与回复 | comment |
-| `/friends` | 登录后提交友链申请 | site |
+| `/friends` | 本站信息、联系方式；登录后提交友链申请 | site |
 | `/assistant` | 站点助手对话，本地保存最近消息 | agent |
 | `/about` | 站点、服务与技术栈说明 | 本地配置 |
 | `/search` | 服务端文章搜索 | article |
@@ -93,12 +120,28 @@ front/
 │  ├─ editor/             # RichEditor、ArticleEditor、CoverPicker
 │  ├─ admin/              # 后台侧栏与顶栏
 │  └─ ui/                 # 按钮、图标、弹窗、封面、空状态、Toast
-├─ composables/           # API、鉴权、会话、各服务数据访问
+├─ composables/           # API、鉴权、会话、外观、各服务数据访问
 ├─ utils/                 # 类型、常量、格式化、封面、富文本渲染
 ├─ assets/css/            # 设计令牌与模块化样式
 ├─ server/routes/static/  # 文章封面文件读取
+├─ server/routes/station/ # 站点背景文件读取
 └─ public/                # favicon 与默认头像
 ```
+
+### CSS 模块
+
+| 文件 | 职责 |
+| --- | --- |
+| `tokens.css` | 浅色/深色语义令牌、字体、圆角、阴影与动效曲线 |
+| `base.css` | 全局重置、滚动条、页面氛围层与应用外壳 |
+| `backgrounds.css` | 三种背景、首屏叠色与深色背景变体 |
+| `layout.css` | 页头、页脚、页面宽度与通用页面标题 |
+| `components.css` | 按钮、表单、下拉、标签、Toast、主题切换等通用组件 |
+| `editorial.css` | 首页、文章广场、阅读页、归档、留言、关于、友链的编辑型布局 |
+| `prose.css` | 文章正文、代码块、引用、表格与图片排版 |
+| `editor.css` | 富文本编辑器工具栏、斜杠菜单与写作界面 |
+| `pages.css` | 登录、注册、账号页等页面补充样式 |
+| `admin.css` | 后台侧栏、数据面板与表格样式 |
 
 ## API 约定
 
@@ -162,7 +205,7 @@ front/
 - 文章列表与搜索响应必须映射 `article_id` 与 `created_at`，否则前端无法跳转或显示日期。
 - 文章更新接口的 `tags` 是字符串数组；后端 repository 使用 map 更新时必须显式写入 JSON 文本，不能直接传 `[]string` 给 MySQL JSON 列。
 - 评论顶层路由当前带拼写错误：`/novblog/comment/commet/top`；前端保留正确路径 fallback。
-- 站点留言使用后端约定的根地址 `3489673482`；顶层评论发送 `parent_id: 0`，API 校验应为 `gte=0`。
+- 站点留言使用后端约定的根地址 `3489673482`；顶层评论发送 `parent_id: 0`，API 校验应为 `gte=0`。`/station/*` 是前端本地静态路由，不经过微服务代理。
 - 角色值：`0` 普通用户，`1` 管理员，`2` 超级管理员。后台入口要求 `Role >= 1`；公告发布要求 `Role >= 2`。
 
 ## 已知限制
@@ -171,7 +214,7 @@ front/
 - 归档接口不返回文章 ID；前端仅能用近期文章列表按标题补全部分跳转，旧文章可能只能显示标题。
 - 用户批量接口不返回总数与封禁状态；后台同时提供封禁、解封操作。
 - 后端没有“当前文章是否已点赞/收藏”的查询接口；文章页按钮状态只在当前页面会话内维护。
-- 后端没有友链列表接口；`/friends` 目前只提供申请表单。
+- 后端没有友链列表接口；`/friends` 展示本站信息与申请表单，不伪造已收录友链列表。
 
 ## 验证命令
 

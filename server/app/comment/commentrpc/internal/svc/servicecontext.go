@@ -128,7 +128,7 @@ func initTool() toolCollection {
 	commentValidate := validate.NewCommentValidate(articleValidate, articleValidate)
 	typeConversion := common.NewTypesConversion()
 	dataDeduplication := common.NewDataDeduplication()
-	logger := zaplogger.NewLogger()
+	logger := zaplogger.NewLogger("commentrpc")
 	sf, err := snowflake.NewSnowFlake(1)
 	if err != nil {
 		panic(fmt.Errorf("雪花ID生成器初始化失败！%w", err))

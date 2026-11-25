@@ -9,6 +9,12 @@ taskkill /f /im articleapi.exe >nul 2>&1
 taskkill /f /im articlerpc.exe >nul 2>&1
 taskkill /f /im identityapi.exe >nul 2>&1
 taskkill /f /im identityrpc.exe >nul 2>&1
+taskkill /f /im commentapi.exe >nul 2>&1
+taskkill /f /im commentrpc.exe >nul 2>&1
+taskkill /f /im noticeapi.exe  >nul 2>&1
+taskkill /f /im noticerpc.exe  >nul 2>&1
+taskkill /f /im siteapi.exe    >nul 2>&1
+taskkill /f /im siterpc.exe    >nul 2>&1
 
 echo [2/3] Close Old CMD Windows...
 taskkill /f /fi "WINDOWTITLE eq userapi"    >nul 2>&1
@@ -17,6 +23,12 @@ taskkill /f /fi "WINDOWTITLE eq articleapi" >nul 2>&1
 taskkill /f /fi "WINDOWTITLE eq articlerpc" >nul 2>&1
 taskkill /f /fi "WINDOWTITLE eq identityapi" >nul 2>&1
 taskkill /f /fi "WINDOWTITLE eq identityrpc" >nul 2>&1
+taskkill /f /fi "WINDOWTITLE eq commentapi"  >nul 2>&1
+taskkill /f /fi "WINDOWTITLE eq commentrpc"  >nul 2>&1
+taskkill /f /fi "WINDOWTITLE eq noticeapi"   >nul 2>&1
+taskkill /f /fi "WINDOWTITLE eq noticerpc"   >nul 2>&1
+taskkill /f /fi "WINDOWTITLE eq siteapi"     >nul 2>&1
+taskkill /f /fi "WINDOWTITLE eq siterpc"     >nul 2>&1
 
 rem 等 1 秒，确保 exe 文件锁和端口释放，否则 go build 覆盖 exe 会 Access is denied
 timeout /t 1 /nobreak >nul
@@ -28,6 +40,12 @@ go build -o bin\articleapi.exe ./server/app/article/articleapi || goto :fail
 go build -o bin\articlerpc.exe ./server/app/article/articlerpc || goto :fail
 go build -o bin\identityapi.exe ./server/app/identity/identityapi || goto :fail
 go build -o bin\identityrpc.exe ./server/app/identity/identityrpc || goto :fail
+go build -o bin\commentapi.exe  ./server/app/comment/commentapi  || goto :fail
+go build -o bin\commentrpc.exe  ./server/app/comment/commentrpc  || goto :fail
+go build -o bin\noticeapi.exe   ./server/app/notice/noticeapi    || goto :fail
+go build -o bin\noticerpc.exe   ./server/app/notice/noticerpc    || goto :fail
+go build -o bin\siteapi.exe     ./server/app/site/siteapi        || goto :fail
+go build -o bin\siterpc.exe     ./server/app/site/siterpc        || goto :fail
 
 echo start...
 start "userapi"    cmd /k bin\userapi.exe
@@ -36,6 +54,12 @@ start "articleapi" cmd /k bin\articleapi.exe
 start "articlerpc" cmd /k bin\articlerpc.exe
 start "identityapi" cmd /k bin\identityapi.exe
 start "identityrpc" cmd /k bin\identityrpc.exe
+start "commentapi"  cmd /k bin\commentapi.exe
+start "commentrpc"  cmd /k bin\commentrpc.exe
+start "noticeapi"   cmd /k bin\noticeapi.exe
+start "noticerpc"   cmd /k bin\noticerpc.exe
+start "siteapi"     cmd /k bin\siteapi.exe
+start "siterpc"     cmd /k bin\siterpc.exe
 goto :eof
 
 :fail

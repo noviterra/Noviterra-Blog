@@ -23,14 +23,26 @@ func NewAgentServiceServer(svcCtx *svc.ServiceContext) *AgentServiceServer {
 	}
 }
 
-// 对话
+// 非流式对话 一次性返回 便于后台测试与兜底
 func (s *AgentServiceServer) Chat(ctx context.Context, in *agentrpc.ChatRequest) (*agentrpc.ChatResponse, error) {
 	l := logic.NewChatLogic(ctx, s.svcCtx)
 	return l.Chat(in)
+}
+
+// 流式对话 API层转SSE
+func (s *AgentServiceServer) ChatStream(in *agentrpc.ChatRequest, stream agentrpc.AgentService_ChatStreamServer) error {
+	l := logic.NewChatStreamLogic(stream.Context(), s.svcCtx)
+	return l.ChatStream(in, stream)
 }
 
 // 配置对话助手
 func (s *AgentServiceServer) Deploy(ctx context.Context, in *agentrpc.DeployAgentRequest) (*agentrpc.Response, error) {
 	l := logic.NewDeployLogic(ctx, s.svcCtx)
 	return l.Deploy(in)
+}
+
+// 重建知识库索引 切片+向量化
+func (s *AgentServiceServer) SyncKnowledge(ctx context.Context, in *agentrpc.SyncKnowledgeRequest) (*agentrpc.SyncKnowledgeResponse, error) {
+	l := logic.NewSyncKnowledgeLogic(ctx, s.svcCtx)
+	return l.SyncKnowledge(in)
 }
